@@ -1,0 +1,23 @@
+{
+    "name": "elibrary/digital-library",
+    "description": "Digital Library module",
+    "type": "library",
+    "license": "proprietary",
+    "version": "0.1.0",
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Elibrary\\Library\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Elibrary\\Library\\LibraryServiceProvider"
+            ]
+        }
+    }
+}

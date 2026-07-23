@@ -1,0 +1,113 @@
+@import 'tailwindcss';
+@import 'trix/dist/trix.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../../packages/lms/resources/views/**/*.blade.php';
+@source '../../packages/cbt/resources/views/**/*.blade.php';
+@source '../../packages/digital-library/resources/views/**/*.blade.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-brand-50: #f5f3ff;
+    --color-brand-100: #ede9fe;
+    --color-brand-200: #ddd6fe;
+    --color-brand-300: #c4b5fd;
+    --color-brand-400: #a78bfa;
+    --color-brand-500: #8b5cf6;
+    --color-brand-600: #7c3aed;
+    --color-brand-700: #6d28d9;
+    --color-brand-800: #5b21b6;
+    --color-brand-900: #4c1d95;
+}
+
+/* Trix editor, themed to match the app's inputs */
+trix-editor.trix-content {
+    min-height: 10rem;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: #0f172a;
+    box-shadow: inset 0 0 0 1px #cbd5e1;
+}
+
+trix-editor.trix-content:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px #7c3aed;
+}
+
+trix-toolbar .trix-button-row {
+    border-radius: 0.5rem 0.5rem 0 0;
+    border: 1px solid #e2e8f0;
+    border-bottom: none;
+    background: #f8fafc;
+}
+
+trix-toolbar .trix-button {
+    color: #334155;
+}
+
+trix-toolbar + trix-editor.trix-content {
+    border-radius: 0 0 0.5rem 0.5rem;
+}
+
+/* Read-only rendering of Trix-authored HTML (lesson content, page bodies, etc.) */
+.rich-text h1 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.rich-text p {
+    margin-bottom: 0.85rem;
+    line-height: 1.7;
+}
+
+.rich-text ul,
+.rich-text ol {
+    margin: 0.75rem 0 0.85rem 1.5rem;
+}
+
+.rich-text ul {
+    list-style: disc;
+}
+
+.rich-text ol {
+    list-style: decimal;
+}
+
+.rich-text li {
+    margin-bottom: 0.25rem;
+}
+
+.rich-text a {
+    color: #7c3aed;
+    text-decoration: underline;
+}
+
+.rich-text blockquote {
+    margin: 0.85rem 0;
+    border-left: 3px solid #e2e8f0;
+    padding-left: 1rem;
+    color: #64748b;
+    font-style: italic;
+}
+
+.rich-text pre {
+    margin: 0.85rem 0;
+    overflow-x: auto;
+    border-radius: 0.5rem;
+    background: #f1f5f9;
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.rich-text strong {
+    font-weight: 600;
+}

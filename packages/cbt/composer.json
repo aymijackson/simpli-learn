@@ -1,0 +1,23 @@
+{
+    "name": "elibrary/cbt",
+    "description": "Computer-Based Testing module",
+    "type": "library",
+    "license": "proprietary",
+    "version": "0.1.0",
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Elibrary\\Cbt\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Elibrary\\Cbt\\CbtServiceProvider"
+            ]
+        }
+    }
+}
