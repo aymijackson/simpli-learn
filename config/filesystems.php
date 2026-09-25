@@ -40,7 +40,13 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
+            // On hosts without symlink support (so no storage:link), set
+            // PUBLIC_DISK_ROOT to a real "storage" folder inside the web root,
+            // e.g. ../simpli-learn.hitmoh.com/storage. Relative paths resolve
+            // from the app folder.
+            'root' => ($root = env('PUBLIC_DISK_ROOT'))
+                ? (str_starts_with($root, '/') || preg_match('#^[A-Za-z]:[\\\\/]#', $root) ? $root : base_path($root))
+                : storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
             'throw' => false,
