@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ? $title.' · ' : '' }}{{ $tenant->name }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('partials.assets')
 </head>
 <body class="h-full font-sans text-slate-900 antialiased">
     <div class="min-h-full">

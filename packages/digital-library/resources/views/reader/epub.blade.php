@@ -18,6 +18,8 @@
     </div>
 
     @push('scripts')
-        @vite(['resources/js/library-epub-reader.js'])
+        <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
+        <script src="{{ asset('js/library-epub-reader.js') }}?v={{ filemtime(public_path('js/library-epub-reader.js')) }}"></script>
     @endpush
 </x-app-layout>

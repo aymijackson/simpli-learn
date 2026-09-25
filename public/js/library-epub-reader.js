@@ -1,4 +1,5 @@
-import ePub from 'epubjs';
+// Plain script: epub.js (window.ePub) and its JSZip dependency are loaded
+// from the CDN just before this file — see reader/epub.blade.php.
 
 function debounce(fn, delayMs) {
     let timeout;
@@ -20,7 +21,7 @@ async function initEpubReader(container) {
 
     // Same-origin request — the browser sends the session cookie
     // automatically, no special credentials option is needed.
-    const book = ePub(streamUrl, { openAs: 'epub' });
+    const book = window.ePub(streamUrl, { openAs: 'epub' });
     const rendition = book.renderTo(viewer, { width: '100%', height: '75vh' });
 
     const saveProgress = debounce((cfi) => {

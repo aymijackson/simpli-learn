@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('partials.assets')
 </head>
 <body class="flex min-h-full flex-col items-center bg-slate-50 px-4 py-12 font-sans text-slate-900 antialiased">
     <a href="{{ url('/') }}" class="mb-8 flex items-center gap-2 text-lg font-bold text-slate-900">

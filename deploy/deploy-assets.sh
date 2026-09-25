@@ -22,18 +22,19 @@
 # Relative paths are resolved against the app folder, not the current dir.
 #
 # What it does:
-#   - (optional, --build) npm ci && npm run build
-#   - replaces PUBLIC_DIR/build with public/build (stale hashed files removed)
-#   - copies the other files in public/ (favicon, robots.txt, .htaccess, ...)
+#   - replaces each folder in public/ (css/, js/, ...) in PUBLIC_DIR, so
+#     files deleted from the app are deleted on the site too
+#   - copies the loose files in public/ (favicon, robots.txt, .htaccess, ...)
 #     but never overwrites PUBLIC_DIR/index.php
+#   - removes a leftover Vite build/ folder from earlier deploys
 #   - writes PUBLIC_DIR/index.php pointing at APP_DIR if it's missing
 #     (or with --force-index)
 #   - creates PUBLIC_DIR/storage as a real folder (the server has no symlink
 #     support) and copies existing uploads into it; set PUBLIC_DISK_ROOT in
 #     .env so new uploads are written there
 #
-# public/build is gitignored, so either pass --build (needs Node on the
-# server) or upload a locally built public/build into APP_DIR first.
+# There is no build step: the assets in public/ are committed as-is and
+# Tailwind runs in the browser (see resources/views/partials/assets.blade.php).
 
 set -euo pipefail
 
@@ -46,7 +47,6 @@ Usage: $(basename "$0") [options]
 Options:
   -d, --public-dir <path>  Destination document root
                            (default: ../${DEFAULT_PUBLIC_DIR_NAME} next to the app)
-  -b, --build              Run 'npm ci && npm run build' before deploying
       --force-index        Regenerate PUBLIC_DIR/index.php even if it exists
   -n, --dry-run            Show what would happen without changing anything
   -h, --help               Show this help
@@ -55,7 +55,6 @@ EOF
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PUBLIC_DIR_ARG=""
-DO_BUILD=0
 FORCE_INDEX=0
 DRY_RUN=0
 
@@ -63,7 +62,6 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         -d|--public-dir) PUBLIC_DIR_ARG="${2:?--public-dir needs a path}"; shift 2 ;;
         --public-dir=*)  PUBLIC_DIR_ARG="${1#*=}"; shift ;;
-        -b|--build)      DO_BUILD=1; shift ;;
         --force-index)   FORCE_INDEX=1; shift ;;
         -n|--dry-run)    DRY_RUN=1; shift ;;
         -h|--help)       usage; exit 0 ;;
@@ -102,56 +100,50 @@ log "App folder:  $APP_DIR"
 log "Destination: $PUBLIC_DIR"
 [[ $DRY_RUN -eq 1 ]] && log "Dry run - nothing will be changed"
 
-# --- Build (optional) -------------------------------------------------------
+# --- Public folders and files ----------------------------------------------
+# Each folder is copied into a staging folder and swapped in, so the site
+# never serves a half-copied folder and files removed from the app don't
+# linger on the site.
 
-if [[ $DO_BUILD -eq 1 ]]; then
-    command -v npm >/dev/null 2>&1 \
-        || die "npm not found. Enable Node.js in cPanel (Setup Node.js App) or build locally and upload public/build."
-    log "Building assets"
-    (cd "$APP_DIR" && run npm ci && run npm run build)
-fi
-
-SRC_BUILD="$APP_DIR/public/build"
-[[ -f "$SRC_BUILD/manifest.json" ]] \
-    || die "No built assets at $SRC_BUILD/manifest.json. Run with --build, or build locally and upload public/build."
-
-# --- Sync build/ ------------------------------------------------------------
-# Vite file names are content-hashed, so old files must be removed or the
-# folder grows forever. Copy into a staging folder and swap it in so the site
-# never serves a half-copied build.
-
-log "Deploying build/ ($(find "$SRC_BUILD" -type f | wc -l | tr -d ' ') files)"
-DEST_BUILD="$PUBLIC_DIR/build"
-STAGE="$PUBLIC_DIR/.build.new.$$"
-OLD="$PUBLIC_DIR/.build.old.$$"
-
-run rm -rf "$STAGE"
-run cp -R "$SRC_BUILD" "$STAGE"
-if [[ -e "$DEST_BUILD" ]]; then
-    run mv "$DEST_BUILD" "$OLD"
-fi
-run mv "$STAGE" "$DEST_BUILD"
-run rm -rf "$OLD"
-
-# --- Other public files -----------------------------------------------------
-
-log "Copying other public files"
+log "Deploying public files"
 shopt -s dotglob nullglob
 for item in "$APP_DIR/public/"*; do
     name="$(basename "$item")"
     case "$name" in
-        build|storage|hot|index.php) continue ;;
+        storage|hot|build|index.php) continue ;;
     esac
-    run cp -R "$item" "$PUBLIC_DIR/"
-    echo "  $name"
+
+    if [[ -d "$item" ]]; then
+        dest="$PUBLIC_DIR/$name"
+        stage="$PUBLIC_DIR/.$name.new.$$"
+        old="$PUBLIC_DIR/.$name.old.$$"
+        run rm -rf "$stage"
+        run cp -R "$item" "$stage"
+        if [[ -e "$dest" ]]; then
+            run mv "$dest" "$old"
+        fi
+        run mv "$stage" "$dest"
+        run rm -rf "$old"
+        echo "  $name/ ($(find "$item" -type f | wc -l | tr -d ' ') files)"
+    else
+        run cp "$item" "$PUBLIC_DIR/"
+        echo "  $name"
+    fi
 done
 shopt -u dotglob nullglob
+
+# Earlier deploys used Vite, which wrote to build/. Only remove it if it
+# really is a Vite build, so a folder someone else put there is left alone.
+if [[ -f "$PUBLIC_DIR/build/manifest.json" ]]; then
+    log "Removing old Vite build/ folder"
+    run rm -rf "$PUBLIC_DIR/build"
+fi
 
 # --- index.php --------------------------------------------------------------
 # The stock public/index.php uses __DIR__.'/../', which only works when the
 # app is the parent folder. Write one that points at the sibling app folder
-# and tells Laravel its public path is this document root (so Vite's
-# manifest is read from here).
+# and tells Laravel its public path is this document root (so asset()
+# cache-busting reads file times from here).
 
 relative_path() {
     if realpath --relative-to=/ / >/dev/null 2>&1; then

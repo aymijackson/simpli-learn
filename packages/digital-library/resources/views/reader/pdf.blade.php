@@ -21,6 +21,6 @@
     </div>
 
     @push('scripts')
-        @vite(['resources/js/library-pdf-reader.js'])
+        <script type="module" src="{{ asset('js/library-pdf-reader.js') }}?v={{ filemtime(public_path('js/library-pdf-reader.js')) }}"></script>
     @endpush
 </x-app-layout>

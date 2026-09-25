@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ? $title.' · ' : '' }}e-Library</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('partials.assets')
 </head>
 <body class="h-full font-sans text-slate-900 antialiased">
     <nav class="border-b border-slate-200 bg-white">
