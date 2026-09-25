@@ -24,6 +24,14 @@
     <p class="mt-1 text-xs text-slate-500">When enabled, a submission received after the duration has elapsed is rejected and the attempt is forfeited (scored 0). When disabled, the countdown is shown to learners but a late submission is still graded normally.</p>
 </div>
 
+<div>
+    <label class="flex items-center gap-2 text-sm text-slate-600">
+        <input type="checkbox" name="integrity_monitoring_enabled" value="1" class="rounded border-slate-300 text-brand-600 focus:ring-brand-600" @checked(old('integrity_monitoring_enabled', $exam?->integrity_monitoring_enabled ?? false))>
+        Monitor for tab-switching and copy/paste
+    </label>
+    <p class="mt-1 text-xs text-slate-500">Logs when a learner switches away from the exam tab, loses window focus, copies, or pastes — timestamped for your review afterward. It never blocks, warns, or auto-fails the learner; it's purely a signal for you to factor into grading manually.</p>
+</div>
+
 @php($currentNavMode = old('navigation_mode', $exam->navigation_mode?->value ?? 'all_at_once'))
 
 <div>
@@ -51,12 +59,12 @@
 <div class="grid gap-5 sm:grid-cols-2">
     <div>
         <label class="mb-1.5 block text-sm font-medium text-slate-700">Opens (optional)</label>
-        <input type="datetime-local" name="available_from" value="{{ old('available_from', $exam->available_from?->format('Y-m-d\TH:i') ?? '') }}" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+        <input type="datetime-local" name="available_from" value="{{ old('available_from', $exam?->available_from?->format('Y-m-d\TH:i') ?? '') }}" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
         @error('available_from')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
     </div>
     <div>
         <label class="mb-1.5 block text-sm font-medium text-slate-700">Closes (optional)</label>
-        <input type="datetime-local" name="available_until" value="{{ old('available_until', $exam->available_until?->format('Y-m-d\TH:i') ?? '') }}" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+        <input type="datetime-local" name="available_until" value="{{ old('available_until', $exam?->available_until?->format('Y-m-d\TH:i') ?? '') }}" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
         @error('available_until')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
     </div>
 </div>
@@ -84,6 +92,23 @@
 <div>
     <x-input type="number" name="questions_per_attempt" label="Questions per attempt (optional)" value="{{ old('questions_per_attempt', $exam->questions_per_attempt ?? '') }}" min="1" />
     <p class="mt-1 text-xs text-slate-500">Leave blank to show every question. When set, each attempt draws a random subset of this size from the full question pool.</p>
+</div>
+
+@php($currentCertPolicy = old('certificate_policy', $exam?->certificate_policy ?? 'inherit'))
+
+<div>
+    <label class="mb-1.5 block text-sm font-medium text-slate-700">Certificate policy</label>
+    <select id="certificate-policy" name="certificate_policy" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+        @foreach (\Elibrary\Cbt\Enums\CertificatePolicy::cases() as $policy)
+            <option value="{{ $policy->value }}" @selected($currentCertPolicy === $policy->value)>{{ $policy->label() }}</option>
+        @endforeach
+    </select>
+    <p class="mt-1 text-xs text-slate-500">Overrides your organization's <a href="{{ route('cbt.manage.certificates.settings.edit') }}" class="underline">default certificate settings</a> for this exam only.</p>
+</div>
+
+<div id="certificate-price-field" class="grid gap-5 sm:grid-cols-2 {{ in_array($currentCertPolicy, ['inherit', 'free', 'none'], true) ? 'hidden' : '' }}">
+    <x-input type="number" name="certificate_price" label="Certificate price" value="{{ old('certificate_price', $exam->certificate_price ?? '') }}" min="0" step="0.01" />
+    <x-input type="text" name="certificate_currency" label="Currency (3-letter code)" value="{{ old('certificate_currency', $exam->certificate_currency ?? '') }}" maxlength="3" />
 </div>
 
 @push('scripts')
@@ -115,6 +140,12 @@
             const maxAttemptsField = document.getElementById('max-attempts-field');
             allowRetakesField.addEventListener('change', () => {
                 maxAttemptsField.classList.toggle('hidden', !allowRetakesField.checked);
+            });
+
+            const certPolicyField = document.getElementById('certificate-policy');
+            const certPriceField = document.getElementById('certificate-price-field');
+            certPolicyField.addEventListener('change', () => {
+                certPriceField.classList.toggle('hidden', ['inherit', 'free', 'none'].includes(certPolicyField.value));
             });
         })();
     </script>

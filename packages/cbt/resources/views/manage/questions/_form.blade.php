@@ -44,7 +44,13 @@
     </div>
 @endif
 
-<x-input type="number" name="position" label="Position" value="{{ old('position', $question->position ?? $nextPosition ?? 0) }}" min="0" required />
+<div class="grid gap-5 sm:grid-cols-2">
+    <x-input type="number" name="position" label="Position" value="{{ old('position', $question->position ?? $nextPosition ?? 0) }}" min="0" required />
+    <div>
+        <x-input type="number" name="points" label="Points" value="{{ old('points', $question->points ?? 1) }}" min="1" required />
+        <p class="mt-1 text-xs text-slate-500">How much this question counts toward the final score relative to the others.</p>
+    </div>
+</div>
 
 @push('scripts')
     <script>

@@ -61,6 +61,25 @@
         </div>
     @endif
 
+    @php($submittedAttempts = $attempts->filter->isSubmitted())
+
+    @if ($submittedAttempts->isNotEmpty())
+        <div class="mb-8 grid grid-cols-3 gap-4">
+            <x-card class="text-center">
+                <p class="text-2xl font-bold text-slate-900">{{ $submittedAttempts->min('score') }}%</p>
+                <p class="text-xs text-slate-500">Your lowest score</p>
+            </x-card>
+            <x-card class="text-center">
+                <p class="text-2xl font-bold text-slate-900">{{ $submittedAttempts->max('score') }}%</p>
+                <p class="text-xs text-slate-500">Your highest score</p>
+            </x-card>
+            <x-card class="text-center">
+                <p class="text-2xl font-bold text-slate-900">{{ round($submittedAttempts->avg('score')) }}%</p>
+                <p class="text-xs text-slate-500">Your average score</p>
+            </x-card>
+        </div>
+    @endif
+
     @if ($attempts->isNotEmpty())
         <x-card :padded="false">
             <ul class="divide-y divide-slate-200">

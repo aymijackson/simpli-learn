@@ -7,12 +7,15 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
         "doctrine/dbal": "^4.4",
         "elibrary/cbt": "0.1.0",
         "elibrary/digital-library": "0.1.0",
         "elibrary/lms": "0.1.0",
+        "endroid/qr-code": "^5.0",
         "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1"
+        "laravel/tinker": "^2.10.1",
+        "stripe/stripe-php": "^21.0"
     },
     "repositories": [
         {

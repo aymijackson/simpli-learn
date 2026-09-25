@@ -27,3 +27,8 @@
     </select>
     <p class="mt-1 text-xs text-slate-500">Only enforced when the course's exam requirements are set to "after each lesson".</p>
 </div>
+
+<label class="flex items-center gap-2 text-sm text-slate-600">
+    <input type="checkbox" name="is_preview" value="1" class="rounded border-slate-300 text-brand-600 focus:ring-brand-600" @checked(old('is_preview', $lesson->is_preview ?? false))>
+    Free preview (viewable without enrolling, even on a paid course)
+</label>

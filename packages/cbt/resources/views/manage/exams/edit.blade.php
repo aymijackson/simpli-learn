@@ -3,7 +3,11 @@
         &larr; Back to exams
     </a>
 
-    <x-page-header title="Edit exam" :subtitle="$exam->title" />
+    <x-page-header title="Edit exam" :subtitle="$exam->title">
+        <x-slot:actions>
+            <x-button :href="route('cbt.manage.analytics.show', $exam)" variant="secondary">View analytics</x-button>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-card class="mb-8">
         <form method="POST" action="{{ route('cbt.manage.exams.update', $exam) }}" class="space-y-5">
@@ -62,7 +66,10 @@
 
     <div class="mb-4 flex items-center justify-between">
         <h2 class="text-sm font-semibold text-slate-900">Questions</h2>
-        <x-button :href="route('cbt.manage.questions.create', $exam)" variant="secondary">Add question</x-button>
+        <div class="flex items-center gap-3">
+            <x-button :href="route('cbt.manage.questions.import.create', $exam)" variant="secondary">Import CSV</x-button>
+            <x-button :href="route('cbt.manage.questions.create', $exam)">Add question</x-button>
+        </div>
     </div>
 
     @if ($questions->isEmpty())
@@ -82,6 +89,7 @@
                                     <p class="text-xs text-slate-500">
                                         {{ $question->options_count }} options
                                         &middot; {{ $question->answer_type->label() }}
+                                        &middot; {{ $question->points }} {{ \Illuminate\Support\Str::plural('point', $question->points) }}
                                         @if ($question->section)
                                             &middot; {{ $question->section->title }}
                                         @endif

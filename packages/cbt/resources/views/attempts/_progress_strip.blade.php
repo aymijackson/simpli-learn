@@ -1,4 +1,4 @@
-@php($questions = $exam->orderedQuestions())
+@php($questions = $exam->orderedQuestions($attempt))
 <div class="mb-6 flex flex-wrap gap-2">
     @foreach ($questions as $index => $question)
         @php($answer = $attempt->answers->firstWhere('question_id', $question->id))

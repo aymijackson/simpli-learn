@@ -13,6 +13,26 @@
 
         <div class="rich-text mt-6 text-sm text-slate-700">{!! $lesson->content !!}</div>
 
+        @if ($lesson->attachments->isNotEmpty())
+            <div class="mt-8 space-y-3 border-t border-slate-100 pt-6">
+                <h2 class="text-sm font-semibold text-slate-900">Attachments</h2>
+                @foreach ($lesson->attachments as $attachment)
+                    <div class="rounded-lg border border-slate-200 p-4">
+                        <p class="mb-2 text-sm font-medium text-slate-900">{{ $attachment->title }}</p>
+                        @if ($attachment->access_level->value === 'open')
+                            <a href="{{ route('lms.lessons.attachments.download', [$course, $lesson, $attachment]) }}" class="text-sm font-medium text-brand-600 hover:text-brand-500">Download &rarr;</a>
+                        @elseif ($attachment->type->value === 'video')
+                            <video controls preload="none" class="w-full max-w-xl rounded-lg" src="{{ route('lms.lessons.attachments.stream', [$course, $lesson, $attachment]) }}"></video>
+                        @elseif ($attachment->type->value === 'audio')
+                            <audio controls preload="none" class="w-full max-w-xl" src="{{ route('lms.lessons.attachments.stream', [$course, $lesson, $attachment]) }}"></audio>
+                        @else
+                            <a href="{{ route('lms.lessons.attachments.stream', [$course, $lesson, $attachment]) }}" target="_blank" class="text-sm font-medium text-brand-600 hover:text-brand-500">View &rarr;</a>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
         <div class="mt-8 flex items-center justify-between border-t border-slate-100 pt-6">
             <div>
                 @if ($previous)

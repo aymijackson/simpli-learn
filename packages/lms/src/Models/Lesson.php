@@ -14,7 +14,14 @@ class Lesson extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'course_id', 'course_module_id', 'exam_id', 'title', 'content', 'position'];
+    protected $fillable = ['tenant_id', 'course_id', 'course_module_id', 'exam_id', 'title', 'content', 'position', 'is_preview'];
+
+    protected function casts(): array
+    {
+        return [
+            'is_preview' => 'boolean',
+        ];
+    }
 
     public function course(): BelongsTo
     {
@@ -34,6 +41,16 @@ class Lesson extends Model
     public function progress(): HasMany
     {
         return $this->hasMany(LessonProgress::class);
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(LessonAttachment::class)->orderBy('position');
+    }
+
+    public function isAccessibleTo(User $user): bool
+    {
+        return $this->course->isEnrolled($user) || $this->is_preview;
     }
 
     public function isCompletedBy(User $user): bool

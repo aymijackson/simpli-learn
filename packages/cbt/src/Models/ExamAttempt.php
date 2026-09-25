@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 class ExamAttempt extends Model
@@ -36,6 +37,16 @@ class ExamAttempt extends Model
     public function answers(): HasMany
     {
         return $this->hasMany(ExamAttemptAnswer::class, 'attempt_id');
+    }
+
+    public function integrityEvents(): HasMany
+    {
+        return $this->hasMany(ExamIntegrityEvent::class, 'exam_attempt_id');
+    }
+
+    public function certificate(): HasOne
+    {
+        return $this->hasOne(Certificate::class, 'exam_attempt_id');
     }
 
     public function isSubmitted(): bool
@@ -75,5 +86,19 @@ class ExamAttempt extends Model
     public function nextPageNumber(): int
     {
         return $this->answeredPageCount() + 1;
+    }
+
+    /**
+     * Wall-clock minutes from start to submit — null while still in
+     * progress. Single source of truth for "time taken," shared by the
+     * analytics aggregates and the per-attempt display so they can't drift.
+     */
+    public function durationMinutes(): ?float
+    {
+        if (! $this->isSubmitted()) {
+            return null;
+        }
+
+        return $this->started_at->diffInSeconds($this->submitted_at) / 60;
     }
 }

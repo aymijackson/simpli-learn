@@ -7,6 +7,7 @@ use App\Enums\TenantStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Tenant extends Model
 {
@@ -39,6 +40,11 @@ class Tenant extends Model
     public function tenantModules(): HasMany
     {
         return $this->hasMany(TenantModule::class);
+    }
+
+    public function revenueSplit(): HasOne
+    {
+        return $this->hasOne(TenantRevenueSplit::class);
     }
 
     public function hasModule(Module|string $module): bool

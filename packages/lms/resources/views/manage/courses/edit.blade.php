@@ -21,54 +21,52 @@
         </form>
     </x-card>
 
-    @if ($course->assessment_mode->value === 'per_module')
-        <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-sm font-semibold text-slate-900">Modules</h2>
+    <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-slate-900">Modules</h2>
+    </div>
+
+    @if ($modules->isEmpty())
+        <x-empty-state title="No modules yet" description="Add a module below to organize lessons — modules are also used to gate progress when exam requirements are set to 'after each module'." />
+    @else
+        <div class="mb-4 space-y-3">
+            @foreach ($modules as $module)
+                <x-card>
+                    <form method="POST" action="{{ route('lms.manage.modules.update', [$course, $module]) }}" class="grid gap-3 sm:grid-cols-[2fr_1fr_2fr_auto] sm:items-end">
+                        @csrf
+                        @method('PUT')
+                        <x-input type="text" name="title" label="Title" value="{{ $module->title }}" />
+                        <x-input type="number" name="position" label="Position" value="{{ $module->position }}" min="0" />
+                        <div>
+                            <label class="mb-1.5 block text-sm font-medium text-slate-700">Exam to unlock next module</label>
+                            <select name="exam_id" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                                <option value="">None</option>
+                                @foreach ($exams as $exam)
+                                    <option value="{{ $exam->id }}" @selected($module->exam_id === $exam->id)>{{ $exam->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <x-button type="submit" variant="secondary">Save</x-button>
+                        </div>
+                    </form>
+                    <form method="POST" action="{{ route('lms.manage.modules.destroy', [$course, $module]) }}" onsubmit="return confirm('Delete this module? Lessons in it will become unassigned.')" class="mt-2">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-500">Delete module</button>
+                    </form>
+                </x-card>
+            @endforeach
         </div>
-
-        @if ($modules->isEmpty())
-            <x-empty-state title="No modules yet" description="Add a module below, then assign lessons to it from each lesson's edit page." />
-        @else
-            <div class="mb-4 space-y-3">
-                @foreach ($modules as $module)
-                    <x-card>
-                        <form method="POST" action="{{ route('lms.manage.modules.update', [$course, $module]) }}" class="grid gap-3 sm:grid-cols-[2fr_1fr_2fr_auto] sm:items-end">
-                            @csrf
-                            @method('PUT')
-                            <x-input type="text" name="title" label="Title" value="{{ $module->title }}" />
-                            <x-input type="number" name="position" label="Position" value="{{ $module->position }}" min="0" />
-                            <div>
-                                <label class="mb-1.5 block text-sm font-medium text-slate-700">Exam to unlock next module</label>
-                                <select name="exam_id" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
-                                    <option value="">None</option>
-                                    @foreach ($exams as $exam)
-                                        <option value="{{ $exam->id }}" @selected($module->exam_id === $exam->id)>{{ $exam->title }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="flex gap-2">
-                                <x-button type="submit" variant="secondary">Save</x-button>
-                            </div>
-                        </form>
-                        <form method="POST" action="{{ route('lms.manage.modules.destroy', [$course, $module]) }}" onsubmit="return confirm('Delete this module? Lessons in it will become unassigned.')" class="mt-2">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-500">Delete module</button>
-                        </form>
-                    </x-card>
-                @endforeach
-            </div>
-        @endif
-
-        <x-card class="mb-8">
-            <form method="POST" action="{{ route('lms.manage.modules.store', $course) }}" class="grid gap-3 sm:grid-cols-[2fr_1fr_auto] sm:items-end">
-                @csrf
-                <x-input type="text" name="title" label="New module title" required />
-                <x-input type="number" name="position" label="Position" value="{{ $modules->count() }}" min="0" required />
-                <x-button type="submit" variant="secondary">Add module</x-button>
-            </form>
-        </x-card>
     @endif
+
+    <x-card class="mb-8">
+        <form method="POST" action="{{ route('lms.manage.modules.store', $course) }}" class="grid gap-3 sm:grid-cols-[2fr_1fr_auto] sm:items-end">
+            @csrf
+            <x-input type="text" name="title" label="New module title" required />
+            <x-input type="number" name="position" label="Position" value="{{ $modules->count() }}" min="0" required />
+            <x-button type="submit" variant="secondary">Add module</x-button>
+        </form>
+    </x-card>
 
     <div class="mb-4 flex items-center justify-between">
         <h2 class="text-sm font-semibold text-slate-900">Lessons</h2>

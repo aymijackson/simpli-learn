@@ -65,7 +65,7 @@ class LessonController extends Controller
     {
         $tenantId = app(Tenancy::class)->id();
 
-        return $request->validate([
+        $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
             'position' => ['required', 'integer', 'min:0'],
@@ -75,5 +75,9 @@ class LessonController extends Controller
             ],
             'exam_id' => ['nullable', Rule::exists('exams', 'id')->where('tenant_id', $tenantId)],
         ]);
+
+        $validated['is_preview'] = $request->boolean('is_preview');
+
+        return $validated;
     }
 }

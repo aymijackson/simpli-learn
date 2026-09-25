@@ -38,6 +38,39 @@
     @endif
 </div>
 
+@php($currentPricingPolicy = old('pricing_policy', $course->pricing_policy?->value ?? 'free'))
+
+<div>
+    <label class="mb-1.5 block text-sm font-medium text-slate-700">Pricing</label>
+    <select id="pricing-policy" name="pricing_policy" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+        @foreach (\Elibrary\Lms\Enums\CoursePricingPolicy::cases() as $policy)
+            <option value="{{ $policy->value }}" @selected($currentPricingPolicy === $policy->value)>{{ $policy->label() }}</option>
+        @endforeach
+    </select>
+</div>
+
+<div id="course-price-field" class="grid gap-5 sm:grid-cols-2 {{ $currentPricingPolicy === 'free' ? 'hidden' : '' }}">
+    <x-input type="number" name="price" label="Price" value="{{ old('price', $course->price ?? '') }}" min="0" step="0.01" />
+    <x-input type="text" name="currency" label="Currency (3-letter code)" value="{{ old('currency', $course->currency ?? '') }}" maxlength="3" />
+</div>
+
+<div>
+    <label class="mb-1.5 block text-sm font-medium text-slate-700">Completion certificate</label>
+    <select id="course-certificate-policy" name="certificate_policy" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+        @foreach (\Elibrary\Lms\Enums\CourseCertificatePolicy::cases() as $policy)
+            <option value="{{ $policy->value }}" @selected(old('certificate_policy', $course->certificate_policy?->value ?? 'none') === $policy->value)>{{ $policy->label() }}</option>
+        @endforeach
+    </select>
+    <p class="mt-1 text-xs text-slate-500">Independent of pricing above — a free course can still charge only for its completion certificate.</p>
+</div>
+
+@php($currentCertPolicy = old('certificate_policy', $course->certificate_policy?->value ?? 'none'))
+
+<div id="course-certificate-price-field" class="grid gap-5 sm:grid-cols-2 {{ $currentCertPolicy === 'paid' ? '' : 'hidden' }}">
+    <x-input type="number" name="certificate_price" label="Certificate price" value="{{ old('certificate_price', $course->certificate_price ?? '') }}" min="0" step="0.01" />
+    <x-input type="text" name="certificate_currency" label="Currency (3-letter code)" value="{{ old('certificate_currency', $course->certificate_currency ?? '') }}" maxlength="3" />
+</div>
+
 @push('scripts')
     <script>
         (function () {
@@ -61,6 +94,18 @@
             const finalExamField = document.getElementById('final-exam-field');
             modeField.addEventListener('change', () => {
                 finalExamField.classList.toggle('hidden', modeField.value !== 'course_final');
+            });
+
+            const pricingPolicyField = document.getElementById('pricing-policy');
+            const coursePriceField = document.getElementById('course-price-field');
+            pricingPolicyField.addEventListener('change', () => {
+                coursePriceField.classList.toggle('hidden', pricingPolicyField.value === 'free');
+            });
+
+            const certPolicyField = document.getElementById('course-certificate-policy');
+            const certPriceField = document.getElementById('course-certificate-price-field');
+            certPolicyField.addEventListener('change', () => {
+                certPriceField.classList.toggle('hidden', certPolicyField.value !== 'paid');
             });
         })();
     </script>

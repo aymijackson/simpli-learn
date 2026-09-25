@@ -15,7 +15,7 @@ class Question extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'exam_id', 'exam_section_id', 'question_text', 'answer_type', 'scoring_method', 'position'];
+    protected $fillable = ['tenant_id', 'exam_id', 'exam_section_id', 'question_text', 'answer_type', 'scoring_method', 'position', 'points'];
 
     protected function casts(): array
     {

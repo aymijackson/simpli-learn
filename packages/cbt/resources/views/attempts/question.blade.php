@@ -93,4 +93,6 @@
             })();
         </script>
     @endpush
+
+    @include('cbt::attempts._integrity_monitor')
 </x-app-layout>

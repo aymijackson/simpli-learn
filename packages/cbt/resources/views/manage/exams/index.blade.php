@@ -1,6 +1,8 @@
 <x-app-layout title="Manage Exams">
     <x-page-header title="Manage exams" subtitle="Create, edit, and publish your organization's exams.">
         <x-slot:actions>
+            <x-button :href="route('cbt.manage.certificates.settings.edit')" variant="secondary">Certificates</x-button>
+            <x-button :href="route('cbt.manage.analytics.index')" variant="secondary">Analytics</x-button>
             <x-button :href="route('cbt.manage.exams.create')">New exam</x-button>
         </x-slot:actions>
     </x-page-header>

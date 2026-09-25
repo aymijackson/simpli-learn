@@ -6,7 +6,7 @@
     <x-page-header title="New resource" />
 
     <x-card>
-        <form method="POST" action="{{ route('library.manage.resources.store') }}" class="space-y-5">
+        <form method="POST" action="{{ route('library.manage.resources.store') }}" enctype="multipart/form-data" class="space-y-5">
             @csrf
             @include('library::manage.resources._form')
             <x-button type="submit">Create resource</x-button>

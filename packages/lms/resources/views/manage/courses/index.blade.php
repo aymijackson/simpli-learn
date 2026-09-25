@@ -1,6 +1,8 @@
 <x-app-layout title="Manage Courses">
     <x-page-header title="Manage courses" subtitle="Create, edit, and publish your organization's courses.">
         <x-slot:actions>
+            <x-button :href="route('lms.manage.payment-gateways.edit')" variant="secondary">Payment gateways</x-button>
+            <x-button :href="route('lms.manage.course-purchases.index')" variant="secondary">Purchases</x-button>
             <x-button :href="route('lms.manage.courses.create')">New course</x-button>
         </x-slot:actions>
     </x-page-header>

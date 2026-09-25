@@ -3,6 +3,7 @@
 namespace Elibrary\Cbt\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Elibrary\Cbt\Certificates\CertificateService;
 use Elibrary\Cbt\Enums\NavigationMode;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Cbt\Models\ExamAttempt;
@@ -122,19 +123,25 @@ class AttemptController extends Controller
 
             $attempt->load('answers.selectedOptions');
             $totalScore = 0.0;
+            $totalPoints = 0;
 
             foreach ($questions as $question) {
                 $answer = $attempt->answers->firstWhere('question_id', $question->id);
                 $selectedOptionIds = $answer ? $answer->selectedOptions->pluck('id') : Collection::make();
-                $totalScore += $question->scoreForSelection($selectedOptionIds);
+                $totalScore += $question->scoreForSelection($selectedOptionIds) * $question->points;
+                $totalPoints += $question->points;
             }
 
-            $score = $questions->isEmpty() ? 0 : (int) round($totalScore / $questions->count() * 100);
+            $score = $totalPoints === 0 ? 0 : (int) round($totalScore / $totalPoints * 100);
 
             $attempt->update([
                 'submitted_at' => now(),
                 'score' => $score,
             ]);
+
+            if ($attempt->passed()) {
+                app(CertificateService::class)->issueIfFree($attempt);
+            }
 
             return redirect()->route('cbt.attempts.result', $attempt);
         });

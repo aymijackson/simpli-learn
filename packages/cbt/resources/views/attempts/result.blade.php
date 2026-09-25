@@ -13,6 +13,24 @@
                 {{ $attempt->passed() ? 'Passed' : 'Failed' }} &middot; pass mark {{ $exam->pass_percentage }}%
             </x-badge>
         </div>
+
+        @if ($attempt->passed() && $exam->certificatePolicy()->value !== 'none')
+            <div class="mt-6 flex items-center justify-center gap-3">
+                @if ($attempt->certificate)
+                    <x-button :href="route('cbt.attempts.certificate.download', $attempt)" variant="secondary">
+                        Download certificate
+                        @if ($attempt->certificate->tier->value === 'unverified')
+                            (unverified)
+                        @endif
+                    </x-button>
+                    @if ($attempt->certificate->tier->value === 'unverified')
+                        <x-button :href="route('cbt.attempts.certificate-payment.create', $attempt)">Upgrade to verified</x-button>
+                    @endif
+                @elseif ($exam->certificatePolicy()->value === 'paid')
+                    <x-button :href="route('cbt.attempts.certificate-payment.create', $attempt)">Get certificate</x-button>
+                @endif
+            </div>
+        @endif
     </x-card>
 
     <h2 class="mb-4 text-sm font-semibold text-slate-900">Answer review</h2>
@@ -28,7 +46,9 @@
             <x-card>
                 <div class="flex items-start justify-between gap-4">
                     <div class="flex-1">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Question {{ $loop->iteration }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Question {{ $loop->iteration }} &middot; {{ $answer->question->points }} {{ \Illuminate\Support\Str::plural('point', $answer->question->points) }}
+                        </p>
                         <div class="rich-text mt-1 text-sm font-semibold text-slate-900">{!! $answer->question->question_text !!}</div>
                     </div>
                     <x-badge :color="$badgeColor">{{ $badgeLabel }}</x-badge>

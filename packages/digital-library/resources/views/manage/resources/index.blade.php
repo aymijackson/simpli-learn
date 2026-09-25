@@ -1,6 +1,9 @@
 <x-app-layout title="Manage Resources">
     <x-page-header title="Manage resources" subtitle="Create, edit, and publish your organization's library catalog.">
         <x-slot:actions>
+            <x-button :href="route('library.manage.analytics.index')" variant="secondary">Analytics</x-button>
+            <x-button :href="route('library.manage.payment-gateways.edit')" variant="secondary">Payment gateways</x-button>
+            <x-button :href="route('library.manage.resource-purchases.index')" variant="secondary">Purchases</x-button>
             <x-button :href="route('library.manage.resources.create')">New resource</x-button>
         </x-slot:actions>
     </x-page-header>

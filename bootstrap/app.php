@@ -35,6 +35,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'owner' => EnsureTenantOwner::class,
         ]);
 
+        // Payment gateway webhooks are unauthenticated server-to-server calls
+        // from Stripe/Paystack/Flutterwave — they carry no CSRF token and are
+        // protected instead by per-gateway signature verification inside
+        // WebhookController.
+        $middleware->validateCsrfTokens(except: ['webhooks/certificates/*', 'webhooks/courses/*', 'webhooks/library/*']);
+
         // Laravel's defaults know nothing about tenant context: an
         // unauthenticated request would otherwise always bounce to the
         // central /login (useless for a tenant user, whose credentials

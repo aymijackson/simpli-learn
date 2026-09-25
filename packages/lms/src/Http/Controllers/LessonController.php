@@ -3,6 +3,7 @@
 namespace Elibrary\Lms\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Elibrary\Lms\Certificates\CourseCertificateService;
 use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Models\Lesson;
 use Illuminate\Http\RedirectResponse;
@@ -14,7 +15,7 @@ class LessonController extends Controller
     public function show(Request $request, string $tenant, Course $course, Lesson $lesson): View
     {
         abort_unless($lesson->course_id === $course->id, 404);
-        abort_unless($course->isEnrolled($request->user()), 403, 'Enroll in this course to view its lessons.');
+        abort_unless($lesson->isAccessibleTo($request->user()), 403, 'Enroll in this course to view its lessons.');
         abort_unless($lesson->isUnlockedFor($request->user()), 403, 'Pass the required exam to unlock this lesson.');
 
         $lessons = $course->lessons;
@@ -32,13 +33,17 @@ class LessonController extends Controller
     public function complete(Request $request, string $tenant, Course $course, Lesson $lesson): RedirectResponse
     {
         abort_unless($lesson->course_id === $course->id, 404);
-        abort_unless($course->isEnrolled($request->user()), 403);
+        abort_unless($lesson->isAccessibleTo($request->user()), 403);
         abort_unless($lesson->isUnlockedFor($request->user()), 403, 'Pass the required exam to unlock this lesson.');
 
         $lesson->progress()->updateOrCreate(
             ['user_id' => $request->user()->id],
             ['completed_at' => now()],
         );
+
+        if ($course->isEnrolled($request->user())) {
+            app(CourseCertificateService::class)->issueIfPassedAndFree($course, $request->user());
+        }
 
         return redirect()
             ->route('lms.lessons.show', [$course, $lesson])

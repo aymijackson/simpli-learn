@@ -3,12 +3,15 @@
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\MarketingPageController;
+use App\Http\Controllers\Admin\PaymentSettingsController;
 use App\Http\Controllers\Admin\TenantApprovalController;
 use App\Http\Controllers\Admin\TenantController as AdminTenantController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegistrationController;
+use App\Http\Controllers\CertificateVerificationController;
+use App\Http\Controllers\CourseCertificateVerificationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\TeamController;
@@ -18,6 +21,10 @@ use Illuminate\Support\Facades\Route;
 // Public marketing site
 Route::get('/', [MarketingController::class, 'home'])->name('home');
 Route::get('/pages/{page:slug}', [MarketingController::class, 'show'])->name('pages.show');
+
+// Public certificate verification (no auth, no tenant context)
+Route::get('/certificates/verify/{token}', [CertificateVerificationController::class, 'show'])->name('certificates.verify');
+Route::get('/course-certificates/verify/{token}', [CourseCertificateVerificationController::class, 'show'])->name('course-certificates.verify');
 
 // Signup
 Route::middleware('guest')->group(function () {
@@ -54,6 +61,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::resource('pages', MarketingPageController::class)->except(['show']);
 
     Route::post('/uploads', [UploadController::class, 'store'])->name('uploads.store');
+
+    Route::get('/payment-settings', [PaymentSettingsController::class, 'edit'])->name('payment-settings.edit');
+    Route::put('/payment-settings', [PaymentSettingsController::class, 'update'])->name('payment-settings.update');
+    Route::put('/payment-settings/gateways/{gateway}', [PaymentSettingsController::class, 'updateGateway'])->name('payment-settings.gateways.update');
+    Route::put('/tenants/{workspace}/revenue-split', [PaymentSettingsController::class, 'updateRevenueSplit'])->name('tenants.revenue-split');
 });
 
 // Tenant workspace

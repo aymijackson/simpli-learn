@@ -4,6 +4,7 @@ namespace Elibrary\Cbt\Http\Controllers\Manage;
 
 use App\Http\Controllers\Controller;
 use App\Support\Tenancy\Tenancy;
+use Elibrary\Cbt\Enums\CertificatePolicy;
 use Elibrary\Cbt\Enums\NavigationMode;
 use Elibrary\Cbt\Models\Exam;
 use Illuminate\Http\RedirectResponse;
@@ -22,7 +23,7 @@ class ExamController extends Controller
 
     public function create(): View
     {
-        return view('cbt::manage.exams.create');
+        return view('cbt::manage.exams.create', ['exam' => null]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -74,10 +75,14 @@ class ExamController extends Controller
             'available_until' => ['nullable', 'date', 'after:available_from'],
             'max_attempts' => ['nullable', 'integer', 'min:1'],
             'questions_per_attempt' => ['nullable', 'integer', 'min:1'],
+            'certificate_policy' => ['nullable', Rule::in(array_column(CertificatePolicy::cases(), 'value'))],
+            'certificate_price' => ['nullable', 'numeric', 'min:0'],
+            'certificate_currency' => ['nullable', 'string', 'size:3'],
         ]);
 
         $validated['is_published'] = $request->boolean('is_published');
         $validated['enforce_time_limit'] = $request->boolean('enforce_time_limit');
+        $validated['integrity_monitoring_enabled'] = $request->boolean('integrity_monitoring_enabled');
         $validated['navigation_mode'] = $validated['navigation_mode'] ?? NavigationMode::AllAtOnce->value;
         $validated['allow_backward_navigation'] = $validated['navigation_mode'] === NavigationMode::OneAtATime->value
             ? $request->boolean('allow_backward_navigation')
@@ -86,6 +91,12 @@ class ExamController extends Controller
         $validated['allow_retakes'] = $request->boolean('allow_retakes');
         $validated['max_attempts'] = $validated['allow_retakes'] ? $validated['max_attempts'] : null;
         $validated['randomize_questions'] = $request->boolean('randomize_questions');
+
+        $validated['certificate_policy'] = $validated['certificate_policy'] ?? CertificatePolicy::Inherit->value;
+        if (in_array($validated['certificate_policy'], [CertificatePolicy::Inherit->value, CertificatePolicy::Free->value], true)) {
+            $validated['certificate_price'] = null;
+            $validated['certificate_currency'] = null;
+        }
 
         return $validated;
     }

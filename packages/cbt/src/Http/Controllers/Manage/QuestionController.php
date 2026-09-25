@@ -81,8 +81,10 @@ class QuestionController extends Controller
             'scoring_method' => ['nullable', Rule::in(array_column(ScoringMethod::cases(), 'value'))],
             'exam_section_id' => ['nullable', Rule::exists('exam_sections', 'id')->where('exam_id', $exam->id)],
             'position' => ['required', 'integer', 'min:0'],
+            'points' => ['nullable', 'integer', 'min:1', 'max:1000'],
         ]);
 
+        $validated['points'] = $validated['points'] ?? 1;
         $validated['answer_type'] = $validated['answer_type'] ?? AnswerType::Single->value;
         $validated['scoring_method'] = $validated['answer_type'] === AnswerType::Single->value
             ? ScoringMethod::AllOrNothing->value

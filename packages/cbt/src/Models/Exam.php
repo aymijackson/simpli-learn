@@ -3,7 +3,9 @@
 namespace Elibrary\Cbt\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Scopes\TenantScope;
 use App\Models\User;
+use Elibrary\Cbt\Enums\CertificatePolicy;
 use Elibrary\Cbt\Enums\NavigationMode;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -15,10 +17,11 @@ class Exam extends Model
 
     protected $fillable = [
         'tenant_id', 'title', 'slug', 'description', 'instructions',
-        'duration_minutes', 'enforce_time_limit', 'pass_percentage', 'is_published',
+        'duration_minutes', 'enforce_time_limit', 'integrity_monitoring_enabled', 'pass_percentage', 'is_published',
         'navigation_mode', 'allow_backward_navigation',
         'allow_retakes', 'max_attempts', 'available_from', 'available_until',
         'randomize_questions', 'questions_per_attempt',
+        'certificate_policy', 'certificate_price', 'certificate_currency',
     ];
 
     protected function casts(): array
@@ -26,6 +29,7 @@ class Exam extends Model
         return [
             'is_published' => 'boolean',
             'enforce_time_limit' => 'boolean',
+            'integrity_monitoring_enabled' => 'boolean',
             'navigation_mode' => NavigationMode::class,
             'allow_backward_navigation' => 'boolean',
             'allow_retakes' => 'boolean',
@@ -80,6 +84,49 @@ class Exam extends Model
     public function attempts(): HasMany
     {
         return $this->hasMany(ExamAttempt::class);
+    }
+
+    /**
+     * The tenant's one certificate-settings row, created on first use. Explicit
+     * tenant_id filter (not the ambient resolved-tenant scope) so this always
+     * resolves this exam's own tenant regardless of the calling context.
+     */
+    public function certificateSettings(): TenantCertificateSettings
+    {
+        // firstOrCreate() only populates the in-memory model with attributes
+        // explicitly passed here — it does not re-fetch DB column defaults
+        // after insert — so these must be spelled out even though the
+        // migration already defaults them at the schema level.
+        return TenantCertificateSettings::withoutGlobalScope(TenantScope::class)
+            ->firstOrCreate(
+                ['tenant_id' => $this->tenant_id],
+                ['default_policy' => 'free', 'default_currency' => 'USD']
+            );
+    }
+
+    /**
+     * "inherit" resolves to the tenant's own default policy — the tenant's
+     * default is never itself "inherit" (nothing above it to inherit from).
+     */
+    public function certificatePolicy(): CertificatePolicy
+    {
+        if ($this->certificate_policy && $this->certificate_policy !== CertificatePolicy::Inherit->value) {
+            return CertificatePolicy::from($this->certificate_policy);
+        }
+
+        return CertificatePolicy::from($this->certificateSettings()->default_policy);
+    }
+
+    public function certificatePrice(): ?float
+    {
+        $price = $this->certificate_price ?? $this->certificateSettings()->default_price;
+
+        return $price === null ? null : (float) $price;
+    }
+
+    public function certificateCurrency(): ?string
+    {
+        return $this->certificate_currency ?? $this->certificateSettings()->default_currency;
     }
 
     public function attemptsFor(User $user): HasMany

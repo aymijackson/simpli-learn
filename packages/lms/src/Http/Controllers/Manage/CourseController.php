@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Support\Tenancy\Tenancy;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Lms\Enums\AssessmentMode;
+use Elibrary\Lms\Enums\CourseCertificatePolicy;
+use Elibrary\Lms\Enums\CoursePricingPolicy;
 use Elibrary\Lms\Models\Course;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -76,6 +78,12 @@ class CourseController extends Controller
                 Rule::requiredIf(fn () => $request->input('assessment_mode') === AssessmentMode::CourseFinal->value),
                 Rule::exists('exams', 'id')->where('tenant_id', $tenantId),
             ],
+            'pricing_policy' => ['nullable', Rule::in(array_column(CoursePricingPolicy::cases(), 'value'))],
+            'price' => ['nullable', 'numeric', 'min:0'],
+            'currency' => ['nullable', 'string', 'size:3'],
+            'certificate_policy' => ['nullable', Rule::in(array_column(CourseCertificatePolicy::cases(), 'value'))],
+            'certificate_price' => ['nullable', 'numeric', 'min:0'],
+            'certificate_currency' => ['nullable', 'string', 'size:3'],
         ]);
 
         $validated['is_published'] = $request->boolean('is_published');
@@ -83,6 +91,18 @@ class CourseController extends Controller
 
         if ($validated['assessment_mode'] !== AssessmentMode::CourseFinal->value) {
             $validated['final_exam_id'] = null;
+        }
+
+        $validated['pricing_policy'] = $validated['pricing_policy'] ?? CoursePricingPolicy::Free->value;
+        if ($validated['pricing_policy'] === CoursePricingPolicy::Free->value) {
+            $validated['price'] = null;
+            $validated['currency'] = null;
+        }
+
+        $validated['certificate_policy'] = $validated['certificate_policy'] ?? CourseCertificatePolicy::None->value;
+        if ($validated['certificate_policy'] !== CourseCertificatePolicy::Paid->value) {
+            $validated['certificate_price'] = null;
+            $validated['certificate_currency'] = null;
         }
 
         return $validated;
