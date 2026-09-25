@@ -34,11 +34,13 @@ class TenantSeeder extends Seeder
                 ]);
             }
 
-            User::factory()->create([
+            User::forceCreate([
                 'tenant_id' => $tenant->id,
                 'role' => UserRole::Owner,
                 'name' => "{$definition['name']} Admin",
                 'email' => "admin@{$definition['slug']}.test",
+                'email_verified_at' => now(),
+                'password' => 'password',
             ]);
         }
     }
