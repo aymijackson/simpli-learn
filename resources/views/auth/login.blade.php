@@ -1,9 +1,13 @@
 <x-guest-layout>
-    <x-card>
-        <h1 class="text-lg font-semibold text-slate-900">Log in to your account</h1>
-        <p class="mt-1 text-sm text-slate-500">Enter your email and password below.</p>
+    @php($loginTenant = app(\App\Support\Tenancy\Tenancy::class)->current())
+    <div class="mb-8">
+        <h1 class="font-display text-3xl font-bold tracking-tight text-slate-900">Welcome back</h1>
+        <p class="mt-2 text-sm text-slate-500">Log in to {{ $loginTenant ? $loginTenant->name : 'your account' }} to continue.</p>
+    </div>
 
-        <form method="POST" action="{{ $action }}" class="mt-6 space-y-5">
+    <x-card class="sm:p-8">
+
+        <form method="POST" action="{{ $action }}" class="space-y-5">
             @csrf
 
             <x-input type="email" name="email" label="Email" value="{{ old('email') }}" required autofocus />

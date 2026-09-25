@@ -1,20 +1,19 @@
 <x-app-layout title="My Favorites">
-    <x-page-header title="My favorites" subtitle="Resources you've saved for later." />
+    <x-page-header title="My favorites" subtitle="Resources you've saved for later." eyebrow="Library">
+        <x-slot:actions>
+            <x-button :href="route('library.checkouts.index')" variant="secondary" icon="bookmark">My checkouts</x-button>
+            <x-button :href="route('library.resources.index')" variant="secondary" icon="book-open">Browse library</x-button>
+        </x-slot:actions>
+    </x-page-header>
 
     @if ($favorites->isEmpty())
-        <x-empty-state title="No favorites yet" description="Browse the library and tap the favorite button on anything you want to save." />
+        <x-empty-state icon="heart" title="No favorites yet" description="Browse the library and tap the favorite button on anything you want to save.">
+            <x-slot:action><x-button :href="route('library.resources.index')">Browse the library</x-button></x-slot:action>
+        </x-empty-state>
     @else
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
             @foreach ($favorites as $favorite)
-                <a href="{{ route('library.resources.show', $favorite->resource) }}" class="group block">
-                    <x-card class="h-full transition hover:shadow-md hover:ring-slate-300">
-                        <h3 class="text-base font-semibold text-slate-900">{{ $favorite->resource->title }}</h3>
-                        @if ($favorite->resource->author)
-                            <p class="mt-1 text-sm text-slate-500">{{ $favorite->resource->author }}</p>
-                        @endif
-                        <x-badge color="amber" class="mt-4">{{ $favorite->resource->category }}</x-badge>
-                    </x-card>
-                </a>
+                <x-resource-card :resource="$favorite->resource" />
             @endforeach
         </div>
     @endif

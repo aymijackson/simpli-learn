@@ -13,7 +13,9 @@ use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\CourseCertificateVerificationController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ManageDashboardController;
 use App\Http\Controllers\MarketingController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 // Public marketing site
 Route::get('/', [MarketingController::class, 'home'])->name('home');
 Route::get('/pages/{page:slug}', [MarketingController::class, 'show'])->name('pages.show');
+Route::get('/find-workspace', [MarketingController::class, 'findWorkspace'])->name('workspace.find');
 
 // Public certificate verification (no auth, no tenant context)
 Route::get('/certificates/verify/{token}', [CertificateVerificationController::class, 'show'])->name('certificates.verify');
@@ -83,8 +86,11 @@ Route::prefix('t/{tenant}')->name('tenant.')->group(function () {
     Route::middleware('auth')->group(function () {
         Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
         Route::get('/', HomeController::class)->name('home');
+        Route::get('/search', SearchController::class)->name('search');
         Route::post('/impersonate/stop', [ImpersonationController::class, 'stop'])->name('impersonate.stop');
     });
+
+    Route::middleware(['auth', 'owner'])->get('/manage', ManageDashboardController::class)->name('manage.dashboard');
 
     Route::middleware(['auth', 'owner'])->prefix('team')->name('team.')->group(function () {
         Route::get('/', [TeamController::class, 'index'])->name('index');

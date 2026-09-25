@@ -84,3 +84,45 @@ trix-toolbar + trix-editor.trix-content {
 .rich-text strong {
     font-weight: 600;
 }
+
+/* ---------------------------------------------------------------------------
+   Layout helpers
+   ------------------------------------------------------------------------- */
+
+/* <details> used as dropdowns/accordions: hide the default marker */
+details > summary {
+    list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+    display: none;
+}
+
+details[open] > summary .details-chevron {
+    transform: rotate(180deg);
+}
+
+.scrollbar-none {
+    scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+
+/* Soft dotted texture for hero sections */
+.bg-dots {
+    background-image: radial-gradient(rgb(255 255 255 / 0.09) 1px, transparent 1px);
+    background-size: 22px 22px;
+}
+
+.bg-dots-dark {
+    background-image: radial-gradient(rgb(15 23 42 / 0.07) 1px, transparent 1px);
+    background-size: 22px 22px;
+}
+
+/* Hide content until Tailwind's browser build has generated styles, so pages
+   don't flash unstyled. The script adds .tw-ready as soon as it has run. */
+html:not(.tw-ready) body {
+    visibility: hidden;
+}

@@ -74,3 +74,39 @@ document.addEventListener('trix-attachment-add', (event) => {
     xhr.addEventListener('error', fail);
     xhr.send(formData);
 });
+
+// Mobile sidebar / drawer: any [data-drawer-open="id"] opens #id, and
+// [data-drawer-close] inside it (backdrop, close button, links) closes it.
+document.addEventListener('click', (event) => {
+    const opener = event.target.closest('[data-drawer-open]');
+    if (opener) {
+        document.getElementById(opener.dataset.drawerOpen)?.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        return;
+    }
+
+    const closer = event.target.closest('[data-drawer-close]');
+    if (closer) {
+        closer.closest('[data-drawer]')?.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+});
+
+// <details data-dropdown> menus close when clicking elsewhere or pressing Esc.
+document.addEventListener('click', (event) => {
+    document.querySelectorAll('details[data-dropdown][open]').forEach((menu) => {
+        if (!menu.contains(event.target)) {
+            menu.removeAttribute('open');
+        }
+    });
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') {
+        return;
+    }
+
+    document.querySelectorAll('details[data-dropdown][open]').forEach((menu) => menu.removeAttribute('open'));
+    document.querySelectorAll('[data-drawer]:not(.hidden)').forEach((drawer) => drawer.classList.add('hidden'));
+    document.body.classList.remove('overflow-hidden');
+});
