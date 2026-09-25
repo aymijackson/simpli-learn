@@ -85,6 +85,24 @@ trix-toolbar + trix-editor.trix-content {
     font-weight: 600;
 }
 
+.rich-text figure {
+    margin: 1.5rem 0;
+}
+
+.rich-text img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+}
+
+.rich-text figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+    color: #64748b;
+}
+
 /* ---------------------------------------------------------------------------
    Layout helpers
    ------------------------------------------------------------------------- */

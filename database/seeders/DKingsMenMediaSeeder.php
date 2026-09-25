@@ -9,6 +9,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Lms\Models\Course;
+use Elibrary\Lms\Models\Lesson;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -20,9 +21,11 @@ use Illuminate\Support\Str;
  *
  *   php artisan db:seed --class=DKingsMenMediaSeeder --force
  *
- * Safe to re-run: it reuses the workspace and owner if they exist and
- * skips the course if it has already been created. Course content lives
- * in database/seeders/content/dkm_data_security_course.php.
+ * Safe to re-run: it reuses the workspace and owner if they exist, skips
+ * the course if it has already been created, and only adds lesson images
+ * that aren't there yet. Course content lives in
+ * database/seeders/content/dkm_data_security_course.php and lesson images
+ * in public/images/courses/dkm-data-security.
  */
 class DKingsMenMediaSeeder extends Seeder
 {
@@ -40,6 +43,7 @@ class DKingsMenMediaSeeder extends Seeder
             $tenant = $this->workspace();
             $this->owner($tenant);
             $this->course($tenant);
+            $this->lessonImages($tenant);
         });
     }
 
@@ -157,6 +161,56 @@ class DKingsMenMediaSeeder extends Seeder
             $lessonPosition,
             count($data['modules']),
         ));
+    }
+
+    /**
+     * Put each lesson's illustration after its opening paragraph. Runs on
+     * every seed so courses created before images existed get them too;
+     * lessons that already show their image are left alone.
+     */
+    private function lessonImages(Tenant $tenant): void
+    {
+        $data = require __DIR__.'/content/dkm_data_security_course.php';
+
+        $course = Course::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->id)
+            ->where('slug', $data['course']['slug'])
+            ->first();
+
+        if (! $course) {
+            return;
+        }
+
+        $lessons = Lesson::withoutGlobalScopes()->where('course_id', $course->id)->get()->keyBy('title');
+        $added = 0;
+
+        foreach ($data['modules'] as $moduleData) {
+            foreach ($moduleData['lessons'] as $lessonData) {
+                $lesson = $lessons->get($lessonData['title']);
+
+                if (! isset($lessonData['image']) || ! $lesson) {
+                    continue;
+                }
+
+                $src = '/images/courses/dkm-data-security/'.$lessonData['image']['file'];
+
+                if (str_contains((string) $lesson->content, $src)) {
+                    continue;
+                }
+
+                $figure = '<figure><img src="'.e($src).'" alt="'.e($lessonData['image']['alt']).'" width="1600" height="835" loading="lazy"></figure>';
+                $content = (string) $lesson->content;
+                $afterIntro = strpos($content, '</p>');
+
+                $lesson->content = $afterIntro === false
+                    ? $figure."\n".$content
+                    : substr_replace($content, "</p>\n".$figure, $afterIntro, strlen('</p>'));
+                $lesson->save();
+                $added++;
+            }
+        }
+
+        $this->say($added > 0 ? "Added {$added} lesson images" : 'Lesson images already in place');
     }
 
     private function knowledgeCheck(Tenant $tenant, int $number, array $moduleData): Exam

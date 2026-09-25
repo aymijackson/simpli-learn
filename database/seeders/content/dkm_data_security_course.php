@@ -13,6 +13,10 @@
 | Lesson HTML sticks to what the Trix editor supports (h1, p, ul, ol,
 | blockquote, strong, em) so owners can edit it later in the admin.
 |
+| Lesson 'image' entries point at files in public/images/courses/dkm-data-security
+| (exported from the quick-training slide deck); the seeder places each one
+| after the lesson's opening paragraph.
+|
 | Question format: 'q' => text, 'options' => [text => is_correct].
 | More than one correct option makes it a "select all that apply" question.
 |
@@ -39,6 +43,7 @@ HTML,
             'lessons' => [
                 [
                     'title' => 'Welcome and how this course works',
+                    'image' => ['file' => 'course-overview.png', 'alt' => 'Course overview: the six modules — why data security matters, the law, confidentiality, everyday habits, fan and payment data, and incidents.'],
                     'preview' => true,
                     'content' => <<<'HTML'
 <p>Welcome! CREAM exists because fans trust us to connect them directly with the artists they love. That trust depends on something fans rarely see: how carefully we look after their information and our artists' work.</p>
@@ -63,6 +68,7 @@ HTML,
                 ],
                 [
                     'title' => 'What we protect: the CREAM data map',
+                    'image' => ['file' => 'cream-data-map.png', 'alt' => 'The CREAM data map: fans and subscribers, money, talent and artists, and our business.'],
                     'content' => <<<'HTML'
 <p>You can't protect information you don't know you have. Here is the information D'Kings Men Media handles across the CREAM platform.</p>
 <h1>Fans and subscribers</h1>
@@ -94,6 +100,7 @@ HTML,
                 ],
                 [
                     'title' => 'What\'s at stake when data leaks',
+                    'image' => ['file' => 'whats-at-stake.png', 'alt' => 'What is at stake when data leaks, for fans, artists and the company, including NDPA fines of up to ₦10 million or 2% of annual gross revenue.'],
                     'content' => <<<'HTML'
 <p>A single careless moment can cause harm that is hard or impossible to undo.</p>
 <h1>For fans</h1>
@@ -156,6 +163,7 @@ HTML,
             'lessons' => [
                 [
                     'title' => 'NDPA essentials: the seven principles',
+                    'image' => ['file' => 'ndpa-seven-principles.png', 'alt' => 'The seven principles of the Nigeria Data Protection Act 2023, and the lawful bases for using personal data.'],
                     'content' => <<<'HTML'
 <p>The <strong>Nigeria Data Protection Act 2023 (NDPA)</strong> is the main law on personal data in Nigeria. It is enforced by the <strong>Nigeria Data Protection Commission (NDPC)</strong>, which can investigate complaints, audit organisations and impose penalties.</p>
 <p>As a company that decides why and how fan data is used, D'Kings Men Media is a <strong>data controller</strong>. Companies that process data on our behalf — hosting providers, SMS aggregators, agencies — are <strong>data processors</strong>, and we remain responsible for choosing and supervising them.</p>
@@ -176,6 +184,7 @@ HTML,
                 ],
                 [
                     'title' => 'Fans\' rights and how we respond',
+                    'image' => ['file' => 'fans-rights.png', 'alt' => 'Data subject rights, and the four steps to follow when a fan makes a request about their data.'],
                     'content' => <<<'HTML'
 <p>The NDPA gives every fan — and every artist and staff member — rights over their personal data.</p>
 <ul>
@@ -200,6 +209,7 @@ HTML,
                 ],
                 [
                     'title' => 'Consent, marketing and children',
+                    'image' => ['file' => 'consent-and-children.png', 'alt' => 'Under 18 counts as a child under the NDPA; what valid consent looks like; rules for marketing messages.'],
                     'content' => <<<'HTML'
 <h1>Valid consent</h1>
 <p>When we rely on consent — for example, for promotional SMS or sharing data with a sponsor — it must be <strong>freely given, specific, informed and unambiguous</strong>. Pre-ticked boxes and silence don't count. We must be able to prove consent was given, and people must be able to withdraw it easily (for example, by replying STOP or through a USSD menu option).</p>
@@ -259,6 +269,7 @@ HTML,
             'lessons' => [
                 [
                     'title' => 'Classifying information: Public to Restricted',
+                    'image' => ['file' => 'information-classification.png', 'alt' => 'The four information levels — Public, Internal, Confidential and Restricted — with examples and handling rules.'],
                     'content' => <<<'HTML'
 <p>Not all information needs the same protection. We use four levels. When in doubt, choose the higher level.</p>
 <h1>Public</h1>
@@ -274,6 +285,7 @@ HTML,
                 ],
                 [
                     'title' => 'Protecting unreleased content and embargoes',
+                    'image' => ['file' => 'unreleased-content.png', 'alt' => 'What to do and what to avoid when protecting unreleased music, videos and artwork.'],
                     'content' => <<<'HTML'
 <p>Leaks of unreleased music are one of the biggest confidentiality risks in our industry, and they almost always come from inside the circle of people with access.</p>
 <h1>Golden rules for unreleased content</h1>
@@ -345,6 +357,7 @@ HTML,
             'lessons' => [
                 [
                     'title' => 'Passwords and multi-factor authentication',
+                    'image' => ['file' => 'passwords-and-mfa.png', 'alt' => 'Strong, unique passphrases and turning on multi-factor authentication everywhere.'],
                     'content' => <<<'HTML'
 <p>Stolen or guessed passwords are behind a large share of account takeovers. A few habits make a huge difference.</p>
 <h1>Strong, unique passwords</h1>
@@ -366,6 +379,7 @@ HTML,
                 ],
                 [
                     'title' => 'Phishing and social engineering',
+                    'image' => ['file' => 'phishing.png', 'alt' => 'Common phishing tricks aimed at our team, red flags, and the Stop, Verify, Report steps.'],
                     'content' => <<<'HTML'
 <p>Attackers find it easier to trick people than to break into systems. In our world, they often pretend to be artists, managers, telco partners or fans.</p>
 <h1>Common tricks aimed at our team</h1>
@@ -393,6 +407,7 @@ HTML,
                 ],
                 [
                     'title' => 'Devices, Wi-Fi and working on the move',
+                    'image' => ['file' => 'device-security.png', 'alt' => 'Six device habits: lock your screen, update promptly, encrypt, mind public Wi-Fi, keep a clear desk, and report lost devices immediately.'],
                     'content' => <<<'HTML'
 <p>Our team works in offices, studios, backstage and on the road. Your laptop and phone carry access to fan data and unreleased content, so treat them like keys to the building.</p>
 <h1>Your devices</h1>
@@ -457,6 +472,7 @@ HTML,
             'lessons' => [
                 [
                     'title' => 'Access to systems: least privilege',
+                    'image' => ['file' => 'fan-and-payment-data.png', 'alt' => 'Module overview: least privilege, payments and CREAM Fund, support and USSD, and sharing with partners.'],
                     'content' => <<<'HTML'
 <p>The fewer people who can reach data, the smaller the damage when something goes wrong. That's the principle of <strong>least privilege</strong>.</p>
 <ul>
@@ -597,6 +613,7 @@ HTML,
                 ],
                 [
                     'title' => 'How to report and what happens next',
+                    'image' => ['file' => 'incident-response.png', 'alt' => 'Incidents must be reported immediately — the NDPC must be notified within 72 hours — with what to do and what not to do.'],
                     'content' => <<<'HTML'
 <h1>Report immediately</h1>
 <p>Tell your manager and the Data Protection Officer or security contact <strong>as soon as you notice</strong> — don't wait until you've "confirmed" it or finished your shift. Include:</p>
@@ -625,6 +642,7 @@ HTML,
                 ],
                 [
                     'title' => 'Summary: our golden rules',
+                    'image' => ['file' => 'golden-rules.png', 'alt' => 'The ten golden rules of data security and confidentiality at D\'Kings Men Media.'],
                     'content' => <<<'HTML'
 <p>You've reached the end of the lessons. Here's everything in ten rules.</p>
 <ol>
