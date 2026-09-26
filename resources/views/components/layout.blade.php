@@ -92,6 +92,9 @@
                                 <p class="truncate text-xs text-slate-500">{{ $user->email }}</p>
                             </div>
                             <div class="p-1.5 text-sm">
+                                <a href="{{ route('tenant.profile.edit') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50">
+                                    <x-icon name="user-circle" class="h-4 w-4 text-slate-400" /> Profile &amp; security
+                                </a>
                                 <a href="{{ route('tenant.home') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50">
                                     <x-icon name="home" class="h-4 w-4 text-slate-400" /> My learning
                                 </a>

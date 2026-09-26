@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Listeners\RecordAuthActivity;
 use App\Models\User;
 use App\Support\Tenancy\Tenancy;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Event::subscribe(RecordAuthActivity::class);
+
         // The stock notification always links to the central `password.reset`
         // route. A tenant user's reset link needs the /t/{tenant} prefix, or
         // it 404s before the token is ever checked.

@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Models\ActivityLog;
 
 class PaymentGatewayController extends Controller
 {
@@ -55,6 +56,8 @@ class PaymentGatewayController extends Controller
                 ]),
             ]
         );
+
+        ActivityLog::record('settings.gateway', 'Updated '.$gatewayEnum->label().' payment settings ('.($request->boolean('is_enabled') ? 'enabled' : 'disabled').')');
 
         return back()->with('status', $gatewayEnum->label().' settings updated.');
     }

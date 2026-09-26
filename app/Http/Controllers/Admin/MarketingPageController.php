@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Models\ActivityLog;
 
 class MarketingPageController extends Controller
 {
@@ -27,6 +28,8 @@ class MarketingPageController extends Controller
     {
         MarketingPage::create($this->validated($request));
 
+        ActivityLog::record('website.page_created', 'Created a website page');
+
         return redirect()->route('admin.pages.index')->with('status', 'Page created.');
     }
 
@@ -39,12 +42,16 @@ class MarketingPageController extends Controller
     {
         $page->update($this->validated($request, $page));
 
+        ActivityLog::record('website.page_updated', "Updated the website page {$page->title}", $page);
+
         return redirect()->route('admin.pages.index')->with('status', 'Page updated.');
     }
 
     public function destroy(MarketingPage $page): RedirectResponse
     {
         $page->delete();
+
+        ActivityLog::record('website.page_deleted', "Deleted the website page {$page->title}");
 
         return redirect()->route('admin.pages.index')->with('status', 'Page deleted.');
     }

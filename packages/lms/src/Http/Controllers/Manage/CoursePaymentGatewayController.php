@@ -9,6 +9,7 @@ use Elibrary\Lms\Models\CoursePaymentGatewayCredential;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Models\ActivityLog;
 
 class CoursePaymentGatewayController extends Controller
 {
@@ -52,6 +53,8 @@ class CoursePaymentGatewayController extends Controller
                 ]),
             ]
         );
+
+        ActivityLog::record('settings.gateway', 'Updated '.$gatewayEnum->label().' payment settings ('.($request->boolean('is_enabled') ? 'enabled' : 'disabled').')');
 
         return back()->with('status', $gatewayEnum->label().' settings updated.');
     }

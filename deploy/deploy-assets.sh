@@ -29,6 +29,7 @@
 #   - removes a leftover Vite build/ folder from earlier deploys
 #   - writes PUBLIC_DIR/index.php pointing at APP_DIR if it's missing
 #     (or with --force-index)
+#   - warns about unsafe production values in .env (debug mode, mail, cookies)
 #   - creates PUBLIC_DIR/storage as a real folder (the server has no symlink
 #     support) and copies existing uploads into it; set PUBLIC_DISK_ROOT in
 #     .env so new uploads are written there
@@ -231,6 +232,38 @@ else
         if [[ ! -d "$DISK_ROOT" ]] || [[ "$(cd "$DISK_ROOT" && pwd)" != "$STORAGE_DIR" ]]; then
             [[ $DRY_RUN -eq 1 && ! -d "$DISK_ROOT" ]]                 || warn "PUBLIC_DISK_ROOT ($(env_value PUBLIC_DISK_ROOT)) does not point at $STORAGE_DIR"
         fi
+    fi
+fi
+
+# --- Production settings check ---------------------------------------------
+# Warn (don't fail) about .env values that are unsafe on a live server.
+
+check_env() {
+    local key="$1" bad="$2" message="$3" value
+    value="$(env_value "$key" | tr '[:upper:]' '[:lower:]')"
+    if [[ " $bad " == *" ${value:-<empty>} "* ]]; then
+        warn "$key=${value:-<empty>} — $message"
+        PROBLEMS=$((PROBLEMS + 1))
+    fi
+}
+
+PROBLEMS=0
+if [[ -f "$APP_DIR/.env" ]]; then
+    log "Checking production settings in .env"
+    check_env APP_ENV "local development testing <empty>" "set APP_ENV=production"
+    check_env APP_DEBUG "true 1 on" "set APP_DEBUG=false; debug pages expose secrets and stack traces"
+    check_env MAIL_MAILER "log array <empty>" "emails (password resets, approvals, welcomes) are not being sent; configure SMTP"
+    check_env SESSION_ENCRYPT "false 0 <empty>" "set SESSION_ENCRYPT=true"
+    if [[ "$(env_value APP_URL)" == https://* ]]; then
+        check_env SESSION_SECURE_COOKIE "false 0 <empty>" "set SESSION_SECURE_COOKIE=true since the site runs on HTTPS"
+    else
+        warn "APP_URL is not https:// — serve the site over HTTPS (cPanel > SSL/TLS Status > AutoSSL)"
+        PROBLEMS=$((PROBLEMS + 1))
+    fi
+    if [[ $PROBLEMS -eq 0 ]]; then
+        log "Production settings look good"
+    else
+        warn "$PROBLEMS production setting(s) need attention — then run: php artisan config:clear"
     fi
 fi
 

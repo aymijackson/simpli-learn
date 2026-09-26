@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Models\ActivityLog;
 
 class CertificateSettingsController extends Controller
 {
@@ -33,6 +34,8 @@ class CertificateSettingsController extends Controller
         ]);
 
         $this->settings()->update($validated);
+
+        ActivityLog::record('settings.certificates', 'Updated certificate settings');
 
         return back()->with('status', 'Certificate settings updated.');
     }

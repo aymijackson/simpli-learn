@@ -2,6 +2,7 @@
     $adminNav = [
         'Overview' => [
             ['route' => 'admin.dashboard', 'match' => 'admin.dashboard', 'icon' => 'dashboard', 'label' => 'Dashboard'],
+            ['route' => 'admin.activity', 'match' => 'admin.activity', 'icon' => 'list', 'label' => 'Activity log'],
         ],
         'Workspaces' => [
             ['route' => 'admin.tenants.index', 'match' => 'admin.tenants.*', 'icon' => 'building', 'label' => 'Tenants', 'badge' => $pendingTenants ?: null],
@@ -12,6 +13,7 @@
         ],
         'Settings' => [
             ['route' => 'admin.payment-settings.edit', 'match' => 'admin.payment-settings.*', 'icon' => 'credit-card', 'label' => 'Payments'],
+            ['route' => 'profile.edit', 'match' => 'profile.*', 'icon' => 'user-circle', 'label' => 'Profile & security'],
         ],
     ];
 @endphp

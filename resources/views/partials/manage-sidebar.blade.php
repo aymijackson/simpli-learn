@@ -45,6 +45,7 @@
 
     <x-sidebar-section title="Workspace">
         <x-sidebar-link :href="route('tenant.team.index')" icon="users" :active="request()->routeIs('tenant.team.*')">Team &amp; learners</x-sidebar-link>
+        <x-sidebar-link :href="route('tenant.manage.activity')" icon="list" :active="request()->routeIs('tenant.manage.activity')">Activity log</x-sidebar-link>
         <x-sidebar-link :href="route('tenant.home')" icon="eye">View learner site</x-sidebar-link>
     </x-sidebar-section>
 </nav>

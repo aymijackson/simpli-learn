@@ -8,6 +8,7 @@ use Elibrary\Library\Models\LibraryResourcePurchase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Models\ActivityLog;
 
 class LibraryResourcePurchaseQueueController extends Controller
 {
@@ -24,6 +25,8 @@ class LibraryResourcePurchaseQueueController extends Controller
 
         $purchase->markPaid($request->user()->id);
 
+        ActivityLog::record('payments.confirmed', "Confirmed resource payment {$purchase->reference} ({$purchase->currency} {$purchase->amount})", $purchase);
+
         return back()->with('status', 'Payment confirmed.');
     }
 
@@ -32,6 +35,8 @@ class LibraryResourcePurchaseQueueController extends Controller
         abort_unless($purchase->isPending(), 404);
 
         $purchase->update(['status' => LibraryPurchaseStatus::Cancelled->value]);
+
+        ActivityLog::record('payments.rejected', "Rejected resource payment {$purchase->reference} ({$purchase->currency} {$purchase->amount})", $purchase);
 
         return back()->with('status', 'Payment marked as cancelled.');
     }

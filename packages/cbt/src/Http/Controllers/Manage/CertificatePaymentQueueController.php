@@ -8,6 +8,7 @@ use Elibrary\Cbt\Models\CertificatePayment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Models\ActivityLog;
 
 class CertificatePaymentQueueController extends Controller
 {
@@ -24,6 +25,8 @@ class CertificatePaymentQueueController extends Controller
 
         $payment->markPaidAndIssueCertificate($request->user()->id);
 
+        ActivityLog::record('payments.confirmed', "Confirmed certificate payment {$payment->reference} ({$payment->currency} {$payment->amount})", $payment);
+
         return back()->with('status', 'Payment confirmed and certificate issued.');
     }
 
@@ -32,6 +35,8 @@ class CertificatePaymentQueueController extends Controller
         abort_unless($payment->isPending(), 404);
 
         $payment->update(['status' => PaymentStatus::Cancelled->value]);
+
+        ActivityLog::record('payments.rejected', "Rejected certificate payment {$payment->reference} ({$payment->currency} {$payment->amount})", $payment);
 
         return back()->with('status', 'Payment marked as cancelled.');
     }

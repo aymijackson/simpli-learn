@@ -9,6 +9,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ActivityLog;
 
 class ImpersonationController extends Controller
 {
@@ -22,6 +23,8 @@ class ImpersonationController extends Controller
             ->first();
 
         abort_unless($owner, 404, 'This workspace has no owner to manage as.');
+
+        ActivityLog::record('impersonation.started', "Started managing {$workspace->name} as {$owner->name}", $workspace, tenantId: $workspace->id);
 
         session(['impersonator_id' => auth()->id()]);
         Auth::login($owner);
@@ -40,6 +43,10 @@ class ImpersonationController extends Controller
         $original = User::withoutGlobalScope(TenantScope::class)->find($originalId);
 
         abort_unless($original, 403);
+
+        ActivityLog::record('impersonation.stopped', "Stopped managing the workspace and returned to the admin account", actor: $original);
+        // The Login event below is the admin returning, not a fresh sign-in.
+        request()->attributes->set('activity.skip_login', true);
 
         Auth::login($original);
 

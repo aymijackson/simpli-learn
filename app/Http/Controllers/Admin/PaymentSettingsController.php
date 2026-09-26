@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Models\ActivityLog;
 
 class PaymentSettingsController extends Controller
 {
@@ -42,6 +43,8 @@ class PaymentSettingsController extends Controller
 
         PlatformPaymentSettings::current()->update($validated);
 
+        ActivityLog::record('settings.platform_payments', 'Changed the platform payment mode');
+
         return back()->with('status', 'Platform payment mode updated.');
     }
 
@@ -69,6 +72,8 @@ class PaymentSettingsController extends Controller
             ]
         );
 
+        ActivityLog::record('settings.platform_gateway', 'Updated the platform '.$gatewayEnum->label().' settings');
+
         return back()->with('status', 'Platform '.$gatewayEnum->label().' settings updated.');
     }
 
@@ -82,6 +87,8 @@ class PaymentSettingsController extends Controller
         ]);
 
         TenantRevenueSplit::updateOrCreate(['tenant_id' => $workspace->id], $validated);
+
+        ActivityLog::record('settings.revenue_split', "Changed the revenue split for {$workspace->name}", $workspace);
 
         return back()->with('status', 'Revenue split updated for '.$workspace->name.'.');
     }

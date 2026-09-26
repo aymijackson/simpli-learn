@@ -8,6 +8,7 @@ use Elibrary\Lms\Models\CoursePurchase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Models\ActivityLog;
 
 class CoursePurchaseQueueController extends Controller
 {
@@ -24,6 +25,8 @@ class CoursePurchaseQueueController extends Controller
 
         $purchase->markPaidAndActivate($request->user()->id);
 
+        ActivityLog::record('payments.confirmed', "Confirmed course payment {$purchase->reference} ({$purchase->currency} {$purchase->amount})", $purchase);
+
         return back()->with('status', 'Payment confirmed.');
     }
 
@@ -32,6 +35,8 @@ class CoursePurchaseQueueController extends Controller
         abort_unless($purchase->isPending(), 404);
 
         $purchase->update(['status' => CoursePurchaseStatus::Cancelled->value]);
+
+        ActivityLog::record('payments.rejected', "Rejected course payment {$purchase->reference} ({$purchase->currency} {$purchase->amount})", $purchase);
 
         return back()->with('status', 'Payment marked as cancelled.');
     }

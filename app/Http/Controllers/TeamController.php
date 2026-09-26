@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Notifications\AddedToWorkspace;
+use App\Support\PersonalData;
+use App\Support\SafeNotifier;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Support\Tenancy\Tenancy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -11,6 +15,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
+use App\Models\ActivityLog;
 
 class TeamController extends Controller
 {
@@ -40,7 +45,7 @@ class TeamController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        User::create([
+        $member = User::create([
             'tenant_id' => $tenant->id,
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -48,7 +53,13 @@ class TeamController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        return redirect()->route('tenant.team.index')->with('status', 'Team member added.');
+        ActivityLog::record('team.member_added', "Added {$member->name} ({$member->email}) as {$member->role->label()}", $member);
+
+        $emailed = SafeNotifier::send($member, new AddedToWorkspace($tenant, $request->user()->name));
+
+        return redirect()->route('tenant.team.index')->with('status', $emailed
+            ? "Team member added. We've emailed {$member->email} their login link."
+            : 'Team member added. (The welcome email could not be sent — check the mail settings.)');
     }
 
     public function update(Request $request, string $tenant, User $member): RedirectResponse
@@ -63,6 +74,8 @@ class TeamController extends Controller
 
         $member->update(['role' => $validated['role']]);
 
+        ActivityLog::record('team.role_changed', "Changed {$member->name}'s role to {$member->role->label()}", $member);
+
         return redirect()->route('tenant.team.index')->with('status', 'Role updated.');
     }
 
@@ -76,9 +89,61 @@ class TeamController extends Controller
             return back()->withErrors(['member' => 'You cannot remove the only owner.']);
         }
 
+        ActivityLog::record('team.member_removed', "Removed {$member->name} ({$member->email}) from the workspace");
+
         $member->delete();
 
         return redirect()->route('tenant.team.index')->with('status', 'Team member removed.');
+    }
+
+    /** Right of access: everything held about a member, as a JSON download. */
+    public function exportData(string $tenant, User $member): StreamedResponse
+    {
+        ActivityLog::record('data.exported', "Downloaded the personal data of {$member->name}", $member);
+
+        return $this->jsonDownload(PersonalData::export($member), $member);
+    }
+
+    /** Right to erasure: anonymise the member (see PersonalData::erase). */
+    public function eraseData(string $tenant, User $member): RedirectResponse
+    {
+        if ($member->id === auth()->id()) {
+            return back()->withErrors(['member' => 'You cannot erase your own account from here.']);
+        }
+
+        if ($member->isOwner() && $this->isLastOwner($member)) {
+            return back()->withErrors(['member' => 'You cannot erase the only owner.']);
+        }
+
+        PersonalData::erase($member);
+        ActivityLog::record('data.erased', "Erased the personal data of a team member (account #{$member->id})", $member);
+
+        return redirect()->route('tenant.team.index')->with('status', 'Their personal data has been erased. Payment and exam records are kept anonymously.');
+    }
+
+    /** For a member who lost their phone and recovery codes. */
+    public function resetTwoFactor(string $tenant, User $member): RedirectResponse
+    {
+        $member->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+        ])->save();
+
+        ActivityLog::record('security.two_factor_reset', "Reset two-step login for {$member->name}", $member);
+
+        return redirect()->route('tenant.team.index')->with('status', "Two-step login was reset for {$member->name}. They can sign in with their password and set it up again.");
+    }
+
+    private function jsonDownload(array $data, User $member): StreamedResponse
+    {
+        $filename = 'personal-data-'.\Illuminate\Support\Str::slug($member->name ?: 'user').'-'.now()->format('Y-m-d').'.json';
+
+        return response()->streamDownload(
+            fn () => print(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
+            $filename,
+            ['Content-Type' => 'application/json'],
+        );
     }
 
     private function isLastOwner(User $member): bool

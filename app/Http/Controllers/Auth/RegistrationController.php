@@ -8,6 +8,8 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\NewWorkspaceSignup;
+use App\Support\SafeNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -55,6 +57,11 @@ class RegistrationController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
         ]);
+
+        SafeNotifier::send(
+            User::withoutGlobalScopes()->whereNull('tenant_id')->get(),
+            new NewWorkspaceSignup($tenant->load('tenantModules'), $validated['name'], $validated['email']),
+        );
 
         return redirect()->route('signup.pending')->with('organization', $tenant->name);
     }

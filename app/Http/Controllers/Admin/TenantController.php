@@ -10,6 +10,7 @@ use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Models\ActivityLog;
 
 class TenantController extends Controller
 {
@@ -62,6 +63,8 @@ class TenantController extends Controller
                 ['is_enabled' => in_array($module->value, $selected, true)],
             );
         }
+
+        ActivityLog::record('workspace.modules_updated', "Changed the enabled packages for {$workspace->name}", $workspace, ['enabled' => array_values($selected)]);
 
         return back()->with('status', 'Packages updated.');
     }
