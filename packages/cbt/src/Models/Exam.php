@@ -5,6 +5,7 @@ namespace Elibrary\Cbt\Models;
 use App\Models\Concerns\BelongsToTenant;
 use App\Models\Scopes\TenantScope;
 use App\Models\User;
+use Elibrary\Cbt\Contracts\ExamPlacements;
 use Elibrary\Cbt\Enums\CertificatePolicy;
 use Elibrary\Cbt\Enums\NavigationMode;
 use Illuminate\Database\Eloquent\Collection;
@@ -151,6 +152,10 @@ class Exam extends Model
      */
     public function startBlockReason(User $user): ?string
     {
+        if ($reason = app(ExamPlacements::class)->accessBlockReason($this, $user)) {
+            return $reason;
+        }
+
         if ($this->available_from && now()->lt($this->available_from)) {
             return 'This exam opens '.$this->available_from->format('M j, Y g:ia').'.';
         }

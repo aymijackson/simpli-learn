@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Module;
 use App\Support\Tenancy\Tenancy;
+use Elibrary\Cbt\Contracts\ExamPlacements;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Library\Models\LibraryResource;
 use Elibrary\Lms\Models\Course;
@@ -41,6 +42,7 @@ class SearchController extends Controller
 
             if ($enabled->contains(Module::Cbt)) {
                 $results['exams'] = Exam::where('is_published', true)
+                    ->whereNotIn('id', app(ExamPlacements::class)->embeddedExamIds())
                     ->where(fn ($query) => $query->where('title', 'like', $like)->orWhere('description', 'like', $like))
                     ->withCount('questions')
                     ->orderBy('title')

@@ -4,6 +4,7 @@ namespace Elibrary\Cbt\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Elibrary\Cbt\Certificates\CertificateService;
+use Elibrary\Cbt\Contracts\ExamPlacements;
 use Elibrary\Cbt\Enums\NavigationMode;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Cbt\Models\ExamAttempt;
@@ -140,6 +141,7 @@ class AttemptController extends Controller
         return view('cbt::attempts.result', [
             'attempt' => $attempt,
             'exam' => $attempt->exam,
+            'placement' => app(ExamPlacements::class)->contextFor($attempt->exam, $request->user()),
         ]);
     }
 }

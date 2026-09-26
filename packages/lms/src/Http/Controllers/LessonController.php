@@ -18,15 +18,28 @@ class LessonController extends Controller
         abort_unless($lesson->isAccessibleTo($request->user()), 403, 'Enroll in this course to view its lessons.');
         abort_unless($lesson->isUnlockedFor($request->user()), 403, 'Pass the required exam to unlock this lesson.');
 
+        $user = $request->user();
         $lessons = $course->lessons;
         $index = $lessons->search(fn ($l) => $l->id === $lesson->id);
+        $next = $index < $lessons->count() - 1 ? $lessons[$index + 1] : null;
+
+        // Quizzes sit after the lesson they follow; the outline shows them in place.
+        $checkpoints = $course->isEnrolled($user)
+            ? $course->checkpoints()
+                ->filter(fn ($checkpoint) => $checkpoint['after'])
+                ->map(fn ($checkpoint) => $checkpoint + ['status' => $course->checkpointStatus($checkpoint, $user)])
+                ->keyBy(fn ($checkpoint) => $checkpoint['after']->id)
+            : collect();
 
         return view('lms::lessons.show', [
             'course' => $course,
             'lesson' => $lesson,
-            'isCompleted' => $lesson->isCompletedBy($request->user()),
+            'isCompleted' => $lesson->isCompletedBy($user),
             'previous' => $index > 0 ? $lessons[$index - 1] : null,
-            'next' => $index < $lessons->count() - 1 ? $lessons[$index + 1] : null,
+            'next' => $next,
+            'nextIsOpen' => $next && $next->isAccessibleTo($user) && $next->isUnlockedFor($user),
+            'checkpoints' => $checkpoints,
+            'checkpoint' => $checkpoints->get($lesson->id),
         ]);
     }
 

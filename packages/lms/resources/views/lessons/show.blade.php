@@ -56,6 +56,20 @@
                     </div>
                 @endif
 
+                @if ($checkpoint && $checkpoint['exam']->is_published && $checkpoint['status'] === 'open')
+                    <div class="flex items-start gap-3 border-t border-slate-100 bg-brand-50/60 px-6 py-4 text-sm text-brand-900 sm:px-10">
+                        <x-icon name="clipboard-check" class="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
+                        <p>
+                            <strong>{{ $checkpoint['label'] }}:</strong> {{ $checkpoint['exam']->title }}.
+                            @if ($checkpoint['kind'] === 'final')
+                                Pass it to complete the course.
+                            @else
+                                Pass it to unlock what comes next.
+                            @endif
+                        </p>
+                    </div>
+                @endif
+
                 <div class="flex flex-col-reverse gap-3 border-t border-slate-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-10">
                     <div>
                         @if ($previous)
@@ -69,8 +83,14 @@
                                 <x-button type="submit" icon="check" class="w-full sm:w-auto">Mark as complete</x-button>
                             </form>
                         @endunless
-                        @if ($next)
+                        @if ($checkpoint && $checkpoint['exam']->is_published && in_array($checkpoint['status'], ['open', 'marking'], true))
+                            <x-button :variant="$isCompleted ? 'primary' : 'secondary'" :href="route('cbt.exams.show', $checkpoint['exam'])" icon="clipboard-check">
+                                {{ $checkpoint['status'] === 'marking' ? 'Quiz awaiting marking' : 'Take the '.strtolower($checkpoint['label']) }}
+                            </x-button>
+                        @elseif ($next && $nextIsOpen)
                             <x-button :variant="$isCompleted ? 'primary' : 'secondary'" :href="route('lms.lessons.show', [$course, $next])" icon-right="arrow-right">Next lesson</x-button>
+                        @elseif ($next && $isCompleted)
+                            <x-button variant="secondary" :href="route('lms.courses.show', $course)" icon-right="arrow-right">Back to the course</x-button>
                         @endif
                     </div>
                 </div>
@@ -98,6 +118,9 @@
                                 <span class="line-clamp-2">{{ $item->title }}</span>
                             </a>
                         </li>
+                        @if ($checkpoints->has($item->id))
+                            @include('lms::courses._checkpoint', ['checkpoint' => $checkpoints[$item->id], 'compact' => true])
+                        @endif
                     @endforeach
                 </ol>
             </div>

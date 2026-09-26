@@ -12,17 +12,29 @@
     $nextLesson = $isEnrolled
         ? $course->lessons->first(fn ($lesson) => ! $lessonState[$lesson->id]['completed'] && $lessonState[$lesson->id]['unlocked'])
         : null;
+    // Exams placed along the way (lesson quizzes, module tests, the final exam).
+    $checkpoints = $course->checkpoints()->map(fn ($checkpoint) => $checkpoint + [
+        'status' => $isEnrolled ? $course->checkpointStatus($checkpoint, $user) : 'locked',
+    ]);
+    $lessonQuizzes = $checkpoints->where('kind', 'lesson')->keyBy(fn ($checkpoint) => $checkpoint['lesson']->id);
+    $moduleTests = $checkpoints->where('kind', 'module')->keyBy(fn ($checkpoint) => $checkpoint['module']->id);
+    $finalCheckpoint = $checkpoints->firstWhere('kind', 'final');
+    // When no lesson is available, the learner is usually waiting on a quiz.
+    $nextCheckpoint = $isEnrolled && ! $nextLesson
+        ? $checkpoints->first(fn ($checkpoint) => $checkpoint['status'] === 'open' && $checkpoint['exam']->is_published)
+        : null;
     $previewCount = $course->lessons->where('is_preview', true)->count();
     $attachmentCount = $course->lessons->sum(fn ($lesson) => $lesson->attachments->count());
 
     // Curriculum sections: each course module, then any lessons not in a module.
     $sections = $course->modules->map(fn ($module) => [
+        'module_id' => $module->id,
         'title' => $module->title,
         'lessons' => $course->lessons->where('course_module_id', $module->id)->values(),
     ])->filter(fn ($section) => $section['lessons']->isNotEmpty())->values();
     $loose = $course->lessons->whereNull('course_module_id')->values();
     if ($loose->isNotEmpty()) {
-        $sections->push(['title' => $sections->isEmpty() ? 'Lessons' : 'More lessons', 'lessons' => $loose]);
+        $sections->push(['module_id' => null, 'title' => $sections->isEmpty() ? 'Lessons' : 'More lessons', 'lessons' => $loose]);
     }
     $lessonNumbers = $course->lessons->pluck('id')->flip()->map(fn ($index) => $index + 1);
 @endphp
@@ -207,14 +219,7 @@
                                                     </span>
                                                     <span class="flex shrink-0 items-center gap-3">
                                                         @if ($state['hasAccess'] && ! $state['unlocked'])
-                                                            @php($requiredExam = $lesson->unlockRequirement($user))
-                                                            <span class="hidden text-xs text-slate-500 sm:inline">
-                                                                @if ($requiredExam)
-                                                                    Pass "{{ $requiredExam->title }}" to unlock
-                                                                @else
-                                                                    Complete the previous lesson/module to unlock
-                                                                @endif
-                                                            </span>
+                                                            <span class="hidden text-xs text-slate-500 sm:inline">Finish the step above to unlock</span>
                                                         @endif
                                                         @if ($lesson->attachments->isNotEmpty())
                                                             <x-icon name="document" class="h-4 w-4 text-slate-400" title="Has attachments" />
@@ -222,10 +227,21 @@
                                                     </span>
                                                 </a>
                                             </li>
+                                            @if ($lessonQuizzes->has($lesson->id))
+                                                @include('lms::courses._checkpoint', ['checkpoint' => $lessonQuizzes[$lesson->id]])
+                                            @endif
                                         @endforeach
+                                        @if ($section['module_id'] && $moduleTests->has($section['module_id']))
+                                            @include('lms::courses._checkpoint', ['checkpoint' => $moduleTests[$section['module_id']]])
+                                        @endif
                                     </ul>
                                 </details>
                             @endforeach
+                            @if ($finalCheckpoint)
+                                <ul class="border-t border-slate-200">
+                                    @include('lms::courses._checkpoint', ['checkpoint' => $finalCheckpoint])
+                                </ul>
+                            @endif
                         </div>
                     @endif
                 </section>
@@ -267,6 +283,11 @@
                                     {{ $progress === 0 ? 'Start learning' : 'Continue learning' }}
                                 </x-button>
                                 <p class="mt-2 truncate text-center text-xs text-slate-500">Next: {{ $nextLesson->title }}</p>
+                            @elseif ($nextCheckpoint)
+                                <x-button :href="route('cbt.exams.show', $nextCheckpoint['exam'])" class="mt-5 w-full" size="lg" icon-right="arrow-right">
+                                    Take the {{ strtolower($nextCheckpoint['label']) }}
+                                </x-button>
+                                <p class="mt-2 truncate text-center text-xs text-slate-500">{{ $nextCheckpoint['kind'] === 'final' ? 'Pass it to complete the course' : 'Pass it to continue' }}: {{ $nextCheckpoint['exam']->title }}</p>
                             @elseif ($progress === 100)
                                 <p class="mt-5 flex items-center justify-center gap-2 rounded-lg bg-emerald-50 py-3 text-sm font-semibold text-emerald-700"><x-icon name="check-circle" /> All lessons complete</p>
                             @endif

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Module;
 use App\Support\Tenancy\Tenancy;
+use Elibrary\Cbt\Contracts\ExamPlacements;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Cbt\Models\ExamAttempt;
 use Elibrary\Library\Models\LibraryCheckout;
@@ -104,6 +105,7 @@ class HomeController extends Controller
 
             $data['suggestedExams'] = Exam::query()
                 ->where('is_published', true)
+                ->whereNotIn('id', app(ExamPlacements::class)->embeddedExamIds())
                 ->withCount('questions')
                 ->latest()
                 ->take(3)

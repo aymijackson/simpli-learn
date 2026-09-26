@@ -12,6 +12,7 @@ use Elibrary\Lms\Enums\CoursePricingPolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 class Course extends Model
@@ -91,6 +92,70 @@ class Course extends Model
     public function finalExam(): BelongsTo
     {
         return $this->belongsTo(Exam::class, 'final_exam_id');
+    }
+
+    /**
+     * The exams learners meet on the way through the course, in order, for
+     * the current assessment mode: a quiz after a lesson, a test at the end
+     * of a module, or the final exam. "after" is the last lesson before it.
+     *
+     * @return Collection<int, array{kind: string, label: string, exam: Exam, lesson: ?Lesson, module: ?CourseModule, after: ?Lesson}>
+     */
+    public function checkpoints(): Collection
+    {
+        $points = match ($this->assessment_mode) {
+            AssessmentMode::PerLesson => $this->lessons
+                ->filter(fn (Lesson $lesson) => $lesson->exam_id && $lesson->exam)
+                ->map(fn (Lesson $lesson) => ['kind' => 'lesson', 'label' => 'Lesson quiz', 'exam' => $lesson->exam, 'lesson' => $lesson, 'module' => null, 'after' => $lesson]),
+            AssessmentMode::PerModule => $this->modules
+                ->filter(fn (CourseModule $module) => $module->exam_id && $module->exam && $module->lessons->isNotEmpty())
+                ->map(fn (CourseModule $module) => ['kind' => 'module', 'label' => 'Module test', 'exam' => $module->exam, 'lesson' => null, 'module' => $module, 'after' => $module->lessons->last()]),
+            AssessmentMode::CourseFinal => $this->final_exam_id && $this->finalExam
+                ? collect([['kind' => 'final', 'label' => 'Final exam', 'exam' => $this->finalExam, 'lesson' => null, 'module' => null, 'after' => $this->lessons->last()]])
+                : collect(),
+            default => collect(),
+        };
+
+        return $points->values();
+    }
+
+    /** Whether the learner has got far enough through the course to sit this checkpoint. */
+    public function checkpointIsReachable(array $checkpoint, User $user): bool
+    {
+        if (! $this->isEnrolled($user)) {
+            return false;
+        }
+
+        return match ($checkpoint['kind']) {
+            'lesson' => $checkpoint['lesson']->isUnlockedFor($user),
+            'module' => $checkpoint['module']->lessons->first()?->isUnlockedFor($user) ?? true,
+            default => true,
+        };
+    }
+
+    /** passed, marking (submitted, essays not marked yet), open or locked. */
+    public function checkpointStatus(array $checkpoint, User $user): string
+    {
+        $exam = $checkpoint['exam'];
+
+        return match (true) {
+            $exam->passedBy($user) => 'passed',
+            $exam->attempts()->where('user_id', $user->id)->whereNotNull('submitted_at')->where('needs_marking', true)->exists() => 'marking',
+            $this->checkpointIsReachable($checkpoint, $user) => 'open',
+            default => 'locked',
+        };
+    }
+
+    /** The lesson that follows a checkpoint, if any. */
+    public function lessonAfterCheckpoint(array $checkpoint): ?Lesson
+    {
+        if (! $checkpoint['after']) {
+            return null;
+        }
+
+        $index = $this->lessons->search(fn (Lesson $lesson) => $lesson->id === $checkpoint['after']->id);
+
+        return $index === false ? null : $this->lessons->get($index + 1);
     }
 
     public function isEnrolled(User $user): bool

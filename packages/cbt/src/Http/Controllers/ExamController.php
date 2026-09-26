@@ -3,6 +3,7 @@
 namespace Elibrary\Cbt\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Elibrary\Cbt\Contracts\ExamPlacements;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Cbt\Models\ExamAttempt;
 use Illuminate\Http\Request;
@@ -12,8 +13,10 @@ class ExamController extends Controller
 {
     public function index(Request $request): View
     {
+        // Course checkpoint quizzes are taken from inside their course, not listed here.
         $query = Exam::query()
             ->where('is_published', true)
+            ->whereNotIn('id', app(ExamPlacements::class)->embeddedExamIds())
             ->withCount('questions')
             ->orderBy('title');
 
@@ -48,6 +51,7 @@ class ExamController extends Controller
             'exam' => $exam,
             'attempts' => $attempts,
             'startBlockReason' => $hasActiveAttempt ? null : $exam->startBlockReason($request->user()),
+            'placement' => app(ExamPlacements::class)->contextFor($exam, $request->user()),
         ]);
     }
 }

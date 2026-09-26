@@ -14,13 +14,22 @@
 
         <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
             <nav class="flex items-center gap-2 text-sm text-slate-400">
-                <a href="{{ route('cbt.exams.index') }}" class="hover:text-white">Exams</a>
+                @if ($placement)
+                    <a href="{{ $placement['url'] }}" class="truncate hover:text-white">{{ $placement['title'] }}</a>
+                @else
+                    <a href="{{ route('cbt.exams.index') }}" class="hover:text-white">Exams</a>
+                @endif
                 <x-icon name="chevron-right" class="h-4 w-4" />
                 <span class="truncate text-slate-300">{{ $exam->title }}</span>
             </nav>
 
             <div class="mt-4 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
                 <div class="max-w-3xl">
+                    @if ($placement)
+                        <p class="mb-2 inline-flex items-center gap-1.5 rounded-full bg-brand-500/20 px-3 py-1 text-xs font-semibold text-brand-100 ring-1 ring-brand-400/30">
+                            <x-icon name="academic-cap" class="h-3.5 w-3.5" /> {{ $placement['checkpoint'] }} &middot; {{ $placement['title'] }}
+                        </p>
+                    @endif
                     <h1 class="font-display text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{{ $exam->title }}</h1>
                     @if ($exam->description)
                         <p class="mt-4 text-base leading-relaxed text-slate-300">{{ \Illuminate\Support\Str::limit(trim(strip_tags($exam->description)), 220) }}</p>

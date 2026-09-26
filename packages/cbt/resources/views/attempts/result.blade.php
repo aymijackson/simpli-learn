@@ -1,6 +1,6 @@
 <x-app-layout :title="$exam->title">
-    <a href="{{ route('cbt.exams.show', $exam) }}" class="mb-6 inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-700">
-        &larr; {{ $exam->title }}
+    <a href="{{ $placement['url'] ?? route('cbt.exams.show', $exam) }}" class="mb-6 inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-700">
+        &larr; {{ $placement['title'] ?? $exam->title }}
     </a>
 
     <x-card class="mb-8 text-center">
@@ -37,6 +37,13 @@
                 @elseif ($exam->certificatePolicy()->value === 'paid')
                     <x-button :href="route('cbt.attempts.certificate-payment.create', $attempt)">Get certificate</x-button>
                 @endif
+            </div>
+        @endif
+
+        @if ($placement)
+            <div class="mt-6 flex flex-col items-center gap-2 border-t border-slate-100 pt-6">
+                <x-button :href="$placement['next_url']" icon-right="arrow-right">{{ $placement['next_label'] }}</x-button>
+                <p class="text-xs text-slate-500">{{ $placement['checkpoint'] }} in {{ $placement['title'] }}</p>
             </div>
         @endif
     </x-card>
