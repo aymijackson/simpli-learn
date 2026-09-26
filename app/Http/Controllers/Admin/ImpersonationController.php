@@ -20,6 +20,7 @@ class ImpersonationController extends Controller
         $owner = $workspace->users()
             ->withoutGlobalScope(TenantScope::class)
             ->where('role', UserRole::Owner)
+            ->whereNull('deactivated_at')
             ->first();
 
         abort_unless($owner, 404, 'This workspace has no owner to manage as.');

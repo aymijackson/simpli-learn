@@ -63,7 +63,7 @@ class TeamManagementTest extends TestCase
         $this->assertTrue($member->fresh()->isOwner());
     }
 
-    public function test_an_owner_can_remove_a_member(): void
+    public function test_removing_a_member_deactivates_them_and_keeps_their_records(): void
     {
         [$tenant, $owner] = $this->tenantWithOwner();
         $member = User::factory()->create(['tenant_id' => $tenant->id, 'role' => UserRole::Member]);
@@ -72,7 +72,43 @@ class TeamManagementTest extends TestCase
             ->delete("/t/acme/team/{$member->id}")
             ->assertRedirect();
 
-        $this->assertNull(User::find($member->id));
+        $this->assertNotNull(User::find($member->id), 'The account must be kept, not deleted.');
+        $this->assertTrue(User::find($member->id)->isDeactivated());
+        $this->assertDatabaseHas('activity_logs', ['action' => 'team.member_deactivated']);
+    }
+
+    public function test_a_deactivated_member_cannot_sign_in(): void
+    {
+        [$tenant] = $this->tenantWithOwner();
+        User::factory()->create(['tenant_id' => $tenant->id, 'email' => 'gone@acme.test', 'password' => 'password', 'deactivated_at' => now()]);
+
+        $this->post('/t/acme/login', ['email' => 'gone@acme.test', 'password' => 'password'])
+            ->assertSessionHasErrors(['email' => 'This account has been deactivated. Contact your workspace administrator.']);
+        $this->assertGuest();
+    }
+
+    public function test_a_member_deactivated_mid_session_is_signed_out(): void
+    {
+        [$tenant] = $this->tenantWithOwner();
+        $member = User::factory()->create(['tenant_id' => $tenant->id]);
+
+        $this->actingAs($member)->get('/t/acme')->assertOk();
+
+        $member->forceFill(['deactivated_at' => now()])->save();
+
+        $this->actingAs($member->fresh())->get('/t/acme')->assertRedirect('/t/acme/login');
+        $this->assertGuest();
+    }
+
+    public function test_an_owner_can_reactivate_a_member(): void
+    {
+        [$tenant, $owner] = $this->tenantWithOwner();
+        $member = User::factory()->create(['tenant_id' => $tenant->id, 'deactivated_at' => now(), 'name' => 'Jordan Member']);
+
+        $this->actingAs($owner)->get('/t/acme/team')->assertSee('Deactivated')->assertSee('Reactivate');
+        $this->actingAs($owner)->post("/t/acme/team/{$member->id}/reactivate")->assertRedirect('/t/acme/team');
+
+        $this->assertFalse($member->fresh()->isDeactivated());
     }
 
     public function test_an_owner_cannot_remove_themselves(): void

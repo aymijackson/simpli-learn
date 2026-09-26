@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsureTenantOwner;
 use App\Http\Middleware\IdentifyTenant;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             IdentifyTenant::class,
             SecurityHeaders::class,
+            EnsureAccountIsActive::class,
         ]);
 
         // Tenant resolution must happen before auth/guest checks, since which

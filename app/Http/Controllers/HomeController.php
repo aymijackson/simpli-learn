@@ -9,7 +9,9 @@ use Elibrary\Cbt\Models\ExamAttempt;
 use Elibrary\Library\Models\LibraryCheckout;
 use Elibrary\Library\Models\LibraryResource;
 use Elibrary\Lms\Models\Course;
+use Elibrary\Lms\Models\CourseAssignment;
 use Elibrary\Lms\Models\Enrollment;
+use Elibrary\Lms\Reports\CourseProgressReport;
 use Illuminate\Http\Request;
 
 /**
@@ -31,6 +33,7 @@ class HomeController extends Controller
             'tenant' => $tenant,
             'enabledModules' => $enabledModules,
             'myCourses' => collect(),
+            'assignments' => collect(),
             'suggestedCourses' => collect(),
             'recentAttempts' => collect(),
             'openAttempts' => collect(),
@@ -52,6 +55,22 @@ class HomeController extends Controller
                     return $course;
                 })
                 ->sortBy(fn (Course $course) => $course->progress === 100 ? 1 : 0)
+                ->values();
+
+            // Courses someone has assigned to this person that they haven't finished yet.
+            $data['assignments'] = CourseAssignment::where('user_id', $user->id)
+                ->with('course')
+                ->get()
+                ->filter(fn (CourseAssignment $assignment) => $assignment->course !== null)
+                ->map(function (CourseAssignment $assignment) use ($user) {
+                    $row = CourseProgressReport::build($assignment->course, collect([$user]))->first();
+                    $assignment->progress = $row['progress'];
+                    $assignment->status = $row['status'];
+
+                    return $assignment;
+                })
+                ->reject(fn (CourseAssignment $assignment) => $assignment->status === CourseProgressReport::COMPLETED)
+                ->sortBy(fn (CourseAssignment $assignment) => $assignment->due_at?->timestamp ?? PHP_INT_MAX)
                 ->values();
 
             $data['suggestedCourses'] = Course::query()

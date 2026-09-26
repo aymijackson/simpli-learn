@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\Invitations;
 use App\Support\Tenancy\Tenancy;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +26,7 @@ class NewPasswordController extends Controller
             'action' => route($tenant ? 'tenant.password.store' : 'password.store'),
             'token' => $request->route('token'),
             'email' => $request->string('email'),
+            'invite' => $request->boolean('invite'),
         ]);
     }
 
@@ -36,7 +38,10 @@ class NewPasswordController extends Controller
             'password' => ['required', 'confirmed', PasswordRule::defaults()],
         ]);
 
-        $status = Password::reset(
+        // Invitation links use their own broker (7-day expiry); see App\Support\Invitations.
+        $broker = Password::broker($request->boolean('invite') ? Invitations::BROKER : null);
+
+        $status = $broker->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user) use ($validated) {
                 $user->forceFill([
@@ -56,6 +61,6 @@ class NewPasswordController extends Controller
 
         return redirect()
             ->route($tenant ? 'tenant.login' : 'login', $tenant ?: [])
-            ->with('status', __($status));
+            ->with('status', $request->boolean('invite') ? 'Your password is set. Log in to get started.' : __($status));
     }
 }

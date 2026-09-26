@@ -21,6 +21,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\TeamImportController;
 use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
@@ -130,10 +131,15 @@ Route::prefix('t/{tenant}')->name('tenant.')->group(function () {
     Route::middleware(['auth', 'owner'])->prefix('team')->name('team.')->group(function () {
         Route::get('/', [TeamController::class, 'index'])->name('index');
         Route::get('/create', [TeamController::class, 'create'])->name('create');
+        Route::get('/import', [TeamImportController::class, 'create'])->name('import.create');
+        Route::get('/import/template.csv', [TeamImportController::class, 'template'])->name('import.template');
+        Route::post('/import', [TeamImportController::class, 'store'])->name('import.store');
         Route::post('/', [TeamController::class, 'store'])->name('store');
         Route::get('/{member}', [TeamController::class, 'show'])->name('show');
         Route::put('/{member}', [TeamController::class, 'update'])->name('update');
         Route::delete('/{member}', [TeamController::class, 'destroy'])->name('destroy');
+        Route::post('/{member}/reactivate', [TeamController::class, 'reactivate'])->name('reactivate');
+        Route::post('/{member}/invite', [TeamController::class, 'resendInvitation'])->name('invite');
         Route::get('/{member}/data', [TeamController::class, 'exportData'])->name('data.export');
         Route::post('/{member}/data/erase', [TeamController::class, 'eraseData'])->name('data.erase');
         Route::post('/{member}/two-factor/reset', [TeamController::class, 'resetTwoFactor'])->name('two-factor.reset');

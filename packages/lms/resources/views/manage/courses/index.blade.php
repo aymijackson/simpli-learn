@@ -22,6 +22,7 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <x-badge :color="$course->is_published ? 'green' : 'slate'">{{ $course->is_published ? 'Published' : 'Draft' }}</x-badge>
+                            <a href="{{ route('lms.manage.courses.report', $course) }}" class="inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-500"><x-icon name="chart-bar" class="h-4 w-4" /> Report &amp; assign</a>
                             <a href="{{ route('lms.manage.courses.edit', $course) }}" class="text-sm font-medium text-brand-600 hover:text-brand-500">Edit</a>
                             <form method="POST" action="{{ route('lms.manage.courses.destroy', $course) }}" onsubmit="return confirm('Delete this course and all its lessons?')">
                                 @csrf

@@ -80,6 +80,37 @@
             </section>
         @endif
 
+        {{-- Assigned courses come first: they have deadlines. --}}
+        @if ($assignments->isNotEmpty())
+            <section>
+                <div class="mb-5">
+                    <h2 class="text-xl font-bold tracking-tight text-slate-900">Assigned to you</h2>
+                    <p class="mt-1 text-sm text-slate-500">Courses {{ $tenant->name }} has asked you to complete.</p>
+                </div>
+                <div class="grid gap-4 md:grid-cols-2">
+                    @foreach ($assignments as $assignment)
+                        @php($overdue = $assignment->isOverdue())
+                        <a href="{{ route('lms.courses.show', $assignment->course) }}"
+                           class="group flex items-center gap-4 rounded-2xl bg-white p-4 ring-1 transition hover:shadow-lg {{ $overdue ? 'ring-rose-300' : 'ring-slate-200/80' }}">
+                            <x-cover :seed="$assignment->course->title" icon="academic-cap" class="h-20 w-28 shrink-0 rounded-xl" />
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-sm font-semibold text-slate-900 group-hover:text-brand-700">{{ $assignment->course->title }}</p>
+                                <p class="mt-0.5 text-xs {{ $overdue ? 'font-semibold text-rose-600' : 'text-slate-500' }}">
+                                    @if ($assignment->due_at)
+                                        {{ $overdue ? 'Overdue — was due' : 'Due' }} {{ $assignment->due_at->format('D, M j') }}
+                                        @unless ($overdue) ({{ $assignment->due_at->diffForHumans() }}) @endunless
+                                    @else
+                                        No due date
+                                    @endif
+                                </p>
+                                <x-progress class="mt-2" :value="$assignment->progress" label />
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
         {{-- Continue learning --}}
         @if ($myCourses->isNotEmpty())
             <section>

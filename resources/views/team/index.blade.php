@@ -1,7 +1,8 @@
 <x-app-layout title="Team">
     <x-page-header title="Team" subtitle="Manage who has access to this workspace.">
         <x-slot:actions>
-            <x-button :href="route('tenant.team.create')">Add member</x-button>
+            <x-button :href="route('tenant.team.import.create')" variant="secondary" icon="download">Import from CSV</x-button>
+            <x-button :href="route('tenant.team.create')" icon="plus">Add member</x-button>
         </x-slot:actions>
     </x-page-header>
 
@@ -41,10 +42,10 @@
                                     @endforeach
                                 </select>
                             </form>
-                            <form method="POST" action="{{ route('tenant.team.destroy', $member) }}" onsubmit="return confirm('Remove this team member?')">
+                            <form method="POST" action="{{ route('tenant.team.destroy', $member) }}" onsubmit="return confirm('Deactivate {{ addslashes($member->name) }}?\n\nThey will be signed out and unable to sign in. Their course, exam and payment records are kept, and you can reactivate them at any time.')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-500">Remove</button>
+                                <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-500">Deactivate</button>
                             </form>
                             <details data-dropdown class="relative">
                                 <summary class="cursor-pointer rounded-lg px-2 py-1 text-slate-500 hover:bg-slate-100" aria-label="More actions for {{ $member->name }}">&middot;&middot;&middot;</summary>
@@ -52,6 +53,12 @@
                                     <a href="{{ route('tenant.team.show', $member) }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50">
                                         <x-icon name="user-circle" class="h-4 w-4 text-slate-400" /> View profile
                                     </a>
+                                    <form method="POST" action="{{ route('tenant.team.invite', $member) }}">
+                                        @csrf
+                                        <button type="submit" class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-slate-700 hover:bg-slate-50">
+                                            <x-icon name="arrow-right" class="h-4 w-4 text-slate-400" /> Resend invitation
+                                        </button>
+                                    </form>
                                     @if ($member->hasTwoFactorEnabled())
                                         <p class="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Security</p>
                                         <form method="POST" action="{{ route('tenant.team.two-factor.reset', $member) }}"
@@ -81,4 +88,24 @@
             @endforeach
         </ul>
     </x-card>
+
+    @if ($deactivated->isNotEmpty())
+        <h2 class="mt-10 mb-3 text-sm font-semibold text-slate-900">Deactivated <span class="font-normal text-slate-400">&middot; can't sign in, records kept</span></h2>
+        <x-card :padded="false">
+            <ul class="divide-y divide-slate-200">
+                @foreach ($deactivated as $member)
+                    <li class="flex items-center justify-between gap-4 px-6 py-4">
+                        <div class="min-w-0 opacity-70">
+                            <a href="{{ route('tenant.team.show', $member) }}" class="text-sm font-semibold text-slate-900 hover:text-brand-700 hover:underline">{{ $member->name }}</a>
+                            <p class="text-sm text-slate-500">{{ $member->email }} &middot; deactivated {{ $member->deactivated_at->format('M j, Y') }}</p>
+                        </div>
+                        <form method="POST" action="{{ route('tenant.team.reactivate', $member) }}">
+                            @csrf
+                            <x-button type="submit" variant="secondary" size="sm">Reactivate</x-button>
+                        </form>
+                    </li>
+                @endforeach
+            </ul>
+        </x-card>
+    @endif
 </x-app-layout>

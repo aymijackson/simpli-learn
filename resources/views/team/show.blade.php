@@ -21,6 +21,9 @@
                     <h1 class="flex flex-wrap items-center gap-2 text-2xl font-bold tracking-tight text-slate-900">
                         {{ $member->name }}
                         <x-badge :color="$member->isOwner() ? 'indigo' : 'slate'">{{ $member->role->label() }}</x-badge>
+                        @if ($member->isDeactivated())
+                            <x-badge color="red">Deactivated {{ $member->deactivated_at->format('M j, Y') }}</x-badge>
+                        @endif
                     </h1>
                     <p class="mt-0.5 text-sm text-slate-500"><a href="mailto:{{ $member->email }}" class="hover:text-brand-700">{{ $member->email }}</a></p>
                     <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
@@ -35,7 +38,12 @@
                 </div>
             </div>
 
-            @unless ($isSelf)
+            @if ($member->isDeactivated())
+                <form method="POST" action="{{ route('tenant.team.reactivate', $member) }}">
+                    @csrf
+                    <x-button type="submit" variant="secondary">Reactivate</x-button>
+                </form>
+            @elseif (! $isSelf)
                 <form method="POST" action="{{ route('tenant.team.update', $member) }}" class="flex items-center gap-2">
                     @csrf
                     @method('PUT')
@@ -46,7 +54,7 @@
                         @endforeach
                     </select>
                 </form>
-            @endunless
+            @endif
         </div>
     </x-card>
 

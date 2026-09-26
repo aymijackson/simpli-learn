@@ -9,6 +9,7 @@ use Elibrary\Lms\Http\Controllers\Manage\CourseController as ManageCourseControl
 use Elibrary\Lms\Http\Controllers\Manage\CourseModuleController as ManageCourseModuleController;
 use Elibrary\Lms\Http\Controllers\Manage\CoursePaymentGatewayController as ManageCoursePaymentGatewayController;
 use Elibrary\Lms\Http\Controllers\Manage\CoursePurchaseQueueController as ManageCoursePurchaseQueueController;
+use Elibrary\Lms\Http\Controllers\Manage\CourseReportController as ManageCourseReportController;
 use Elibrary\Lms\Http\Controllers\Manage\LessonAttachmentController as ManageLessonAttachmentController;
 use Elibrary\Lms\Http\Controllers\Manage\LessonController as ManageLessonController;
 use Elibrary\Lms\Http\Controllers\WebhookController;
@@ -43,6 +44,10 @@ Route::middleware(['web', 'auth', 'module:lms'])
             Route::get('/courses/create', [ManageCourseController::class, 'create'])->name('courses.create');
             Route::post('/courses', [ManageCourseController::class, 'store'])->name('courses.store');
             Route::get('/courses/{course:slug}/edit', [ManageCourseController::class, 'edit'])->name('courses.edit');
+            Route::get('/courses/{course:slug}/report', [ManageCourseReportController::class, 'show'])->name('courses.report');
+            Route::get('/courses/{course:slug}/report.csv', [ManageCourseReportController::class, 'export'])->name('courses.report.export');
+            Route::post('/courses/{course:slug}/assignments', [ManageCourseReportController::class, 'assign'])->name('courses.assign');
+            Route::delete('/courses/{course:slug}/assignments/{assignment}', [ManageCourseReportController::class, 'unassign'])->name('courses.unassign');
             Route::put('/courses/{course:slug}', [ManageCourseController::class, 'update'])->name('courses.update');
             Route::delete('/courses/{course:slug}', [ManageCourseController::class, 'destroy'])->name('courses.destroy');
 

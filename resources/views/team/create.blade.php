@@ -21,10 +21,25 @@
                 </select>
             </div>
 
-            <x-input type="password" name="password" label="Password" required />
-            <x-input type="password" name="password_confirmation" label="Confirm password" required />
+            <div class="rounded-xl bg-brand-50 p-4 text-sm text-brand-900 ring-1 ring-brand-100">
+                <p class="font-medium">We'll email them an invitation to set their own password.</p>
+                <p class="mt-1 text-brand-800">The link works for 7 days. You never need to know or share their password.</p>
+            </div>
 
-            <x-button type="submit">Add member</x-button>
+            <details class="rounded-lg ring-1 ring-slate-200" @if ($errors->has('password')) open @endif>
+                <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-slate-700">Or set a password for them instead</summary>
+                <div class="space-y-4 border-t border-slate-100 p-4">
+                    <x-input type="password" name="password" label="Password" autocomplete="new-password" />
+                    <x-input type="password" name="password_confirmation" label="Confirm password" autocomplete="new-password" />
+                    <p class="text-xs text-slate-500">They'll get a welcome email with the login link, but not the password — you'll need to give it to them yourself.</p>
+                </div>
+            </details>
+
+            <x-button type="submit">Add and send invitation</x-button>
         </form>
     </x-card>
+
+    <p class="mt-6 text-sm text-slate-500">
+        Adding lots of people? <a href="{{ route('tenant.team.import.create') }}" class="font-medium text-brand-700 hover:text-brand-600">Import them from a CSV file</a>.
+    </p>
 </x-app-layout>

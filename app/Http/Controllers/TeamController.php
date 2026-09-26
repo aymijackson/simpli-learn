@@ -10,6 +10,7 @@ use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Models\Enrollment;
 use App\Models\User;
 use App\Notifications\AddedToWorkspace;
+use App\Support\Invitations;
 use App\Support\PersonalData;
 use App\Support\SafeNotifier;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -17,6 +18,7 @@ use App\Support\Tenancy\Tenancy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
@@ -27,7 +29,8 @@ class TeamController extends Controller
     public function index(): View
     {
         return view('team.index', [
-            'members' => app(Tenancy::class)->current()->users()->orderBy('name')->get(),
+            'members' => app(Tenancy::class)->current()->users()->active()->orderBy('name')->get(),
+            'deactivated' => app(Tenancy::class)->current()->users()->whereNotNull('deactivated_at')->orderBy('name')->get(),
         ]);
     }
 
@@ -107,24 +110,31 @@ class TeamController extends Controller
                 Rule::unique('users', 'email')->where(fn ($query) => $query->where('tenant_id', $tenant->id)),
             ],
             'role' => ['required', Rule::in(array_column(UserRole::cases(), 'value'))],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            // Optional: leave blank to email an invitation to set their own password.
+            'password' => ['nullable', 'confirmed', Password::defaults()],
         ]);
+
+        $invite = empty($validated['password']);
 
         $member = User::create([
             'tenant_id' => $tenant->id,
             'name' => $validated['name'],
             'email' => $validated['email'],
             'role' => $validated['role'],
-            'password' => Hash::make($validated['password']),
+            'password' => Hash::make($invite ? Str::random(64) : $validated['password']),
         ]);
 
         ActivityLog::record('team.member_added', "Added {$member->name} ({$member->email}) as {$member->role->label()}", $member);
 
-        $emailed = SafeNotifier::send($member, new AddedToWorkspace($tenant, $request->user()->name));
+        $emailed = $invite
+            ? Invitations::send($member, $tenant, $request->user()->name)
+            : SafeNotifier::send($member, new AddedToWorkspace($tenant, $request->user()->name));
 
-        return redirect()->route('tenant.team.index')->with('status', $emailed
-            ? "Team member added. We've emailed {$member->email} their login link."
-            : 'Team member added. (The welcome email could not be sent — check the mail settings.)');
+        return redirect()->route('tenant.team.index')->with('status', match (true) {
+            ! $emailed => 'Team member added. (The email could not be sent — check the mail settings, then use "Resend invitation".)',
+            $invite => "Team member added. We've emailed {$member->email} an invitation to set their password.",
+            default => "Team member added. We've emailed {$member->email} their login link.",
+        });
     }
 
     public function update(Request $request, string $tenant, User $member): RedirectResponse
@@ -144,21 +154,32 @@ class TeamController extends Controller
         return redirect()->route('tenant.team.index')->with('status', 'Role updated.');
     }
 
+    /**
+     * "Remove" deactivates rather than deletes: deleting a user cascades to
+     * their payments, exam attempts and course history, which must be kept.
+     */
     public function destroy(string $tenant, User $member): RedirectResponse
     {
         if ($member->id === auth()->id()) {
-            return back()->withErrors(['member' => 'You cannot remove yourself.']);
+            return back()->withErrors(['member' => 'You cannot deactivate yourself.']);
         }
 
         if ($member->isOwner() && $this->isLastOwner($member)) {
-            return back()->withErrors(['member' => 'You cannot remove the only owner.']);
+            return back()->withErrors(['member' => 'You cannot deactivate the only owner.']);
         }
 
-        ActivityLog::record('team.member_removed', "Removed {$member->name} ({$member->email}) from the workspace");
+        $member->forceFill(['deactivated_at' => now()])->save();
+        ActivityLog::record('team.member_deactivated', "Deactivated {$member->name} ({$member->email})", $member);
 
-        $member->delete();
+        return redirect()->route('tenant.team.index')->with('status', "{$member->name} has been deactivated and can no longer sign in. Their records are kept, and you can reactivate them at any time.");
+    }
 
-        return redirect()->route('tenant.team.index')->with('status', 'Team member removed.');
+    public function reactivate(string $tenant, User $member): RedirectResponse
+    {
+        $member->forceFill(['deactivated_at' => null])->save();
+        ActivityLog::record('team.member_reactivated', "Reactivated {$member->name} ({$member->email})", $member);
+
+        return redirect()->route('tenant.team.index')->with('status', "{$member->name} has been reactivated and can sign in again.");
     }
 
     /** Right of access: everything held about a member, as a JSON download. */
@@ -184,6 +205,17 @@ class TeamController extends Controller
         ActivityLog::record('data.erased', "Erased the personal data of a team member (account #{$member->id})", $member);
 
         return redirect()->route('tenant.team.index')->with('status', 'Their personal data has been erased. Payment and exam records are kept anonymously.');
+    }
+
+    /** Send a fresh "set your password" link (e.g. the first one expired). */
+    public function resendInvitation(Request $request, string $tenant, User $member): RedirectResponse
+    {
+        $sent = Invitations::send($member, app(Tenancy::class)->current(), $request->user()->name);
+        ActivityLog::record('team.invitation_sent', "Sent {$member->name} a new invitation", $member);
+
+        return back()->with('status', $sent
+            ? "A new invitation has been emailed to {$member->email}."
+            : 'The invitation could not be sent — check the mail settings.');
     }
 
     /** For a member who lost their phone and recovery codes. */
@@ -213,6 +245,6 @@ class TeamController extends Controller
 
     private function isLastOwner(User $member): bool
     {
-        return $member->tenant->users()->where('role', UserRole::Owner)->count() <= 1;
+        return $member->tenant->users()->active()->where('role', UserRole::Owner)->count() <= 1;
     }
 }

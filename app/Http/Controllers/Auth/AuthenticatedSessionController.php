@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Support\Tenancy\Tenancy;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\RedirectResponse;
@@ -64,6 +65,14 @@ class AuthenticatedSessionController extends Controller
 
         RateLimiter::clear($throttleKey);
         $user = $guard->getLastAttempted();
+
+        if ($user->isDeactivated()) {
+            ActivityLog::record('auth.failed', 'Sign-in blocked: account is deactivated', actor: $user);
+
+            return back()->withErrors([
+                'email' => 'This account has been deactivated. Contact your workspace administrator.',
+            ])->onlyInput('email');
+        }
 
         if ($user->hasTwoFactorEnabled()) {
             $request->session()->put('two_factor.login', [
