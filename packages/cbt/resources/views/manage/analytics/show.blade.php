@@ -3,7 +3,11 @@
         &larr; All exams
     </a>
 
-    <x-page-header :title="$exam->title" subtitle="Results and shortlisting." />
+    <x-page-header :title="$exam->title" subtitle="Results and shortlisting.">
+        <x-slot:actions>
+            <x-button :href="route('cbt.manage.analytics.people', $exam)" variant="secondary" icon="users">Results by person</x-button>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-card class="mb-6">
         <form method="GET" action="{{ route('cbt.manage.analytics.show', $exam) }}" class="grid gap-4 sm:grid-cols-5 sm:items-end">

@@ -6,7 +6,7 @@
     <x-page-header title="Edit course" :subtitle="$course->title" />
 
     <x-card class="mb-8">
-        <form method="POST" action="{{ route('lms.manage.courses.update', $course) }}" class="space-y-5">
+        <form method="POST" action="{{ route('lms.manage.courses.update', $course) }}" enctype="multipart/form-data" class="space-y-5">
             @csrf
             @method('PUT')
             @include('lms::manage.courses._form')

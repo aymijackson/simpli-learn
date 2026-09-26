@@ -41,10 +41,30 @@
                     <span class="truncate text-slate-300">{{ $course->title }}</span>
                 </nav>
 
-                <h1 class="mt-4 font-display text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{{ $course->title }}</h1>
+                @if ($course->category)
+                    <p class="mt-4 text-xs font-semibold uppercase tracking-wider text-brand-300">{{ $course->category }}</p>
+                @endif
+                <h1 class="{{ $course->category ? 'mt-1' : 'mt-4' }} font-display text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{{ $course->title }}</h1>
 
-                @if ($course->description)
+                @if ($course->subtitle)
+                    <p class="mt-4 text-lg leading-relaxed text-slate-300">{{ $course->subtitle }}</p>
+                @elseif ($course->description)
                     <p class="mt-4 text-base leading-relaxed text-slate-300">{{ \Illuminate\Support\Str::limit(trim(strip_tags($course->description)), 220) }}</p>
+                @endif
+
+                @if ($course->reviews_count > 0 || $course->instructor_name)
+                    <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                        @if ($course->reviews_count > 0)
+                            <a href="#reviews" class="inline-flex items-center gap-1.5 hover:underline">
+                                <span class="font-bold text-amber-300">{{ number_format($course->reviews_avg_stars, 1) }}</span>
+                                <x-stars :value="$course->reviews_avg_stars" />
+                                <span class="text-slate-400">({{ number_format($course->reviews_count) }} {{ \Illuminate\Support\Str::plural('rating', $course->reviews_count) }})</span>
+                            </a>
+                        @endif
+                        @if ($course->instructor_name)
+                            <span class="text-slate-300">Created by <a href="#instructor" class="font-medium text-white underline decoration-white/30 hover:decoration-white">{{ $course->instructor_name }}</a></span>
+                        @endif
+                    </div>
                 @endif
 
                 <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-300">
@@ -56,6 +76,13 @@
                     @if ($course->certificate_policy->value !== 'none')
                         <span class="inline-flex items-center gap-1.5"><x-icon name="trophy" class="h-4 w-4 text-amber-300" /> Certificate of completion</span>
                     @endif
+                    @if ($course->durationLabel())
+                        <span class="inline-flex items-center gap-1.5"><x-icon name="clock" class="h-4 w-4 text-brand-300" /> {{ $course->durationLabel() }}</span>
+                    @endif
+                    @if ($course->level)
+                        <span class="inline-flex items-center gap-1.5"><x-icon name="chart-bar" class="h-4 w-4 text-brand-300" /> {{ $course->level->label() }}</span>
+                    @endif
+                    <span class="inline-flex items-center gap-1.5 text-slate-400"><x-icon name="calendar" class="h-4 w-4" /> Updated {{ $course->updated_at->format('M Y') }}</span>
                 </div>
 
                 @if ($isEnrolled)
@@ -114,7 +141,18 @@
                     </div>
                 @endif
 
-                @if (mb_strlen(trim(strip_tags((string) $course->description))) > 220)
+                @if (! empty($course->outcomes))
+                    <section class="rounded-2xl bg-white p-6 ring-1 ring-slate-200/80 sm:p-8">
+                        <h2 class="text-xl font-bold text-slate-900">What you'll learn</h2>
+                        <ul class="mt-5 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+                            @foreach ($course->outcomes as $outcome)
+                                <li class="flex gap-3 text-[15px] text-slate-700"><x-icon name="check" class="mt-0.5 h-5 w-5 text-emerald-600" /> {{ $outcome }}</li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+
+                @if (mb_strlen(trim(strip_tags((string) $course->description))) > 220 || ($course->subtitle && $course->description))
                     <section class="rounded-2xl bg-white p-6 ring-1 ring-slate-200/80 sm:p-8">
                         <h2 class="text-xl font-bold text-slate-900">About this course</h2>
                         <div class="rich-text mt-4 text-[15px] text-slate-700">{!! $course->description !!}</div>
@@ -191,12 +229,35 @@
                         </div>
                     @endif
                 </section>
+
+                @if ($course->instructor_name)
+                    <section id="instructor" class="scroll-mt-24 rounded-2xl bg-white p-6 ring-1 ring-slate-200/80 sm:p-8">
+                        <h2 class="text-xl font-bold text-slate-900">Your instructor</h2>
+                        <div class="mt-5 flex gap-4">
+                            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-100 font-display text-lg font-bold text-brand-700">
+                                {{ collect(explode(' ', $course->instructor_name))->filter()->take(2)->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->implode('') }}
+                            </span>
+                            <div>
+                                <p class="text-base font-semibold text-slate-900">{{ $course->instructor_name }}</p>
+                                @if ($course->instructor_bio)
+                                    <p class="mt-1 text-sm leading-relaxed whitespace-pre-line text-slate-600">{{ $course->instructor_bio }}</p>
+                                @endif
+                            </div>
+                        </div>
+                    </section>
+                @endif
+
+                @include('lms::courses._reviews')
             </div>
 
             {{-- Enrollment card: overlaps the hero on large screens --}}
             <aside class="w-full lg:sticky lg:top-32 lg:-mt-56 lg:w-96 lg:shrink-0">
                 <div class="overflow-hidden rounded-2xl bg-white shadow-xl shadow-slate-900/10 ring-1 ring-slate-200">
-                    <x-cover :seed="$course->title" icon="academic-cap" class="aspect-video" />
+                    @if ($course->cover_image_path)
+                        <img src="{{ $course->coverUrl() }}" alt="" class="aspect-video w-full object-cover">
+                    @else
+                        <x-cover :seed="$course->title" icon="academic-cap" class="aspect-video" />
+                    @endif
                     <div class="p-6">
                         @if ($isEnrolled)
                             <p class="text-sm font-medium text-slate-500">You're enrolled</p>

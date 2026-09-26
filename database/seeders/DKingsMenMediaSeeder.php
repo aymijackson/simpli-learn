@@ -12,6 +12,7 @@ use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Models\Lesson;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -44,6 +45,7 @@ class DKingsMenMediaSeeder extends Seeder
             $this->owner($tenant);
             $this->course($tenant);
             $this->lessonImages($tenant);
+            $this->catalogDetails($tenant);
         });
     }
 
@@ -211,6 +213,44 @@ class DKingsMenMediaSeeder extends Seeder
         }
 
         $this->say($added > 0 ? "Added {$added} lesson images" : 'Lesson images already in place');
+    }
+
+    /**
+     * Subtitle, category, level, duration, instructor, outcomes and cover
+     * image for the catalog. Only fills fields that are still empty, so
+     * anything an owner has edited in Manage > Courses is left alone.
+     */
+    private function catalogDetails(Tenant $tenant): void
+    {
+        $data = require __DIR__.'/content/dkm_data_security_course.php';
+        $details = $data['course']['catalog'];
+
+        $course = Course::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->id)
+            ->where('slug', $data['course']['slug'])
+            ->first();
+
+        if (! $course) {
+            return;
+        }
+
+        $filled = [];
+        foreach (['subtitle', 'category', 'level', 'duration_minutes', 'instructor_name', 'instructor_bio', 'outcomes'] as $field) {
+            if (blank($course->getRawOriginal($field))) {
+                $course->{$field} = $details[$field];
+                $filled[] = $field;
+            }
+        }
+
+        if (! $course->cover_image_path && is_file($details['cover'])) {
+            $path = 'course-covers/'.$tenant->id.'/'.$course->slug.'.png';
+            Storage::disk('public')->put($path, file_get_contents($details['cover']));
+            $course->cover_image_path = $path;
+            $filled[] = 'cover image';
+        }
+
+        $course->save();
+        $this->say($filled ? 'Added catalog details: '.implode(', ', $filled) : 'Catalog details already in place');
     }
 
     private function knowledgeCheck(Tenant $tenant, int $number, array $moduleData): Exam

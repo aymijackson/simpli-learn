@@ -47,7 +47,8 @@ class HomeController extends Controller
 
             $data['myCourses'] = Course::query()
                 ->whereIn('id', $enrolledCourseIds)
-                ->withCount('lessons')
+                ->withCount(['lessons', 'reviews'])
+                ->withAvg('reviews', 'stars')
                 ->get()
                 ->map(function (Course $course) use ($user) {
                     $course->progress = $course->progressPercentFor($user);
@@ -76,7 +77,8 @@ class HomeController extends Controller
             $data['suggestedCourses'] = Course::query()
                 ->where('is_published', true)
                 ->whereNotIn('id', $enrolledCourseIds)
-                ->withCount('lessons')
+                ->withCount(['lessons', 'reviews'])
+                ->withAvg('reviews', 'stars')
                 ->latest()
                 ->take(4)
                 ->get();

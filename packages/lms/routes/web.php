@@ -3,6 +3,7 @@
 use Elibrary\Lms\Http\Controllers\CourseCertificateController;
 use Elibrary\Lms\Http\Controllers\CoursePurchaseController;
 use Elibrary\Lms\Http\Controllers\CourseController;
+use Elibrary\Lms\Http\Controllers\CourseReviewController;
 use Elibrary\Lms\Http\Controllers\LessonAttachmentController;
 use Elibrary\Lms\Http\Controllers\LessonController;
 use Elibrary\Lms\Http\Controllers\Manage\CourseController as ManageCourseController;
@@ -25,6 +26,8 @@ Route::middleware(['web', 'auth', 'module:lms'])
         Route::get('/', [CourseController::class, 'index'])->name('courses.index');
         Route::get('/courses/{course:slug}', [CourseController::class, 'show'])->name('courses.show');
         Route::post('/courses/{course:slug}/enroll', [CourseController::class, 'enroll'])->name('courses.enroll');
+        Route::post('/courses/{course:slug}/reviews', [CourseReviewController::class, 'store'])->name('courses.reviews.store');
+        Route::delete('/courses/{course:slug}/reviews/{review}', [CourseReviewController::class, 'destroy'])->name('courses.reviews.destroy');
         Route::get('/courses/{course:slug}/lessons/{lesson}', [LessonController::class, 'show'])->name('lessons.show');
         Route::post('/courses/{course:slug}/lessons/{lesson}/complete', [LessonController::class, 'complete'])->name('lessons.complete');
         Route::get('/courses/{course:slug}/lessons/{lesson}/attachments/{attachment}/download', [LessonAttachmentController::class, 'download'])->name('lessons.attachments.download');

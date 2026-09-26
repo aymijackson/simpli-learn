@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\CourseCertificateVerificationController;
+use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ManageDashboardController;
 use App\Http\Controllers\MarketingController;
@@ -28,6 +29,7 @@ use Illuminate\Support\Facades\Route;
 // Public marketing site
 Route::get('/', [MarketingController::class, 'home'])->name('home');
 Route::get('/pages/{page:slug}', [MarketingController::class, 'show'])->name('pages.show');
+Route::post('/csp-report', CspReportController::class)->name('csp.report')->middleware('throttle:60,1');
 Route::get('/find-workspace', [MarketingController::class, 'findWorkspace'])->name('workspace.find');
 
 // Public certificate verification (no auth, no tenant context)
@@ -71,7 +73,7 @@ Route::middleware('auth')->prefix('profile')->name('profile.')->group(function (
 });
 
 // Central admin
-Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'two-factor'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/activity', [ActivityLogController::class, 'adminIndex'])->name('activity');
 

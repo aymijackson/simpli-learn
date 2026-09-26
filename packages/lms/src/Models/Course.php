@@ -7,10 +7,12 @@ use App\Models\User;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Lms\Enums\AssessmentMode;
 use Elibrary\Lms\Enums\CourseCertificatePolicy;
+use Elibrary\Lms\Enums\CourseLevel;
 use Elibrary\Lms\Enums\CoursePricingPolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Course extends Model
 {
@@ -19,6 +21,7 @@ class Course extends Model
     protected $fillable = [
         'tenant_id', 'title', 'slug', 'description', 'is_published', 'assessment_mode', 'final_exam_id',
         'pricing_policy', 'price', 'currency', 'certificate_policy', 'certificate_price', 'certificate_currency',
+        'subtitle', 'cover_image_path', 'category', 'level', 'duration_minutes', 'instructor_name', 'instructor_bio', 'outcomes',
     ];
 
     protected function casts(): array
@@ -28,7 +31,36 @@ class Course extends Model
             'assessment_mode' => AssessmentMode::class,
             'pricing_policy' => CoursePricingPolicy::class,
             'certificate_policy' => CourseCertificatePolicy::class,
+            'level' => CourseLevel::class,
+            'duration_minutes' => 'integer',
+            'outcomes' => 'array',
         ];
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(CourseReview::class)->latest();
+    }
+
+    public function coverUrl(): ?string
+    {
+        return $this->cover_image_path ? Storage::disk('public')->url($this->cover_image_path) : null;
+    }
+
+    /** "45 min", "3 hours", "2.5 hours" */
+    public function durationLabel(): ?string
+    {
+        if (! $this->duration_minutes) {
+            return null;
+        }
+
+        if ($this->duration_minutes < 60) {
+            return $this->duration_minutes.' min';
+        }
+
+        $hours = round($this->duration_minutes / 60, 1);
+
+        return ($hours == (int) $hours ? (int) $hours : $hours).' '.($hours == 1 ? 'hour' : 'hours');
     }
 
     public function lessons(): HasMany

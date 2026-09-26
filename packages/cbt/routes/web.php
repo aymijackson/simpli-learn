@@ -7,6 +7,7 @@ use Elibrary\Cbt\Http\Controllers\CertificatePaymentController;
 use Elibrary\Cbt\Http\Controllers\ExamController;
 use Elibrary\Cbt\Http\Controllers\IntegrityEventController;
 use Elibrary\Cbt\Http\Controllers\Manage\AnalyticsController as ManageAnalyticsController;
+use Elibrary\Cbt\Http\Controllers\Manage\ExamPeopleReportController;
 use Elibrary\Cbt\Http\Controllers\Manage\CertificatePaymentQueueController as ManageCertificatePaymentQueueController;
 use Elibrary\Cbt\Http\Controllers\Manage\CertificateSettingsController as ManageCertificateSettingsController;
 use Elibrary\Cbt\Http\Controllers\Manage\ExamController as ManageExamController;
@@ -73,6 +74,8 @@ Route::middleware(['web', 'auth', 'module:cbt'])
             Route::get('/analytics', [ManageAnalyticsController::class, 'index'])->name('analytics.index');
             Route::get('/analytics/{exam:slug}', [ManageAnalyticsController::class, 'show'])->name('analytics.show');
             Route::get('/analytics/{exam:slug}/export.csv', [ManageAnalyticsController::class, 'exportCsv'])->name('analytics.export.csv');
+            Route::get('/analytics/{exam:slug}/people', [ExamPeopleReportController::class, 'show'])->name('analytics.people');
+            Route::get('/analytics/{exam:slug}/people.csv', [ExamPeopleReportController::class, 'export'])->name('analytics.people.export');
             Route::get('/analytics/{exam:slug}/export.pdf', [ManageAnalyticsController::class, 'exportPdf'])->name('analytics.export.pdf');
             Route::get('/analytics/{exam:slug}/attempts/{attempt}/integrity', [ManageAnalyticsController::class, 'integrityEvents'])->name('analytics.attempts.integrity');
 

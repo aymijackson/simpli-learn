@@ -4,6 +4,7 @@ namespace Elibrary\Lms\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Elibrary\Lms\Certificates\CourseCertificateService;
+use Elibrary\Lms\Enums\CourseLevel;
 use Elibrary\Lms\Enums\CoursePricingPolicy;
 use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Models\Enrollment;
@@ -17,12 +18,26 @@ class CourseController extends Controller
     {
         $query = Course::query()
             ->where('is_published', true)
-            ->withCount(['lessons', 'enrollments']);
+            ->withCount(['lessons', 'enrollments', 'reviews'])
+            ->withAvg('reviews', 'stars');
 
         $search = $request->string('q')->trim()->limit(100, '')->value();
         if ($search !== '') {
             $like = '%'.addcslashes($search, '%_\\').'%';
-            $query->where(fn ($inner) => $inner->where('title', 'like', $like)->orWhere('description', 'like', $like));
+            $query->where(fn ($inner) => $inner->where('title', 'like', $like)
+                ->orWhere('subtitle', 'like', $like)
+                ->orWhere('description', 'like', $like)
+                ->orWhere('instructor_name', 'like', $like));
+        }
+
+        $category = $request->string('category')->trim()->value();
+        if ($category !== '') {
+            $query->where('category', $category);
+        }
+
+        $level = CourseLevel::tryFrom($request->string('level')->value());
+        if ($level) {
+            $query->where('level', $level->value);
         }
 
         $price = $request->string('price')->value();
@@ -33,6 +48,7 @@ class CourseController extends Controller
         $sort = $request->string('sort')->value();
         match ($sort) {
             'popular' => $query->orderByDesc('enrollments_count'),
+            'rating' => $query->orderByDesc('reviews_avg_stars')->orderByDesc('reviews_count'),
             'title' => $query->orderBy('title'),
             default => $query->latest(),
         };
@@ -46,21 +62,30 @@ class CourseController extends Controller
                 ->mapWithKeys(fn (Course $course) => [$course->id => $course->progressPercentFor($request->user())]),
             'search' => $search,
             'activePrice' => in_array($price, ['free', 'paid'], true) ? $price : '',
-            'activeSort' => in_array($sort, ['popular', 'title'], true) ? $sort : 'newest',
+            'activeSort' => in_array($sort, ['popular', 'rating', 'title'], true) ? $sort : 'newest',
+            'activeCategory' => $category,
+            'activeLevel' => $level?->value ?? '',
+            'categories' => Course::where('is_published', true)->whereNotNull('category')->distinct()->orderBy('category')->pluck('category'),
             'totalPublished' => Course::where('is_published', true)->count(),
         ]);
     }
 
     public function show(Request $request, string $tenant, Course $course): View
     {
-        $course->load(['lessons.attachments', 'modules'])->loadCount('enrollments');
+        $course->load(['lessons.attachments', 'modules'])->loadCount(['enrollments', 'reviews'])->loadAvg('reviews', 'stars');
 
         if ($course->isEnrolled($request->user())) {
             app(CourseCertificateService::class)->issueIfPassedAndFree($course, $request->user());
         }
 
+        $reviews = $course->reviews()->with('user')->take(20)->get();
+
         return view('lms::courses.show', [
             'course' => $course,
+            'reviews' => $reviews,
+            'myReview' => $course->reviews()->where('user_id', $request->user()->id)->first(),
+            // How many reviews gave each star rating, for the 5..1 breakdown bars.
+            'starCounts' => $course->reviews()->reorder()->selectRaw('stars, COUNT(*) as total')->groupBy('stars')->pluck('total', 'stars'),
             'isEnrolled' => $course->isEnrolled($request->user()),
             'progress' => $course->progressPercentFor($request->user()),
             'isPassed' => $course->isPassedBy($request->user()),

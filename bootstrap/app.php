@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsureTenantOwner;
 use App\Http\Middleware\IdentifyTenant;
+use App\Http\Middleware\RequireTwoFactor;
 use App\Http\Middleware\SecurityHeaders;
 use App\Support\Tenancy\Tenancy;
 use Illuminate\Foundation\Application;
@@ -36,14 +37,21 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'module' => EnsureModuleEnabled::class,
-            'owner' => EnsureTenantOwner::class,
+            'two-factor' => RequireTwoFactor::class,
+        ]);
+
+        // Every owner-only route (team, manage pages in all packages) is an
+        // owner check plus the two-step login requirement.
+        $middleware->group('owner', [
+            EnsureTenantOwner::class,
+            RequireTwoFactor::class,
         ]);
 
         // Payment gateway webhooks are unauthenticated server-to-server calls
         // from Stripe/Paystack/Flutterwave — they carry no CSRF token and are
         // protected instead by per-gateway signature verification inside
         // WebhookController.
-        $middleware->validateCsrfTokens(except: ['webhooks/certificates/*', 'webhooks/courses/*', 'webhooks/library/*']);
+        $middleware->validateCsrfTokens(except: ['webhooks/certificates/*', 'webhooks/courses/*', 'webhooks/library/*', 'csp-report']);
 
         // Laravel's defaults know nothing about tenant context: an
         // unauthenticated request would otherwise always bounce to the

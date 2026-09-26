@@ -27,8 +27,13 @@ class SearchController extends Controller
         if ($term !== '') {
             if ($enabled->contains(Module::Lms)) {
                 $results['courses'] = Course::where('is_published', true)
-                    ->where(fn ($query) => $query->where('title', 'like', $like)->orWhere('description', 'like', $like))
-                    ->withCount('lessons')
+                    ->where(fn ($query) => $query->where('title', 'like', $like)
+                        ->orWhere('subtitle', 'like', $like)
+                        ->orWhere('description', 'like', $like)
+                        ->orWhere('category', 'like', $like)
+                        ->orWhere('instructor_name', 'like', $like))
+                    ->withCount(['lessons', 'reviews'])
+                    ->withAvg('reviews', 'stars')
                     ->orderBy('title')
                     ->take(24)
                     ->get();

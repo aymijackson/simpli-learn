@@ -6,7 +6,7 @@
     <x-page-header title="New course" />
 
     <x-card>
-        <form method="POST" action="{{ route('lms.manage.courses.store') }}" class="space-y-5">
+        <form method="POST" action="{{ route('lms.manage.courses.store') }}" enctype="multipart/form-data" class="space-y-5">
             @csrf
             @include('lms::manage.courses._form')
             <x-button type="submit">Create course</x-button>

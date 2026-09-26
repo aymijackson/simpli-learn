@@ -2,7 +2,63 @@
 
 <x-input type="text" name="slug" id="course-slug" label="Slug" value="{{ old('slug', $course->slug ?? '') }}" required />
 
+<x-input type="text" name="subtitle" label="Subtitle (optional)" value="{{ old('subtitle', $course->subtitle ?? '') }}" maxlength="255"
+         placeholder="One line that tells learners what they'll get, e.g. Protect fans, artists and the business in 60 minutes" />
+
 <x-editor name="description" label="Description (optional)" :value="old('description', $course->description ?? '')" />
+
+@php($existingCategories = \Elibrary\Lms\Models\Course::whereNotNull('category')->distinct()->orderBy('category')->pluck('category'))
+<fieldset class="space-y-5 rounded-xl bg-slate-50 p-5 ring-1 ring-slate-200">
+    <legend class="px-1 text-sm font-semibold text-slate-900">Catalog details <span class="font-normal text-slate-500">— shown on course cards and the course page</span></legend>
+
+    <div>
+        <label for="cover_image" class="mb-1.5 block text-sm font-medium text-slate-700">Cover image</label>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+            @if (! empty($course?->cover_image_path))
+                <img src="{{ $course->coverUrl() }}" alt="" class="aspect-video w-48 rounded-lg object-cover ring-1 ring-slate-200">
+            @endif
+            <div class="flex-1 space-y-2">
+                <input id="cover_image" type="file" name="cover_image" accept="image/*"
+                       class="block w-full rounded-lg bg-white text-sm text-slate-700 ring-1 ring-slate-300 file:mr-4 file:rounded-l-lg file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:text-sm file:font-semibold hover:file:bg-slate-200">
+                <p class="text-xs text-slate-500">Landscape works best (16:9, e.g. 1280 × 720). Up to 5 MB. Without one, a coloured cover is generated.</p>
+                @error('cover_image')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                @if (! empty($course?->cover_image_path))
+                    <label class="flex items-center gap-2 text-sm text-slate-600">
+                        <input type="checkbox" name="remove_cover" value="1" class="rounded border-slate-300 text-brand-600 focus:ring-brand-600"> Remove the current image
+                    </label>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-3">
+        <div>
+            <x-input type="text" name="category" label="Category" value="{{ old('category', $course->category ?? '') }}" list="course-categories" maxlength="100" placeholder="e.g. Compliance" />
+            <datalist id="course-categories">
+                @foreach ($existingCategories as $category)<option value="{{ $category }}">@endforeach
+            </datalist>
+        </div>
+        <div>
+            <label for="level" class="mb-1.5 block text-sm font-medium text-slate-700">Level</label>
+            <select id="level" name="level" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                <option value="">Not specified</option>
+                @foreach (\Elibrary\Lms\Enums\CourseLevel::cases() as $level)
+                    <option value="{{ $level->value }}" @selected(old('level', $course->level?->value ?? '') === $level->value)>{{ $level->label() }}</option>
+                @endforeach
+            </select>
+        </div>
+        <x-input type="number" name="duration_hours" label="Estimated duration (hours)" min="0" max="1000" step="0.25"
+                 value="{{ old('duration_hours', isset($course?->duration_minutes) ? round($course->duration_minutes / 60, 2) : '') }}" />
+    </div>
+
+    <x-textarea name="outcomes_text" label="What you'll learn (one per line, up to 12)" rows="5"
+                placeholder="Explain our obligations under the NDPA&#10;Spot phishing and impersonation attempts&#10;Report a security incident correctly">{{ old('outcomes_text', implode("\n", $course->outcomes ?? [])) }}</x-textarea>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+        <x-input type="text" name="instructor_name" label="Instructor or author" value="{{ old('instructor_name', $course->instructor_name ?? '') }}" maxlength="255" />
+        <x-textarea name="instructor_bio" label="About the instructor (optional)" rows="2" maxlength="2000">{{ old('instructor_bio', $course->instructor_bio ?? '') }}</x-textarea>
+    </div>
+</fieldset>
 
 <label class="flex items-center gap-2 text-sm text-slate-600">
     <input type="checkbox" name="is_published" value="1" class="rounded border-slate-300 text-brand-600 focus:ring-brand-600" @checked(old('is_published', $course->is_published ?? false))>

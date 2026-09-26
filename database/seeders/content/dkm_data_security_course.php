@@ -26,6 +26,26 @@ return [
     'course' => [
         'title' => 'Data Security & Confidentiality Essentials',
         'slug' => 'data-security-confidentiality-essentials',
+        // Catalog details — only filled in where the course doesn't have them yet.
+        'catalog' => [
+            'subtitle' => 'Protect our fans, our artists and our business on CREAM — in about 90 minutes.',
+            'category' => 'Compliance',
+            'level' => 'beginner',
+            'duration_minutes' => 90,
+            'instructor_name' => "D'Kings Men Media Security Team",
+            'instructor_bio' => "Written for everyone at D'Kings Men Media, based on how the CREAM platform handles fan, payment and artist data, and on Nigeria's Data Protection Act 2023.",
+            'outcomes' => [
+                'Recognise the personal and confidential information you handle',
+                "Explain our main obligations under Nigeria's Data Protection Act 2023",
+                'Classify information from Public to Restricted and handle it correctly',
+                'Keep unreleased music, contracts and artist details confidential',
+                'Spot phishing, impersonation and SIM-swap attempts',
+                'Handle fan, payment, CREAM Fund and auction data safely',
+                'Use strong passwords and two-step login everywhere',
+                'Report a security incident quickly and correctly',
+            ],
+            'cover' => __DIR__.'/images/dkm-data-security-cover.png',
+        ],
         'description' => <<<'HTML'
 <p>Every day, the D'Kings Men Media team looks after millions of fans' personal details, their payments and CREAM Fund plans, auction winners' delivery addresses, talent-show entries, and unreleased music from our artists. This course shows you how to protect all of it.</p>
 <p>You'll learn what Nigeria's Data Protection Act 2023 expects of us, how to keep unreleased content and business information confidential, the everyday habits that stop most attacks, how to handle fan and payment data safely, and exactly what to do when something goes wrong.</p>
