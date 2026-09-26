@@ -17,7 +17,7 @@
                 <li class="flex items-center justify-between gap-4 px-6 py-4">
                     <div>
                         <p class="text-sm font-semibold text-slate-900">
-                            {{ $member->name }}
+                            <a href="{{ route('tenant.team.show', $member) }}" class="hover:text-brand-700 hover:underline">{{ $member->name }}</a>
                             @if ($member->id === auth()->id())
                                 <span class="text-slate-400">(you)</span>
                             @endif
@@ -49,6 +49,9 @@
                             <details data-dropdown class="relative">
                                 <summary class="cursor-pointer rounded-lg px-2 py-1 text-slate-500 hover:bg-slate-100" aria-label="More actions for {{ $member->name }}">&middot;&middot;&middot;</summary>
                                 <div class="absolute right-0 z-10 mt-2 w-64 rounded-xl bg-white p-1.5 text-sm shadow-xl ring-1 ring-slate-200">
+                                    <a href="{{ route('tenant.team.show', $member) }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50">
+                                        <x-icon name="user-circle" class="h-4 w-4 text-slate-400" /> View profile
+                                    </a>
                                     @if ($member->hasTwoFactorEnabled())
                                         <p class="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Security</p>
                                         <form method="POST" action="{{ route('tenant.team.two-factor.reset', $member) }}"

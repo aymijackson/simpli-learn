@@ -131,6 +131,7 @@ Route::prefix('t/{tenant}')->name('tenant.')->group(function () {
         Route::get('/', [TeamController::class, 'index'])->name('index');
         Route::get('/create', [TeamController::class, 'create'])->name('create');
         Route::post('/', [TeamController::class, 'store'])->name('store');
+        Route::get('/{member}', [TeamController::class, 'show'])->name('show');
         Route::put('/{member}', [TeamController::class, 'update'])->name('update');
         Route::delete('/{member}', [TeamController::class, 'destroy'])->name('destroy');
         Route::get('/{member}/data', [TeamController::class, 'exportData'])->name('data.export');

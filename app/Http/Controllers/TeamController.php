@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Module;
 use App\Enums\UserRole;
+use Elibrary\Cbt\Models\ExamAttempt;
+use Elibrary\Library\Models\LibraryCheckout;
+use Elibrary\Lms\Models\Course;
+use Elibrary\Lms\Models\Enrollment;
 use App\Models\User;
 use App\Notifications\AddedToWorkspace;
 use App\Support\PersonalData;
@@ -23,6 +28,66 @@ class TeamController extends Controller
     {
         return view('team.index', [
             'members' => app(Tenancy::class)->current()->users()->orderBy('name')->get(),
+        ]);
+    }
+
+    /** A member's profile: details, learning progress, results, loans and recent activity. */
+    public function show(string $tenant, User $member): View
+    {
+        $workspace = app(Tenancy::class)->current();
+        $enabled = $workspace->tenantModules()->where('is_enabled', true)->pluck('module')
+            ->map(fn ($module) => $module instanceof Module ? $module : Module::from($module));
+
+        $courses = collect();
+        $attempts = collect();
+        $loans = collect();
+
+        if ($enabled->contains(Module::Lms)) {
+            $courses = Course::whereIn('id', Enrollment::where('user_id', $member->id)->pluck('course_id'))
+                ->withCount('lessons')
+                ->get()
+                ->map(function (Course $course) use ($member) {
+                    $course->progress = $course->progressPercentFor($member);
+                    $course->enrolled_at = Enrollment::where('user_id', $member->id)->where('course_id', $course->id)->value('enrolled_at');
+
+                    return $course;
+                })
+                ->sortByDesc('progress')
+                ->values();
+        }
+
+        if ($enabled->contains(Module::Cbt)) {
+            $attempts = ExamAttempt::where('user_id', $member->id)
+                ->whereNotNull('submitted_at')
+                ->with('exam')
+                ->latest('submitted_at')
+                ->take(20)
+                ->get()
+                ->filter(fn (ExamAttempt $attempt) => $attempt->exam !== null);
+        }
+
+        if ($enabled->contains(Module::Library)) {
+            $loans = LibraryCheckout::where('user_id', $member->id)
+                ->with('resource')
+                ->latest('checked_out_at')
+                ->take(20)
+                ->get()
+                ->filter(fn (LibraryCheckout $loan) => $loan->resource !== null);
+        }
+
+        return view('team.show', [
+            'member' => $member,
+            'enabled' => $enabled,
+            'courses' => $courses,
+            'attempts' => $attempts,
+            'loans' => $loans,
+            'lastSignIn' => ActivityLog::where('user_id', $member->id)->where('action', 'auth.login')->latest('id')->value('created_at'),
+            'activity' => ActivityLog::where('tenant_id', $workspace->id)
+                ->where(fn ($query) => $query->where('user_id', $member->id)
+                    ->orWhere(fn ($about) => $about->where('subject_type', $member->getMorphClass())->where('subject_id', $member->id)))
+                ->latest('id')
+                ->take(10)
+                ->get(),
         ]);
     }
 
