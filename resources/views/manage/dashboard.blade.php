@@ -37,8 +37,18 @@
     </div>
 
     {{-- Things that need the owner --}}
-    @if (! empty($reviews))
+    @if (! empty($reviews) || ($stats['cbt']['toMark'] ?? 0) > 0)
         <div class="mb-8 space-y-3">
+            @if (($stats['cbt']['toMark'] ?? 0) > 0)
+                @php($toMark = $stats['cbt']['toMark'])
+                <a href="{{ route('cbt.manage.marking.index') }}" class="flex items-center justify-between gap-4 rounded-xl bg-amber-50 px-5 py-4 ring-1 ring-amber-200 transition hover:bg-amber-100/70">
+                    <span class="flex items-center gap-3 text-sm text-amber-900">
+                        <x-icon name="pencil" class="h-5 w-5 text-amber-600" />
+                        <span><strong>{{ $toMark }}</strong> exam {{ \Illuminate\Support\Str::plural('attempt', $toMark) }} with written answers {{ $toMark === 1 ? 'is' : 'are' }} waiting to be marked.</span>
+                    </span>
+                    <span class="shrink-0 text-sm font-semibold text-amber-800">Mark &rarr;</span>
+                </a>
+            @endif
             @foreach ($reviews as $module => $count)
                 <a href="{{ route($reviewLinks[$module]['route']) }}" class="flex items-center justify-between gap-4 rounded-xl bg-amber-50 px-5 py-4 ring-1 ring-amber-200 transition hover:bg-amber-100/70">
                     <span class="flex items-center gap-3 text-sm text-amber-900">

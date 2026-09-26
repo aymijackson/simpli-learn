@@ -22,6 +22,7 @@ class ExamPeopleReportController extends Controller
 {
     public const LABELS = [
         'passed' => 'Passed',
+        'awaiting_marking' => 'Awaiting marking',
         'failed' => 'Not passed yet',
         'in_progress' => 'In progress',
         'not_attempted' => 'Not attempted',
@@ -73,19 +74,21 @@ class ExamPeopleReportController extends Controller
 
         $attempts = ExamAttempt::where('exam_id', $exam->id)
             ->whereIn('user_id', $people->pluck('id'))
-            ->get(['user_id', 'score', 'submitted_at', 'started_at'])
+            ->get(['user_id', 'score', 'submitted_at', 'started_at', 'needs_marking'])
             ->groupBy('user_id');
 
         $order = array_keys(self::LABELS);
 
         return $people->map(function ($user) use ($attempts, $exam) {
             $mine = $attempts->get($user->id, collect());
-            $submitted = $mine->whereNotNull('submitted_at');
+            $submitted = $mine->whereNotNull('submitted_at')->where('needs_marking', false);
+            $awaiting = $mine->whereNotNull('submitted_at')->where('needs_marking', true);
             $best = $submitted->max('score');
             $passing = $submitted->filter(fn ($attempt) => $attempt->score >= $exam->pass_percentage);
 
             $status = match (true) {
                 $passing->isNotEmpty() => 'passed',
+                $awaiting->isNotEmpty() => 'awaiting_marking',
                 $submitted->isNotEmpty() => 'failed',
                 $mine->isNotEmpty() => 'in_progress',
                 default => 'not_attempted',
@@ -95,7 +98,7 @@ class ExamPeopleReportController extends Controller
                 'user' => $user,
                 'status' => $status,
                 'best' => $best === null ? null : (int) $best,
-                'attempts' => $submitted->count(),
+                'attempts' => $mine->whereNotNull('submitted_at')->count(),
                 'passed_at' => $passing->min('submitted_at'),
                 'last_at' => $mine->max(fn ($attempt) => $attempt->submitted_at ?? $attempt->started_at),
             ];

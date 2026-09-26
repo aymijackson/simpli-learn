@@ -14,14 +14,50 @@ class ExamAttempt extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'exam_id', 'user_id', 'started_at', 'submitted_at', 'score'];
+    protected $fillable = ['tenant_id', 'exam_id', 'user_id', 'started_at', 'submitted_at', 'score', 'needs_marking'];
 
     protected function casts(): array
     {
         return [
             'started_at' => 'datetime',
             'submitted_at' => 'datetime',
+            'needs_marking' => 'boolean',
         ];
+    }
+
+    /** Submitted, but essay answers still need marking — no score or pass/fail yet. */
+    public function isAwaitingMarking(): bool
+    {
+        return $this->isSubmitted() && $this->needs_marking;
+    }
+
+    /**
+     * Work out the score from the saved answers — the one place grading
+     * happens, at submission and again after an essay is marked. While any
+     * essay is unmarked the score stays null (so every "passed" check treats
+     * the attempt as not passed) and needs_marking is set.
+     */
+    public function grade(): void
+    {
+        $questions = $this->exam->orderedQuestions($this);
+        $answers = $this->answers()->with('selectedOptions')->get()->keyBy('question_id');
+        $earned = 0.0;
+        $possible = 0;
+        $unmarked = false;
+
+        foreach ($questions as $question) {
+            $fraction = $question->scoreAnswer($answers->get($question->id));
+            if ($fraction === null) {
+                $unmarked = true;
+            }
+            $earned += ($fraction ?? 0.0) * $question->points;
+            $possible += $question->points;
+        }
+
+        $this->forceFill([
+            'score' => $unmarked ? null : ($possible === 0 ? 0 : (int) round($earned / $possible * 100)),
+            'needs_marking' => $unmarked,
+        ])->save();
     }
 
     public function exam(): BelongsTo

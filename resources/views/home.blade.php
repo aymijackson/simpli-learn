@@ -147,8 +147,12 @@
                                             <p class="text-xs text-slate-500">{{ $attempt->submitted_at->diffForHumans() }}</p>
                                         </div>
                                         <div class="flex shrink-0 items-center gap-3">
-                                            <span class="text-sm font-bold {{ $attempt->passed() ? 'text-emerald-600' : 'text-rose-600' }}">{{ $attempt->score }}%</span>
-                                            <x-badge :color="$attempt->passed() ? 'green' : 'red'">{{ $attempt->passed() ? 'Passed' : 'Failed' }}</x-badge>
+                                            @if ($attempt->isAwaitingMarking())
+                                                <x-badge color="amber">Awaiting marking</x-badge>
+                                            @else
+                                                <span class="text-sm font-bold {{ $attempt->passed() ? 'text-emerald-600' : 'text-rose-600' }}">{{ $attempt->score }}%</span>
+                                                <x-badge :color="$attempt->passed() ? 'green' : 'red'">{{ $attempt->passed() ? 'Passed' : 'Failed' }}</x-badge>
+                                            @endif
                                         </div>
                                     </a>
                                 </li>

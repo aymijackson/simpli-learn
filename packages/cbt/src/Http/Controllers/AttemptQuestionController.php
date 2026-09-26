@@ -14,7 +14,7 @@ use Illuminate\View\View;
 /**
  * One-question-per-page delivery for exams with navigation_mode = OneAtATime.
  * Every answer is saved server-side as soon as it's submitted (via
- * Question::saveAnswerFor, the same helper AttemptController::submit uses),
+ * Question::saveResponse, the same helper AttemptController::submit uses),
  * which is what makes "no backward navigation" a real, enforced rule rather
  * than a client-side nicety — see redirectFor().
  */
@@ -47,6 +47,7 @@ class AttemptQuestionController extends Controller
             'totalPages' => $questions->count(),
             'selectedOptionIds' => $existingAnswer?->selectedOptions->pluck('id') ?? Collection::make(),
             'isFlagged' => (bool) $existingAnswer?->is_flagged,
+            'textResponse' => $existingAnswer?->text_response,
         ]);
     }
 
@@ -66,11 +67,7 @@ class AttemptQuestionController extends Controller
         }
 
         $question = $questions[$page - 1];
-        $question->saveAnswerFor(
-            $attempt,
-            Collection::make($request->input('answers', [])),
-            $request->boolean('flagged'),
-        );
+        $question->saveResponse($attempt, $request->input('answers'), $request->boolean('flagged'));
 
         $nextPage = $page + 1;
 
@@ -99,7 +96,7 @@ class AttemptQuestionController extends Controller
             return [
                 'page' => $index + 1,
                 'question' => $question,
-                'answered' => (bool) ($answer && $answer->selectedOptions->isNotEmpty()),
+                'answered' => (bool) ($answer && ($answer->selectedOptions->isNotEmpty() || filled($answer->text_response))),
                 'flagged' => (bool) $answer?->is_flagged,
             ];
         });

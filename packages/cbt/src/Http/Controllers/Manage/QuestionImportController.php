@@ -166,7 +166,7 @@ class QuestionImportController extends Controller
 
             $answerType = AnswerType::tryFrom(strtolower($cell('answer_type') ?? AnswerType::Single->value));
 
-            if ($answerType === null) {
+            if (! in_array($answerType, [AnswerType::Single, AnswerType::Multiple], true)) {
                 $errors[] = "Row {$rowNumber}: invalid answer_type (use 'single' or 'multiple').";
 
                 continue;

@@ -76,7 +76,11 @@
                                     &#9888; {{ $attempt->integrity_events_count }} {{ \Illuminate\Support\Str::plural('flag', $attempt->integrity_events_count) }}
                                 </a>
                             @endif
-                            <x-badge :color="$attempt->passed() ? 'green' : 'red'">{{ $attempt->score }}% &middot; {{ $attempt->passed() ? 'Passed' : 'Failed' }}</x-badge>
+                            @if ($attempt->isAwaitingMarking())
+                                <a href="{{ route('cbt.manage.marking.show', $attempt) }}"><x-badge color="amber">Awaiting marking</x-badge></a>
+                            @else
+                                <x-badge :color="$attempt->passed() ? 'green' : 'red'">{{ $attempt->score }}% &middot; {{ $attempt->passed() ? 'Passed' : 'Failed' }}</x-badge>
+                            @endif
                         </div>
                     </li>
                 @endforeach

@@ -42,16 +42,12 @@
                 </label>
             </div>
             <div class="mt-4 space-y-2">
-                @foreach ($question->options as $option)
-                    <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">
-                        @if ($question->answer_type->value === 'single')
-                            <input type="radio" name="answers" value="{{ $option->id }}" class="mt-0.5 text-emerald-600 focus:ring-emerald-600" @checked($selectedOptionIds->contains($option->id))>
-                        @else
-                            <input type="checkbox" name="answers[]" value="{{ $option->id }}" class="mt-0.5 rounded text-emerald-600 focus:ring-emerald-600" @checked($selectedOptionIds->contains($option->id))>
-                        @endif
-                        <span class="rich-text">{!! $option->option_text !!}</span>
-                    </label>
-                @endforeach
+                @include('cbt::attempts._answer_input', [
+                    'question' => $question,
+                    'name' => 'answers',
+                    'selected' => $selectedOptionIds,
+                    'text' => $textResponse,
+                ])
             </div>
         </x-card>
 

@@ -67,6 +67,7 @@ class ManageDashboardController extends Controller
                 'recentAttempts' => (clone $submitted)->where('submitted_at', '>=', $since)->count(),
                 'averageScore' => (int) round((float) (clone $submitted)->avg('score')),
                 'certificates' => Certificate::count(),
+                'toMark' => ExamAttempt::where('needs_marking', true)->whereNotNull('submitted_at')->count(),
             ];
 
             $activity = $activity->merge(
@@ -74,8 +75,10 @@ class ManageDashboardController extends Controller
                     ->filter(fn ($attempt) => $attempt->user && $attempt->exam)
                     ->map(fn ($attempt) => [
                         'icon' => 'clipboard-check',
-                        'tone' => $attempt->passed() ? 'emerald' : 'rose',
-                        'text' => "{$attempt->user->name} scored {$attempt->score}% on {$attempt->exam->title}",
+                        'tone' => $attempt->isAwaitingMarking() ? 'amber' : ($attempt->passed() ? 'emerald' : 'rose'),
+                        'text' => $attempt->isAwaitingMarking()
+                            ? "{$attempt->user->name} submitted {$attempt->exam->title} — awaiting marking"
+                            : "{$attempt->user->name} scored {$attempt->score}% on {$attempt->exam->title}",
                         'at' => $attempt->submitted_at,
                     ])
             );

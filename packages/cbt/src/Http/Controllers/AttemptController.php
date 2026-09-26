@@ -9,7 +9,6 @@ use Elibrary\Cbt\Models\Exam;
 use Elibrary\Cbt\Models\ExamAttempt;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -115,29 +114,13 @@ class AttemptController extends Controller
             // upsert in that case avoids wiping out what was already saved.
             if ($hasInlineAnswers) {
                 foreach ($questions as $question) {
-                    $selectedOptionIds = Collection::make($answers[$question->id] ?? []);
                     $isFlagged = in_array((string) $question->id, array_map('strval', (array) $flagged), true);
-                    $question->saveAnswerFor($attempt, $selectedOptionIds, $isFlagged);
+                    $question->saveResponse($attempt, $answers[$question->id] ?? null, $isFlagged);
                 }
             }
 
-            $attempt->load('answers.selectedOptions');
-            $totalScore = 0.0;
-            $totalPoints = 0;
-
-            foreach ($questions as $question) {
-                $answer = $attempt->answers->firstWhere('question_id', $question->id);
-                $selectedOptionIds = $answer ? $answer->selectedOptions->pluck('id') : Collection::make();
-                $totalScore += $question->scoreForSelection($selectedOptionIds) * $question->points;
-                $totalPoints += $question->points;
-            }
-
-            $score = $totalPoints === 0 ? 0 : (int) round($totalScore / $totalPoints * 100);
-
-            $attempt->update([
-                'submitted_at' => now(),
-                'score' => $score,
-            ]);
+            $attempt->forceFill(['submitted_at' => now()])->save();
+            $attempt->grade();
 
             if ($attempt->passed()) {
                 app(CertificateService::class)->issueIfFree($attempt);

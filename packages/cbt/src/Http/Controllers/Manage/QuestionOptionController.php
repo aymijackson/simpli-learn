@@ -39,7 +39,7 @@ class QuestionOptionController extends Controller
 
         $validated['is_correct'] = $request->boolean('is_correct');
 
-        if ($validated['is_correct'] && $question->answer_type === AnswerType::Single) {
+        if ($validated['is_correct'] && $question->answer_type->isSingleChoice()) {
             $question->options()->where('id', '!=', $option->id)->update(['is_correct' => false]);
         }
 

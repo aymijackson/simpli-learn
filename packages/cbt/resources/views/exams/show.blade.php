@@ -1,7 +1,8 @@
 @php
     $totalQuestions = $exam->questions()->count();
     $effectiveQuestions = $exam->questions_per_attempt ? min($exam->questions_per_attempt, $totalQuestions) : $totalQuestions;
-    $submittedAttempts = $attempts->filter->isSubmitted();
+    // Marked attempts only: an attempt awaiting essay marking has no score yet.
+    $submittedAttempts = $attempts->filter->isSubmitted()->reject->isAwaitingMarking();
     $openAttempt = $attempts->first(fn ($attempt) => ! $attempt->isSubmitted());
     $best = $submittedAttempts->max('score');
 @endphp
@@ -115,9 +116,13 @@
                                     </div>
                                     @if ($attempt->isSubmitted())
                                         <a href="{{ route('cbt.attempts.result', $attempt) }}" class="flex items-center gap-3">
-                                            <x-badge :color="$attempt->passed() ? 'green' : 'red'">
-                                                {{ $attempt->score }}% &middot; {{ $attempt->passed() ? 'Passed' : 'Failed' }}
-                                            </x-badge>
+                                            @if ($attempt->isAwaitingMarking())
+                                                <x-badge color="amber">Awaiting marking</x-badge>
+                                            @else
+                                                <x-badge :color="$attempt->passed() ? 'green' : 'red'">
+                                                    {{ $attempt->score }}% &middot; {{ $attempt->passed() ? 'Passed' : 'Failed' }}
+                                                </x-badge>
+                                            @endif
                                             <x-icon name="chevron-right" class="h-4 w-4 text-slate-400" />
                                         </a>
                                     @else

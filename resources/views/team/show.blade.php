@@ -121,7 +121,11 @@
                                         <p class="truncate text-sm font-medium text-slate-900">{{ $attempt->exam->title }}</p>
                                         <p class="text-xs text-slate-500">{{ $attempt->submitted_at->format('M j, Y g:ia') }}</p>
                                     </div>
-                                    <x-badge :color="$attempt->passed() ? 'green' : 'red'">{{ $attempt->score }}% &middot; {{ $attempt->passed() ? 'Passed' : 'Failed' }}</x-badge>
+                                    @if ($attempt->isAwaitingMarking())
+                                        <x-badge color="amber">Awaiting marking</x-badge>
+                                    @else
+                                        <x-badge :color="$attempt->passed() ? 'green' : 'red'">{{ $attempt->score }}% &middot; {{ $attempt->passed() ? 'Passed' : 'Failed' }}</x-badge>
+                                    @endif
                                 </li>
                             @endforeach
                         </ul>

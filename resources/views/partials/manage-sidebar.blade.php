@@ -27,6 +27,7 @@
     @if ($hasModule(\App\Enums\Module::Cbt))
         <x-sidebar-section title="Testing">
             <x-sidebar-link :href="route('cbt.manage.exams.index')" icon="clipboard-check" :active="request()->routeIs('cbt.manage.exams.*', 'cbt.manage.questions.*', 'cbt.manage.sections.*')">Exams</x-sidebar-link>
+            <x-sidebar-link :href="route('cbt.manage.marking.index')" icon="pencil" :badge="$reviews['marking'] ?? null" :active="request()->routeIs('cbt.manage.marking.*')">Marking</x-sidebar-link>
             <x-sidebar-link :href="route('cbt.manage.analytics.index')" icon="chart-bar" :active="request()->routeIs('cbt.manage.analytics.*')">Results &amp; analytics</x-sidebar-link>
             <x-sidebar-link :href="route('cbt.manage.certificates.settings.edit')" icon="trophy" :active="request()->routeIs('cbt.manage.certificates.*')">Certificates</x-sidebar-link>
             <x-sidebar-link :href="route('cbt.manage.certificate-payments.index')" icon="receipt" :badge="$reviews['cbt'] ?? null" :active="request()->routeIs('cbt.manage.certificate-payments.*')">Certificate sales</x-sidebar-link>

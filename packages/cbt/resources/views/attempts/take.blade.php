@@ -47,16 +47,7 @@
                     </label>
                 </div>
                 <div class="mt-4 space-y-2">
-                    @foreach ($question->options as $option)
-                        <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">
-                            @if ($question->answer_type->value === 'single')
-                                <input type="radio" name="answers[{{ $question->id }}]" value="{{ $option->id }}" data-answer-input class="mt-0.5 text-emerald-600 focus:ring-emerald-600">
-                            @else
-                                <input type="checkbox" name="answers[{{ $question->id }}][]" value="{{ $option->id }}" data-answer-input class="mt-0.5 rounded text-emerald-600 focus:ring-emerald-600">
-                            @endif
-                            <span class="rich-text">{!! $option->option_text !!}</span>
-                        </label>
-                    @endforeach
+                    @include('cbt::attempts._answer_input', ['question' => $question, 'name' => "answers[{$question->id}]"])
                 </div>
             </x-card>
         @endforeach
@@ -94,7 +85,9 @@
                 const strip = document.getElementById('review-strip');
                 const cards = Array.from(document.querySelectorAll('[data-question-card]'));
 
-                const isAnswered = (card) => Array.from(card.querySelectorAll('[data-answer-input]')).some((input) => input.checked);
+                // Ticked options, or text typed into a short-answer / essay box.
+                const isAnswered = (card) => Array.from(card.querySelectorAll('[data-answer-input]')).some((input) =>
+                    input.type === 'radio' || input.type === 'checkbox' ? input.checked : input.value.trim() !== '');
                 const isFlagged = (card) => card.querySelector('[data-flag-input]').checked;
 
                 const render = () => {
@@ -114,7 +107,10 @@
                     });
                 };
 
-                cards.forEach((card) => card.addEventListener('change', render));
+                cards.forEach((card) => {
+                    card.addEventListener('change', render);
+                    card.addEventListener('input', render);
+                });
                 render();
             })();
         </script>

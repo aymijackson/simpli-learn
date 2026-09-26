@@ -14,6 +14,17 @@
         </form>
     </x-card>
 
+    @if (! in_array($question->answer_type->value, ['single', 'multiple'], true))
+        <p class="text-sm text-slate-500">
+            @if ($question->answer_type->isWritten())
+                {{ $question->answer_type->label() }} questions have no answer options — learners type their answer.
+            @else
+                The True and False options are managed for you — pick the correct one above.
+            @endif
+        </p>
+    @endif
+
+    <div id="options-editor" @class(['hidden' => ! in_array($question->answer_type->value, ['single', 'multiple'], true)])>
     <h2 class="mb-4 text-sm font-semibold text-slate-900">
         Answer options
         @if ($options->count() < 2)
@@ -57,4 +68,5 @@
             <x-button type="submit" variant="secondary">Add option</x-button>
         </form>
     </x-card>
+    </div>
 </x-app-layout>

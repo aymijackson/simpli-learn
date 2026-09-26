@@ -48,8 +48,8 @@
                 <tr>
                     <td>{{ $attempt->user->name }}</td>
                     <td>{{ $attempt->user->email }}</td>
-                    <td>{{ $attempt->score }}%</td>
-                    <td class="{{ $attempt->passed() ? 'pass' : 'fail' }}">{{ $attempt->passed() ? 'Passed' : 'Failed' }}</td>
+                    <td>{{ $attempt->isAwaitingMarking() ? '—' : $attempt->score.'%' }}</td>
+                    <td class="{{ $attempt->passed() ? 'pass' : 'fail' }}">{{ $attempt->isAwaitingMarking() ? 'Awaiting marking' : ($attempt->passed() ? 'Passed' : 'Failed') }}</td>
                     <td>{{ $attempt->submitted_at->format('M j, Y g:ia') }}</td>
                     <td>{{ round($attempt->durationMinutes(), 1) }} min</td>
                 </tr>

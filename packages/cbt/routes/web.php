@@ -8,6 +8,7 @@ use Elibrary\Cbt\Http\Controllers\ExamController;
 use Elibrary\Cbt\Http\Controllers\IntegrityEventController;
 use Elibrary\Cbt\Http\Controllers\Manage\AnalyticsController as ManageAnalyticsController;
 use Elibrary\Cbt\Http\Controllers\Manage\ExamPeopleReportController;
+use Elibrary\Cbt\Http\Controllers\Manage\MarkingController as ManageMarkingController;
 use Elibrary\Cbt\Http\Controllers\Manage\CertificatePaymentQueueController as ManageCertificatePaymentQueueController;
 use Elibrary\Cbt\Http\Controllers\Manage\CertificateSettingsController as ManageCertificateSettingsController;
 use Elibrary\Cbt\Http\Controllers\Manage\ExamController as ManageExamController;
@@ -78,6 +79,10 @@ Route::middleware(['web', 'auth', 'module:cbt'])
             Route::get('/analytics/{exam:slug}/people.csv', [ExamPeopleReportController::class, 'export'])->name('analytics.people.export');
             Route::get('/analytics/{exam:slug}/export.pdf', [ManageAnalyticsController::class, 'exportPdf'])->name('analytics.export.pdf');
             Route::get('/analytics/{exam:slug}/attempts/{attempt}/integrity', [ManageAnalyticsController::class, 'integrityEvents'])->name('analytics.attempts.integrity');
+
+            Route::get('/marking', [ManageMarkingController::class, 'index'])->name('marking.index');
+            Route::get('/marking/{attempt}', [ManageMarkingController::class, 'show'])->name('marking.show');
+            Route::put('/marking/{attempt}', [ManageMarkingController::class, 'update'])->name('marking.update');
 
             Route::get('/certificates/settings', [ManageCertificateSettingsController::class, 'edit'])->name('certificates.settings.edit');
             Route::put('/certificates/settings', [ManageCertificateSettingsController::class, 'update'])->name('certificates.settings.update');

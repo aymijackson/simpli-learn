@@ -1,6 +1,6 @@
 @use('Elibrary\Cbt\Http\Controllers\Manage\ExamPeopleReportController', 'Report')
 @php
-    $colors = ['passed' => 'green', 'failed' => 'red', 'in_progress' => 'amber', 'not_attempted' => 'slate'];
+    $colors = ['passed' => 'green', 'awaiting_marking' => 'amber', 'failed' => 'red', 'in_progress' => 'amber', 'not_attempted' => 'slate'];
     $filters = ['all' => 'Everyone'] + Report::LABELS;
 @endphp
 

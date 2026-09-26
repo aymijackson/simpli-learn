@@ -15,7 +15,7 @@ class Question extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'exam_id', 'exam_section_id', 'question_text', 'answer_type', 'scoring_method', 'position', 'points'];
+    protected $fillable = ['tenant_id', 'exam_id', 'exam_section_id', 'question_text', 'marking_guide', 'answer_type', 'scoring_method', 'position', 'points'];
 
     protected function casts(): array
     {
@@ -64,6 +64,60 @@ class Question extends Model
                 - $selectedOptionIds->diff($correctOptionIds)->count()
             ) / $correctOptionIds->count()),
         };
+    }
+
+    /**
+     * Score a saved answer (0.0–1.0) for any answer type. Returns null for an
+     * essay that hasn't been marked yet — the attempt's score waits for it.
+     * Shared by grading and the result page so they can never disagree.
+     */
+    public function scoreAnswer(?ExamAttemptAnswer $answer): ?float
+    {
+        return match ($this->answer_type) {
+            AnswerType::ShortAnswer => $this->matchesAcceptedAnswer($answer?->text_response) ? 1.0 : 0.0,
+            AnswerType::Essay => match (true) {
+                blank($answer?->text_response) => 0.0, // nothing written, nothing to mark
+                $answer->awarded_points === null => null,
+                default => $this->points > 0 ? min(1.0, max(0.0, (float) $answer->awarded_points / $this->points)) : 0.0,
+            },
+            default => $this->scoreForSelection($answer ? $answer->selectedOptions->pluck('id') : Collection::make()),
+        };
+    }
+
+    /** Short answer: case, extra spaces and trailing punctuation don't matter. */
+    public function matchesAcceptedAnswer(?string $response): bool
+    {
+        $response = self::normaliseAnswer((string) $response);
+
+        return $response !== '' && $this->options
+            ->where('is_correct', true)
+            ->contains(fn (QuestionOption $option) => self::normaliseAnswer(strip_tags($option->option_text)) === $response);
+    }
+
+    public static function normaliseAnswer(string $text): string
+    {
+        $text = mb_strtolower(trim(preg_replace('/\s+/u', ' ', html_entity_decode($text))));
+
+        return rtrim($text, " \t.,;:!?");
+    }
+
+    /**
+     * Save a learner's response in whatever shape it arrived: option id(s)
+     * for choice questions, text for short-answer and essay questions.
+     */
+    public function saveResponse(ExamAttempt $attempt, mixed $input, bool $isFlagged = false): ExamAttemptAnswer
+    {
+        if (! $this->answer_type->isWritten()) {
+            return $this->saveAnswerFor($attempt, Collection::make($input ?? []), $isFlagged);
+        }
+
+        $text = is_array($input) ? implode(' ', array_filter($input, 'is_string')) : (string) $input;
+        $limit = $this->answer_type === AnswerType::Essay ? 20000 : 500;
+
+        return $attempt->answers()->updateOrCreate(
+            ['question_id' => $this->id],
+            ['is_flagged' => $isFlagged, 'text_response' => trim(mb_substr($text, 0, $limit)) ?: null],
+        );
     }
 
     /**

@@ -13,11 +13,23 @@ class ExamAttemptAnswer extends Model
 
     protected $table = 'exam_attempt_answers';
 
-    protected $fillable = ['tenant_id', 'attempt_id', 'question_id', 'is_flagged'];
+    protected $fillable = [
+        'tenant_id', 'attempt_id', 'question_id', 'is_flagged',
+        'text_response', 'awarded_points', 'feedback', 'marked_by_user_id', 'marked_at',
+    ];
 
     protected function casts(): array
     {
-        return ['is_flagged' => 'boolean'];
+        return [
+            'is_flagged' => 'boolean',
+            'awarded_points' => 'float',
+            'marked_at' => 'datetime',
+        ];
+    }
+
+    public function markedBy(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'marked_by_user_id');
     }
 
     public function attempt(): BelongsTo
