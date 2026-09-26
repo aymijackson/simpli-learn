@@ -65,6 +65,19 @@ class Lesson extends Model
     {
         $course = $this->course;
 
+        // Free preview lessons stay open to people browsing before they enrol.
+        $previewing = $this->is_preview && ! $course->isEnrolled($user);
+
+        if (! $previewing) {
+            if (! $course->prerequisitesMetBy($user)) {
+                return false;
+            }
+
+            if ($course->sequential_lessons && ($previous = $this->previousLesson($course)) && ! $previous->isCompletedBy($user)) {
+                return false;
+            }
+        }
+
         return match ($course->assessment_mode) {
             AssessmentMode::PerLesson => $this->isUnlockedUnderPerLesson($user, $course),
             AssessmentMode::PerModule => $this->isUnlockedUnderPerModule($user, $course),

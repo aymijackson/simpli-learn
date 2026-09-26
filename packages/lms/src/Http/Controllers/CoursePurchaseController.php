@@ -19,9 +19,13 @@ use Illuminate\View\View;
 
 class CoursePurchaseController extends Controller
 {
-    public function create(Request $request, string $tenant, Course $course): View
+    public function create(Request $request, string $tenant, Course $course): View|RedirectResponse
     {
         abort_if($course->isEnrolled($request->user()), 404);
+
+        if ($blocked = CourseController::prerequisiteBlock($request, $course)) {
+            return $blocked;
+        }
 
         return view('lms::courses.purchase', [
             'course' => $course,
@@ -35,6 +39,10 @@ class CoursePurchaseController extends Controller
     public function store(Request $request, string $tenant, Course $course): RedirectResponse
     {
         abort_if($course->isEnrolled($request->user()), 404);
+
+        if ($blocked = CourseController::prerequisiteBlock($request, $course)) {
+            return $blocked;
+        }
 
         return $this->purchase($request, $course, CoursePurchaseType::Enrollment, $course->price, $course->currency);
     }

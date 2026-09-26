@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class CourseController extends Controller
@@ -30,12 +31,14 @@ class CourseController extends Controller
     {
         return view('lms::manage.courses.create', [
             'exams' => Exam::orderBy('title')->get(),
+            'otherCourses' => Course::orderBy('title')->get(['id', 'title']),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $course = Course::create($this->validated($request));
+        $this->syncPrerequisites($request, $course);
 
         return redirect()->route('lms.manage.courses.edit', $course)->with('status', 'Course created.');
     }
@@ -47,12 +50,14 @@ class CourseController extends Controller
             'lessons' => $course->lessons,
             'modules' => $course->modules,
             'exams' => Exam::orderBy('title')->get(),
+            'otherCourses' => Course::whereKeyNot($course->id)->orderBy('title')->get(['id', 'title']),
         ]);
     }
 
     public function update(Request $request, string $tenant, Course $course): RedirectResponse
     {
         $course->update($this->validated($request, $course));
+        $this->syncPrerequisites($request, $course);
 
         return redirect()->route('lms.manage.courses.edit', $course)->with('status', 'Course updated.');
     }
@@ -96,7 +101,19 @@ class CourseController extends Controller
             'instructor_bio' => ['nullable', 'string', 'max:2000'],
             'outcomes_text' => ['nullable', 'string', 'max:5000'],
             'cover_image' => ['nullable', 'image', 'max:5120'],
+            'prerequisite_ids' => ['nullable', 'array', 'max:20'],
+            'prerequisite_ids.*' => ['integer', Rule::exists('courses', 'id')->where('tenant_id', $tenantId), Rule::notIn(array_filter([$course?->id]))],
         ]);
+
+        if ($course) {
+            $loops = Course::whereIn('id', $validated['prerequisite_ids'] ?? [])->get()
+                ->filter(fn (Course $candidate) => $course->wouldCreatePrerequisiteLoop($candidate));
+            if ($loops->isNotEmpty()) {
+                throw ValidationException::withMessages([
+                    'prerequisite_ids' => '"'.$loops->first()->title.'" already requires this course, so it can\'t also come before it.',
+                ]);
+            }
+        }
 
         $validated['duration_minutes'] = isset($validated['duration_hours']) ? (int) round($validated['duration_hours'] * 60) : null;
         $validated['outcomes'] = collect(preg_split('/\r?\n/', (string) ($validated['outcomes_text'] ?? '')))
@@ -120,7 +137,8 @@ class CourseController extends Controller
                 : null;
         }
 
-        unset($validated['duration_hours'], $validated['outcomes_text'], $validated['cover_image']);
+        unset($validated['duration_hours'], $validated['outcomes_text'], $validated['cover_image'], $validated['prerequisite_ids']);
+        $validated['sequential_lessons'] = $request->boolean('sequential_lessons');
 
         $validated['is_published'] = $request->boolean('is_published');
         $validated['assessment_mode'] = $validated['assessment_mode'] ?? AssessmentMode::None->value;
@@ -142,5 +160,18 @@ class CourseController extends Controller
         }
 
         return $validated;
+    }
+
+    private function syncPrerequisites(Request $request, Course $course): void
+    {
+        $tenantId = app(Tenancy::class)->id();
+
+        $course->prerequisites()->sync(
+            collect($request->input('prerequisite_ids', []))
+                ->map(fn ($id) => (int) $id)
+                ->reject(fn ($id) => $id === $course->id)
+                ->mapWithKeys(fn ($id) => [$id => ['tenant_id' => $tenantId]])
+                ->all()
+        );
     }
 }

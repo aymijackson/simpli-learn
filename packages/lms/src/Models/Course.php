@@ -11,8 +11,10 @@ use Elibrary\Lms\Enums\CourseLevel;
 use Elibrary\Lms\Enums\CoursePricingPolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class Course extends Model
@@ -20,7 +22,7 @@ class Course extends Model
     use BelongsToTenant;
 
     protected $fillable = [
-        'tenant_id', 'title', 'slug', 'description', 'is_published', 'assessment_mode', 'final_exam_id',
+        'tenant_id', 'title', 'slug', 'description', 'is_published', 'assessment_mode', 'sequential_lessons', 'final_exam_id',
         'pricing_policy', 'price', 'currency', 'certificate_policy', 'certificate_price', 'certificate_currency',
         'subtitle', 'cover_image_path', 'category', 'level', 'duration_minutes', 'instructor_name', 'instructor_bio', 'outcomes',
     ];
@@ -30,6 +32,7 @@ class Course extends Model
         return [
             'is_published' => 'boolean',
             'assessment_mode' => AssessmentMode::class,
+            'sequential_lessons' => 'boolean',
             'pricing_policy' => CoursePricingPolicy::class,
             'certificate_policy' => CourseCertificatePolicy::class,
             'level' => CourseLevel::class,
@@ -89,6 +92,61 @@ class Course extends Model
         return $this->certificates()->where('user_id', $user->id)->first();
     }
 
+    /** Courses that must be passed before this one opens. */
+    public function prerequisites(): BelongsToMany
+    {
+        return $this->belongsToMany(self::class, 'course_prerequisites', 'course_id', 'prerequisite_course_id')
+            ->withPivot('tenant_id')
+            ->withTimestamps()
+            ->orderBy('title');
+    }
+
+    /** Courses that list this one as a prerequisite. */
+    public function unlocks(): BelongsToMany
+    {
+        return $this->belongsToMany(self::class, 'course_prerequisites', 'prerequisite_course_id', 'course_id')->orderBy('title');
+    }
+
+    /** @var array<int, Collection<int, Course>> Unmet prerequisites per user id, for this request. */
+    private array $unmetPrerequisites = [];
+
+    /** @return Collection<int, Course> Prerequisite courses this person hasn't passed yet. */
+    public function unmetPrerequisitesFor(User $user): Collection
+    {
+        return $this->unmetPrerequisites[$user->id] ??= $this->prerequisites
+            ->reject(fn (self $prerequisite) => $prerequisite->isPassedBy($user))
+            ->values();
+    }
+
+    public function prerequisitesMetBy(User $user): bool
+    {
+        return $this->unmetPrerequisitesFor($user)->isEmpty();
+    }
+
+    /**
+     * Whether making $candidate a prerequisite of this course would create a
+     * loop (this course is already, directly or indirectly, required by it).
+     */
+    public function wouldCreatePrerequisiteLoop(self $candidate): bool
+    {
+        $seen = [];
+        $queue = [$candidate->id];
+
+        while ($queue) {
+            $id = array_shift($queue);
+            if ($id === $this->id) {
+                return true;
+            }
+            if (isset($seen[$id])) {
+                continue;
+            }
+            $seen[$id] = true;
+            array_push($queue, ...DB::table('course_prerequisites')->where('course_id', $id)->pluck('prerequisite_course_id')->all());
+        }
+
+        return false;
+    }
+
     public function finalExam(): BelongsTo
     {
         return $this->belongsTo(Exam::class, 'final_exam_id');
@@ -122,7 +180,7 @@ class Course extends Model
     /** Whether the learner has got far enough through the course to sit this checkpoint. */
     public function checkpointIsReachable(array $checkpoint, User $user): bool
     {
-        if (! $this->isEnrolled($user)) {
+        if (! $this->isEnrolled($user) || ! $this->prerequisitesMetBy($user)) {
             return false;
         }
 

@@ -94,6 +94,36 @@
     @endif
 </div>
 
+<fieldset class="space-y-4 rounded-xl border border-slate-200 p-4">
+    <legend class="px-1 text-sm font-semibold text-slate-900">Order</legend>
+
+    <label class="flex items-start gap-2 text-sm">
+        <input type="checkbox" name="sequential_lessons" value="1" class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-600" @checked(old('sequential_lessons', $course->sequential_lessons ?? false))>
+        <span>
+            <span class="font-medium text-slate-700">Lessons must be completed in order</span>
+            <span class="block text-xs text-slate-500">Each lesson opens only after the one before it is marked complete. Free preview lessons stay open to visitors.</span>
+        </span>
+    </label>
+
+    @if ($otherCourses->isNotEmpty())
+        @php($chosenPrerequisites = collect(old('prerequisite_ids', isset($course) ? $course->prerequisites->pluck('id')->all() : []))->map(fn ($id) => (int) $id))
+        <div>
+            <p class="text-sm font-medium text-slate-700">Courses to complete first (optional)</p>
+            <p class="text-xs text-slate-500">Learners can't enrol in or open this course until they've passed every course ticked here.</p>
+            <div class="mt-2 grid max-h-56 gap-1.5 overflow-y-auto rounded-lg bg-slate-50 p-3 ring-1 ring-slate-200 sm:grid-cols-2">
+                @foreach ($otherCourses as $other)
+                    <label class="flex items-center gap-2 text-sm text-slate-700">
+                        <input type="checkbox" name="prerequisite_ids[]" value="{{ $other->id }}" class="rounded border-slate-300 text-brand-600 focus:ring-brand-600" @checked($chosenPrerequisites->contains($other->id))>
+                        <span class="truncate">{{ $other->title }}</span>
+                    </label>
+                @endforeach
+            </div>
+            @error('prerequisite_ids')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+            @error('prerequisite_ids.*')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+        </div>
+    @endif
+</fieldset>
+
 @php($currentPricingPolicy = old('pricing_policy', $course->pricing_policy?->value ?? 'free'))
 
 <div>

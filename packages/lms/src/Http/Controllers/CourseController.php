@@ -72,7 +72,9 @@ class CourseController extends Controller
 
     public function show(Request $request, string $tenant, Course $course): View
     {
-        $course->load(['lessons.attachments', 'modules'])->loadCount(['enrollments', 'reviews'])->loadAvg('reviews', 'stars');
+        $course->load(['lessons.attachments', 'modules', 'prerequisites'])->loadCount(['enrollments', 'reviews'])->loadAvg('reviews', 'stars');
+        // Share this instance so per-lesson lock checks reuse its loaded relations.
+        $course->lessons->each->setRelation('course', $course);
 
         if ($course->isEnrolled($request->user())) {
             app(CourseCertificateService::class)->issueIfPassedAndFree($course, $request->user());
@@ -90,11 +92,16 @@ class CourseController extends Controller
             'progress' => $course->progressPercentFor($request->user()),
             'isPassed' => $course->isPassedBy($request->user()),
             'certificate' => $course->certificateFor($request->user()),
+            'unmetPrerequisites' => $course->unmetPrerequisitesFor($request->user()),
         ]);
     }
 
     public function enroll(Request $request, string $tenant, Course $course): RedirectResponse
     {
+        if ($blocked = $this->prerequisiteBlock($request, $course)) {
+            return $blocked;
+        }
+
         if ($course->pricing_policy === CoursePricingPolicy::Paid && ! $course->isEnrolled($request->user())) {
             return redirect()->route('lms.courses.purchase.create', $course);
         }
@@ -107,5 +114,21 @@ class CourseController extends Controller
         return redirect()
             ->route('lms.courses.show', $course)
             ->with('status', "You're enrolled in {$course->title}.");
+    }
+
+    /**
+     * Send people back to the course page when it needs other courses passed
+     * first. Owners can still assign it; the lessons stay locked until then.
+     */
+    public static function prerequisiteBlock(Request $request, Course $course): ?RedirectResponse
+    {
+        $unmet = $course->unmetPrerequisitesFor($request->user());
+
+        if ($unmet->isEmpty() || $course->isEnrolled($request->user())) {
+            return null;
+        }
+
+        return redirect()->route('lms.courses.show', $course)
+            ->with('error', 'Complete '.$unmet->pluck('title')->map(fn ($title) => "\"{$title}\"")->join(', ', ' and ').' before starting this course.');
     }
 }

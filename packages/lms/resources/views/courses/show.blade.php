@@ -138,6 +138,31 @@
                     </div>
                 @endif
 
+                @if ($unmetPrerequisites->isNotEmpty())
+                    <div class="rounded-2xl bg-amber-50 p-5 ring-1 ring-amber-200 sm:p-6">
+                        <div class="flex items-start gap-3">
+                            <x-icon name="lock" class="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+                            <div class="min-w-0 flex-1">
+                                <p class="font-semibold text-amber-900">Complete {{ $unmetPrerequisites->count() === 1 ? 'this course' : 'these courses' }} first</p>
+                                <p class="mt-0.5 text-sm text-amber-800">This course opens once you've passed {{ $unmetPrerequisites->count() === 1 ? 'it' : 'each of them' }}.</p>
+                                <ul class="mt-4 space-y-2">
+                                    @foreach ($unmetPrerequisites as $prerequisite)
+                                        @php($started = $prerequisite->isEnrolled($user))
+                                        <li>
+                                            <a href="{{ route('lms.courses.show', $prerequisite) }}" class="flex items-center justify-between gap-4 rounded-xl bg-white px-4 py-3 ring-1 ring-amber-200 hover:ring-amber-300">
+                                                <span class="min-w-0 truncate text-sm font-medium text-slate-900">{{ $prerequisite->title }}</span>
+                                                <span class="shrink-0 text-xs font-semibold {{ $started ? 'text-brand-700' : 'text-slate-500' }}">
+                                                    {{ $started ? $prerequisite->progressPercentFor($user).'% done — continue' : 'Start' }} &rarr;
+                                                </span>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 @if ($isEnrolled && $course->assessment_mode->value === 'course_final' && $progress === 100 && ! $isPassed)
                     <div class="flex items-start gap-3 rounded-2xl bg-amber-50 p-5 ring-1 ring-amber-200">
                         <x-icon name="flag" class="mt-0.5 h-5 w-5 text-amber-600" />
@@ -219,7 +244,7 @@
                                                     </span>
                                                     <span class="flex shrink-0 items-center gap-3">
                                                         @if ($state['hasAccess'] && ! $state['unlocked'])
-                                                            <span class="hidden text-xs text-slate-500 sm:inline">Finish the step above to unlock</span>
+                                                            <span class="hidden text-xs text-slate-500 sm:inline">{{ $unmetPrerequisites->isNotEmpty() ? 'Complete the required course first' : 'Finish the step above to unlock' }}</span>
                                                         @endif
                                                         @if ($lesson->attachments->isNotEmpty())
                                                             <x-icon name="document" class="h-4 w-4 text-slate-400" title="Has attachments" />
@@ -278,7 +303,11 @@
                         @if ($isEnrolled)
                             <p class="text-sm font-medium text-slate-500">You're enrolled</p>
                             <x-progress class="mt-2" :value="$progress" label />
-                            @if ($nextLesson)
+                            @if ($unmetPrerequisites->isNotEmpty())
+                                <x-button :href="route('lms.courses.show', $unmetPrerequisites->first())" class="mt-5 w-full" size="lg" variant="secondary" icon="lock">
+                                    Complete {{ \Illuminate\Support\Str::limit($unmetPrerequisites->first()->title, 28) }} first
+                                </x-button>
+                            @elseif ($nextLesson)
                                 <x-button :href="route('lms.lessons.show', [$course, $nextLesson])" class="mt-5 w-full" size="lg" icon-right="arrow-right">
                                     {{ $progress === 0 ? 'Start learning' : 'Continue learning' }}
                                 </x-button>
@@ -291,6 +320,15 @@
                             @elseif ($progress === 100)
                                 <p class="mt-5 flex items-center justify-center gap-2 rounded-lg bg-emerald-50 py-3 text-sm font-semibold text-emerald-700"><x-icon name="check-circle" /> All lessons complete</p>
                             @endif
+                        @elseif ($unmetPrerequisites->isNotEmpty())
+                            <p class="text-3xl font-bold {{ $course->pricing_policy->value === 'paid' ? 'text-slate-900' : 'text-emerald-600' }}">
+                                {{ $course->pricing_policy->value === 'paid' ? $course->currency.' '.number_format($course->price, 2) : 'Free' }}
+                            </p>
+                            <p class="mt-4 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-sm text-amber-900 ring-1 ring-amber-200">
+                                <x-icon name="lock" class="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                                <span>Opens after you pass {{ $unmetPrerequisites->pluck('title')->map(fn ($title) => '"'.$title.'"')->join(', ', ' and ') }}.</span>
+                            </p>
+                            <x-button :href="route('lms.courses.show', $unmetPrerequisites->first())" class="mt-4 w-full" size="lg" icon-right="arrow-right">Go to {{ \Illuminate\Support\Str::limit($unmetPrerequisites->first()->title, 30) }}</x-button>
                         @else
                             @if ($course->pricing_policy->value === 'paid')
                                 <p class="text-3xl font-bold text-slate-900">{{ $course->currency }} {{ number_format($course->price, 2) }}</p>
@@ -313,6 +351,12 @@
                                 <li class="flex items-center gap-3"><x-icon name="play" class="h-4 w-4 text-slate-400" /> {{ $course->lessons->count() }} {{ \Illuminate\Support\Str::plural('lesson', $course->lessons->count()) }}</li>
                                 @if ($attachmentCount > 0)
                                     <li class="flex items-center gap-3"><x-icon name="document" class="h-4 w-4 text-slate-400" /> {{ $attachmentCount }} downloadable {{ \Illuminate\Support\Str::plural('resource', $attachmentCount) }}</li>
+                                @endif
+                                @if ($course->sequential_lessons)
+                                    <li class="flex items-center gap-3"><x-icon name="flag" class="h-4 w-4 text-slate-400" /> Lessons unlock in order</li>
+                                @endif
+                                @if ($course->prerequisites->isNotEmpty())
+                                    <li class="flex items-start gap-3"><x-icon name="lock" class="mt-0.5 h-4 w-4 text-slate-400" /> <span>Requires {{ $course->prerequisites->pluck('title')->join(', ', ' and ') }}</span></li>
                                 @endif
                                 @if ($course->assessment_mode->value !== 'none')
                                     <li class="flex items-center gap-3"><x-icon name="clipboard-check" class="h-4 w-4 text-slate-400" /> {{ $course->assessment_mode->value === 'course_final' ? 'Final exam' : 'Assessments along the way' }}</li>

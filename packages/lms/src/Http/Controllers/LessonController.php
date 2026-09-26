@@ -20,6 +20,7 @@ class LessonController extends Controller
 
         $user = $request->user();
         $lessons = $course->lessons;
+        $lessons->each->setRelation('course', $course);
         $index = $lessons->search(fn ($l) => $l->id === $lesson->id);
         $next = $index < $lessons->count() - 1 ? $lessons[$index + 1] : null;
 
