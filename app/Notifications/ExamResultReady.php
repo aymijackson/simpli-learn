@@ -4,18 +4,33 @@ namespace App\Notifications;
 
 use App\Models\Tenant;
 use Elibrary\Cbt\Models\ExamAttempt;
+use App\Notifications\Concerns\ShowsInApp;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class ExamResultReady extends Notification
 {
+    use ShowsInApp;
+
     public function __construct(public ExamAttempt $attempt, public Tenant $tenant)
     {
     }
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        // In-app first, so it's recorded even if the mail server is down.
+        return ['database', 'mail'];
+    }
+
+    protected function inApp(object $notifiable): array
+    {
+        return [
+            'title' => 'Your result is ready',
+            'body' => "{$this->attempt->exam->title}: {$this->attempt->score}% — ".($this->attempt->passed() ? 'passed.' : 'not passed this time.'),
+            'url' => route('cbt.attempts.result', ['tenant' => $this->tenant->slug, 'attempt' => $this->attempt->id]),
+            'icon' => 'clipboard-check',
+            'tone' => $this->attempt->passed() ? 'emerald' : 'rose',
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

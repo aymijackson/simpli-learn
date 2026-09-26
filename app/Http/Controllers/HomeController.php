@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Module;
+use App\Support\Achievements;
 use App\Support\Tenancy\Tenancy;
 use Elibrary\Cbt\Contracts\ExamPlacements;
 use Elibrary\Cbt\Models\Exam;
@@ -126,6 +127,11 @@ class HomeController extends Controller
                 ->latest()
                 ->take(6)
                 ->get();
+        }
+
+        if ($enabled->contains(Module::Lms) || $enabled->contains(Module::Cbt)) {
+            $data['streak'] = Achievements::streak($user);
+            $data['badges'] = Achievements::badgesFor($user);
         }
 
         return view('home', $data);

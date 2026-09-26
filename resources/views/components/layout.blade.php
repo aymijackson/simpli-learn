@@ -76,6 +76,8 @@
                         My learning
                     </a>
 
+                    <x-notification-bell />
+
                     @if ($user->isOwner())
                         <x-button :href="route('tenant.manage.dashboard')" variant="dark" size="sm" icon="dashboard" class="hidden sm:inline-flex">
                             Manage

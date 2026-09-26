@@ -2,7 +2,13 @@
 
 namespace Elibrary\Cbt\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Notifications\AttemptNeedsMarking;
+use App\Support\Achievements;
+use App\Support\SafeNotifier;
+use App\Support\Tenancy\Tenancy;
 use Elibrary\Cbt\Certificates\CertificateService;
 use Elibrary\Cbt\Contracts\ExamPlacements;
 use Elibrary\Cbt\Enums\NavigationMode;
@@ -125,6 +131,17 @@ class AttemptController extends Controller
 
             if ($attempt->passed()) {
                 app(CertificateService::class)->issueIfFree($attempt);
+            }
+
+            Achievements::recordActivity($attempt->user);
+            Achievements::evaluate($attempt->user);
+
+            if ($attempt->needs_marking) {
+                $tenant = app(Tenancy::class)->current();
+                SafeNotifier::send(
+                    User::where('tenant_id', $tenant->id)->where('role', UserRole::Owner)->active()->get(),
+                    new AttemptNeedsMarking($attempt, $tenant),
+                );
             }
 
             return redirect()->route('cbt.attempts.result', $attempt);

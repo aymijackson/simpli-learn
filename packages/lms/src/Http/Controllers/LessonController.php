@@ -3,6 +3,7 @@
 namespace Elibrary\Lms\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Support\Achievements;
 use Elibrary\Lms\Certificates\CourseCertificateService;
 use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Models\Lesson;
@@ -19,6 +20,9 @@ class LessonController extends Controller
         abort_unless($lesson->isUnlockedFor($request->user()), 403, 'Pass the required exam to unlock this lesson.');
 
         $user = $request->user();
+        if ($course->isEnrolled($user)) {
+            Achievements::recordActivity($user);
+        }
         $lessons = $course->lessons;
         $lessons->each->setRelation('course', $course);
         $index = $lessons->search(fn ($l) => $l->id === $lesson->id);
@@ -57,6 +61,8 @@ class LessonController extends Controller
 
         if ($course->isEnrolled($request->user())) {
             app(CourseCertificateService::class)->issueIfPassedAndFree($course, $request->user());
+            Achievements::recordActivity($request->user());
+            Achievements::evaluate($request->user());
         }
 
         return redirect()

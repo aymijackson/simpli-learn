@@ -62,6 +62,12 @@
             />
         @endif
 
+        @isset($streak)
+            <section id="achievements" class="scroll-mt-24">
+                @include('partials.achievements', ['self' => true])
+            </section>
+        @endisset
+
         {{-- Resume unfinished exams first: they're on a clock. --}}
         @if ($openAttempts->isNotEmpty())
             <section>

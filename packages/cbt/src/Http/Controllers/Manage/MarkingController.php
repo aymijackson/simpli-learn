@@ -5,6 +5,7 @@ namespace Elibrary\Cbt\Http\Controllers\Manage;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Notifications\ExamResultReady;
+use App\Support\Achievements;
 use App\Support\SafeNotifier;
 use App\Support\Tenancy\Tenancy;
 use Elibrary\Cbt\Certificates\CertificateService;
@@ -85,6 +86,7 @@ class MarkingController extends Controller
             }
             if ($wasAwaiting && $attempt->user) {
                 SafeNotifier::send($attempt->user, new ExamResultReady($attempt, app(Tenancy::class)->current()));
+                Achievements::evaluate($attempt->user);
             }
         }
 

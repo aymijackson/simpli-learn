@@ -3,7 +3,9 @@
 namespace App\Support;
 
 use App\Models\ActivityLog;
+use App\Models\LearningDay;
 use App\Models\User;
+use App\Models\UserBadge;
 use Elibrary\Cbt\Models\Certificate;
 use Elibrary\Cbt\Models\CertificatePayment;
 use Elibrary\Cbt\Models\ExamAttempt;
@@ -47,6 +49,8 @@ class PersonalData
         'library_ratings' => LibraryResourceRating::class,
         'library_reading_progress' => LibraryReadingProgress::class,
         'library_purchases' => LibraryResourcePurchase::class,
+        'learning_days' => LearningDay::class,
+        'badges' => UserBadge::class,
     ];
 
     /** Purely personal records removed on erasure. */
@@ -55,6 +59,8 @@ class PersonalData
         LibraryResourceRating::class,
         LibraryReadingProgress::class,
         LibraryHold::class,
+        LearningDay::class,
+        UserBadge::class,
     ];
 
     public static function export(User $user): array
@@ -80,6 +86,13 @@ class PersonalData
                 'created_at' => $user->created_at?->toIso8601String(),
             ],
             'records' => $records,
+            'notifications' => $user->notifications()->get()
+                ->map(fn ($notification) => [
+                    'when' => $notification->created_at->toIso8601String(),
+                    'title' => $notification->data['title'] ?? null,
+                    'body' => $notification->data['body'] ?? null,
+                    'read_at' => $notification->read_at?->toIso8601String(),
+                ])->all(),
             'activity' => ActivityLog::where('user_id', $user->id)->latest('id')->get()
                 ->map(fn (ActivityLog $entry) => [
                     'when' => $entry->created_at->toIso8601String(),
@@ -100,6 +113,8 @@ class PersonalData
             foreach (self::DELETE_ON_ERASE as $model) {
                 $model::withoutGlobalScopes()->where('user_id', $user->id)->delete();
             }
+
+            $user->notifications()->delete();
 
             // Hand back any books still on loan so copies aren't stuck.
             LibraryCheckout::withoutGlobalScopes()

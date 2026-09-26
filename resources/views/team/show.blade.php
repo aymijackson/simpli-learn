@@ -76,6 +76,16 @@
         @endif
     </div>
 
+    @if ($has('lms') || $has('cbt'))
+        <div class="mb-6">
+            @include('partials.achievements', [
+                'streak' => \App\Support\Achievements::streak($member),
+                'badges' => \App\Support\Achievements::badgesFor($member),
+                'self' => false,
+            ])
+        </div>
+    @endif
+
     <div class="grid gap-6 lg:grid-cols-3">
         <div class="space-y-6 lg:col-span-2">
             @if ($has('lms'))

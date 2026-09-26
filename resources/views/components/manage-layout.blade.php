@@ -53,6 +53,7 @@
 
             <div class="ml-auto flex items-center gap-2">
                 <x-button :href="route('tenant.home')" variant="secondary" size="sm" icon="eye" class="hidden sm:inline-flex">View site</x-button>
+                <x-notification-bell />
 
                 <details data-dropdown class="relative">
                     <summary class="flex cursor-pointer items-center gap-2 rounded-full p-0.5 hover:ring-4 hover:ring-slate-100">

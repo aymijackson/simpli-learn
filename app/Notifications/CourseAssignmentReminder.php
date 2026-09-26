@@ -4,18 +4,36 @@ namespace App\Notifications;
 
 use App\Models\Tenant;
 use Elibrary\Lms\Models\CourseAssignment;
+use App\Notifications\Concerns\ShowsInApp;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class CourseAssignmentReminder extends Notification
 {
+    use ShowsInApp;
+
     public function __construct(public CourseAssignment $assignment, public Tenant $tenant, public int $progress)
     {
     }
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        // In-app first, so it's recorded even if the mail server is down.
+        return ['database', 'mail'];
+    }
+
+    protected function inApp(object $notifiable): array
+    {
+        $course = $this->assignment->course;
+        $overdue = $this->assignment->due_at->isPast();
+
+        return [
+            'title' => $overdue ? 'Course overdue' : 'Course due soon',
+            'body' => "{$course->title} ".($overdue ? 'was' : 'is').' due '.$this->assignment->due_at->format('j M')." — you're {$this->progress}% through.",
+            'url' => route('lms.courses.show', ['tenant' => $this->tenant->slug, 'course' => $course->slug]),
+            'icon' => 'clock',
+            'tone' => $overdue ? 'rose' : 'amber',
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage
