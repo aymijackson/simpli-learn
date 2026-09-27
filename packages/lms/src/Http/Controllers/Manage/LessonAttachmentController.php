@@ -8,6 +8,7 @@ use Elibrary\Lms\Enums\LessonAttachmentType;
 use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Models\Lesson;
 use Elibrary\Lms\Models\LessonAttachment;
+use Elibrary\Lms\Support\Teaching;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +19,7 @@ class LessonAttachmentController extends Controller
 {
     public function store(Request $request, string $tenant, Course $course, Lesson $lesson): RedirectResponse
     {
+        Teaching::authorize($course);
         abort_unless($lesson->course_id === $course->id, 404);
 
         $validated = $request->validate([
@@ -58,6 +60,7 @@ class LessonAttachmentController extends Controller
 
     public function destroy(string $tenant, Course $course, Lesson $lesson, LessonAttachment $attachment): RedirectResponse
     {
+        Teaching::authorize($course);
         abort_unless($lesson->course_id === $course->id && $attachment->lesson_id === $lesson->id, 404);
 
         Storage::disk($attachment->disk())->delete($attachment->disk_path);

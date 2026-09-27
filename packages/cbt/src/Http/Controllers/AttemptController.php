@@ -139,7 +139,10 @@ class AttemptController extends Controller
             if ($attempt->needs_marking) {
                 $tenant = app(Tenancy::class)->current();
                 SafeNotifier::send(
-                    User::where('tenant_id', $tenant->id)->where('role', UserRole::Owner)->active()->get(),
+                    User::where('tenant_id', $tenant->id)->where('role', UserRole::Owner)->active()->get()
+                        ->merge(app(ExamPlacements::class)->markersFor($attempt->exam))
+                        ->unique('id')
+                        ->values(),
                     new AttemptNeedsMarking($attempt, $tenant),
                 );
             }

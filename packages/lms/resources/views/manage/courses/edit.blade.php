@@ -5,21 +5,54 @@
 
     <x-page-header title="Edit course" :subtitle="$course->title" />
 
-    <x-card class="mb-8">
-        <form method="POST" action="{{ route('lms.manage.courses.update', $course) }}" enctype="multipart/form-data" class="space-y-5">
-            @csrf
-            @method('PUT')
-            @include('lms::manage.courses._form')
-            <div class="flex items-center gap-4">
-                <x-button type="submit">Save changes</x-button>
-                @if ($course->is_published)
-                    <a href="{{ route('lms.courses.show', $course) }}" target="_blank" class="text-sm font-medium text-slate-500 underline hover:text-slate-700">
-                        View live &rarr;
-                    </a>
-                @endif
+    @if ($isOwner)
+        <x-card class="mb-8">
+            <form method="POST" action="{{ route('lms.manage.courses.update', $course) }}" enctype="multipart/form-data" class="space-y-5">
+                @csrf
+                @method('PUT')
+                @include('lms::manage.courses._form')
+                <div class="flex items-center gap-4">
+                    <x-button type="submit">Save changes</x-button>
+                    @if ($course->is_published)
+                        <a href="{{ route('lms.courses.show', $course) }}" target="_blank" class="text-sm font-medium text-slate-500 underline hover:text-slate-700">
+                            View live &rarr;
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </x-card>
+
+        <x-card class="mb-8">
+            <h2 class="text-base font-semibold text-slate-900">Instructors</h2>
+            <p class="mt-1 text-sm text-slate-500">Instructors can edit this course's lessons and modules, see its report and mark its written exam answers. Pricing, publishing and exams stay with owners. They're shown to learners on the course page.</p>
+            <form method="POST" action="{{ route('lms.manage.courses.instructors', $course) }}" class="mt-4 space-y-4">
+                @csrf
+                @method('PUT')
+                <fieldset>
+                    <legend class="sr-only">Choose instructors</legend>
+                    <div class="grid max-h-56 gap-1 overflow-y-auto rounded-lg p-2 ring-1 ring-slate-200 sm:grid-cols-2">
+                        @foreach ($members as $member)
+                            <label class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-slate-50">
+                                <input type="checkbox" name="instructor_ids[]" value="{{ $member->id }}" class="rounded text-brand-600 focus:ring-brand-600" @checked($instructorIds->contains($member->id))>
+                                <span class="truncate">{{ $member->name }}</span>
+                                @if ($member->isOwner())<span class="shrink-0 text-xs text-slate-500">owner</span>@endif
+                            </label>
+                        @endforeach
+                    </div>
+                </fieldset>
+                @error('instructor_ids')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
+                <x-button type="submit" variant="secondary" icon="check">Save instructors</x-button>
+            </form>
+        </x-card>
+    @else
+        <x-card class="mb-8">
+            <p class="text-sm text-slate-600">You teach this course: you can edit its modules and lessons below. Its title, pricing, publishing and exams are managed by the workspace owner.</p>
+            <div class="mt-3 flex flex-wrap gap-4 text-sm">
+                <a href="{{ route('lms.manage.courses.report', $course) }}" class="font-medium text-brand-700 hover:underline">Learner progress</a>
+                @if ($course->is_published)<a href="{{ route('lms.courses.show', $course) }}" class="font-medium text-brand-700 hover:underline">View as a learner</a>@endif
             </div>
-        </form>
-    </x-card>
+        </x-card>
+    @endif
 
     <div class="mb-4 flex items-center justify-between">
         <h2 class="text-sm font-semibold text-slate-900">Modules</h2>
@@ -36,6 +69,7 @@
                         @method('PUT')
                         <x-input type="text" name="title" label="Title" value="{{ $module->title }}" />
                         <x-input type="number" name="position" label="Position" value="{{ $module->position }}" min="0" />
+                        @if ($isOwner)
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-slate-700">Exam to unlock next module</label>
                             <select aria-label="Exam to unlock next module" name="exam_id" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
@@ -45,6 +79,9 @@
                                 @endforeach
                             </select>
                         </div>
+                        @else
+                            <p class="text-sm text-slate-500">Exam: {{ $module->exam?->title ?? 'none' }}</p>
+                        @endif
                         <div class="flex gap-2">
                             <x-button type="submit" variant="secondary">Save</x-button>
                         </div>

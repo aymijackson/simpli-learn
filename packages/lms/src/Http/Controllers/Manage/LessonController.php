@@ -7,6 +7,7 @@ use App\Support\Tenancy\Tenancy;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Models\Lesson;
+use Elibrary\Lms\Support\Teaching;
 use Elibrary\Lms\Support\VideoEmbed;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ class LessonController extends Controller
 {
     public function create(string $tenant, Course $course): View
     {
+        Teaching::authorize($course);
         return view('lms::manage.lessons.create', [
             'course' => $course,
             'nextPosition' => $course->lessons()->count(),
@@ -27,6 +29,7 @@ class LessonController extends Controller
 
     public function store(Request $request, string $tenant, Course $course): RedirectResponse
     {
+        Teaching::authorize($course);
         $course->lessons()->create($this->validated($request, $course));
 
         return redirect()->route('lms.manage.courses.edit', $course)->with('status', 'Lesson added.');
@@ -34,6 +37,7 @@ class LessonController extends Controller
 
     public function edit(string $tenant, Course $course, Lesson $lesson): View
     {
+        Teaching::authorize($course);
         abort_unless($lesson->course_id === $course->id, 404);
 
         return view('lms::manage.lessons.edit', [
@@ -46,6 +50,7 @@ class LessonController extends Controller
 
     public function update(Request $request, string $tenant, Course $course, Lesson $lesson): RedirectResponse
     {
+        Teaching::authorize($course);
         abort_unless($lesson->course_id === $course->id, 404);
 
         $lesson->update($this->validated($request, $course));
@@ -55,6 +60,7 @@ class LessonController extends Controller
 
     public function destroy(string $tenant, Course $course, Lesson $lesson): RedirectResponse
     {
+        Teaching::authorize($course);
         abort_unless($lesson->course_id === $course->id, 404);
 
         $lesson->delete();
@@ -83,6 +89,9 @@ class LessonController extends Controller
         ]);
 
         $validated['is_preview'] = $request->boolean('is_preview');
+        if (! $request->user()->isOwner()) {
+            unset($validated['exam_id']); // which exam gates a lesson is the owner's call
+        }
         $validated['require_video_watch'] = $request->boolean('require_video_watch');
         $validated['content'] = $validated['content'] ?? '';
 

@@ -8,6 +8,7 @@ use App\Http\Middleware\IdentifyTenant;
 use App\Http\Middleware\RequireTwoFactor;
 use App\Http\Middleware\SecurityHeaders;
 use App\Support\Tenancy\Tenancy;
+use Elibrary\Lms\Http\Middleware\EnsureCanTeach;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -52,6 +53,14 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Every owner-only route (team, manage pages in all packages) is an
         // owner check plus the two-step login requirement.
+        // Owners, and members assigned to teach a course: only the pages for
+        // course content, reports and marking (each also checks the course).
+        $middleware->group('teach', [
+            EnsureCanTeach::class,
+            RequireTwoFactor::class,
+            ContentSharing::class.':strict',
+        ]);
+
         $middleware->group('owner', [
             EnsureTenantOwner::class,
             RequireTwoFactor::class,

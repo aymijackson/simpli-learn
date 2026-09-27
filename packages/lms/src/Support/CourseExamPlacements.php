@@ -47,6 +47,16 @@ class CourseExamPlacements implements ExamPlacements
         return SharedCourses::examIds($tenantId);
     }
 
+    public function markableExamIds(User $user): ?array
+    {
+        return $user->isOwner() ? null : Teaching::examIds($user);
+    }
+
+    public function markersFor(Exam $exam): Collection
+    {
+        return $this->lmsEnabled() ? Teaching::instructorsForExam($exam->id) : collect();
+    }
+
     public function accessBlockReason(Exam $exam, User $user): ?string
     {
         $placements = $this->placements($exam);

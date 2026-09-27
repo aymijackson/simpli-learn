@@ -71,7 +71,7 @@ class CourseController extends Controller
 
     public function show(Request $request, string $tenant, Course $course): View
     {
-        $course->load(['lessons.attachments', 'modules', 'prerequisites', 'paths'])->loadCount(['enrollments', 'reviews'])->loadAvg('reviews', 'stars');
+        $course->load(['lessons.attachments', 'modules', 'prerequisites', 'paths', 'instructors'])->loadCount(['enrollments', 'reviews'])->loadAvg('reviews', 'stars');
         // Share this instance so per-lesson lock checks reuse its loaded relations.
         $course->lessons->each->setRelation('course', $course);
 

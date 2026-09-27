@@ -1,14 +1,18 @@
-<x-app-layout title="Manage Courses">
-    <x-page-header title="Manage courses" subtitle="Create, edit, and publish your organization's courses.">
-        <x-slot:actions>
-            <x-button :href="route('lms.manage.payment-gateways.edit')" variant="secondary">Payment gateways</x-button>
-            <x-button :href="route('lms.manage.course-purchases.index')" variant="secondary">Purchases</x-button>
-            <x-button :href="route('lms.manage.courses.create')">New course</x-button>
-        </x-slot:actions>
-    </x-page-header>
+<x-app-layout :title="$isOwner ? 'Manage Courses' : 'My courses'">
+    @if ($isOwner)
+        <x-page-header title="Manage courses" subtitle="Create, edit, and publish your organization's courses.">
+            <x-slot:actions>
+                <x-button :href="route('lms.manage.payment-gateways.edit')" variant="secondary">Payment gateways</x-button>
+                <x-button :href="route('lms.manage.course-purchases.index')" variant="secondary">Purchases</x-button>
+                <x-button :href="route('lms.manage.courses.create')">New course</x-button>
+            </x-slot:actions>
+        </x-page-header>
+    @else
+        <x-page-header title="My courses" subtitle="The courses you teach: edit their lessons, follow learners' progress and mark written answers." />
+    @endif
 
     @if ($courses->isEmpty())
-        <x-empty-state title="No courses yet" description="Create your first course to get started." />
+        <x-empty-state title="No courses yet" :description="$isOwner ? 'Create your first course to get started.' : 'You haven\'t been assigned any courses to teach yet.'" />
     @else
         <x-card :padded="false">
             <ul class="divide-y divide-slate-200">
@@ -25,13 +29,15 @@
                                 <x-badge color="brand" icon="globe">All workspaces</x-badge>
                             @endif
                             <x-badge :color="$course->is_published ? 'green' : 'slate'">{{ $course->is_published ? 'Published' : 'Draft' }}</x-badge>
-                            <a href="{{ route('lms.manage.courses.report', $course) }}" class="inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-500"><x-icon name="chart-bar" class="h-4 w-4" /> Report &amp; assign</a>
+                            <a href="{{ route('lms.manage.courses.report', $course) }}" class="inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-500"><x-icon name="chart-bar" class="h-4 w-4" /> {{ $isOwner ? 'Report & assign' : 'Report' }}</a>
                             <a href="{{ route('lms.manage.courses.edit', $course) }}" class="text-sm font-medium text-brand-600 hover:text-brand-500">Edit</a>
+                            @if ($isOwner)
                             <form method="POST" action="{{ route('lms.manage.courses.destroy', $course) }}" onsubmit="return confirm('{{ $course->is_public ? 'This course is open to every workspace — deleting it removes it, and everyone\'s progress in it, everywhere. ' : '' }}Delete this course and all its lessons?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-500">Delete</button>
                             </form>
+                            @endif
                         </div>
                     </li>
                 @endforeach

@@ -45,7 +45,7 @@
             </button>
 
             <nav class="flex min-w-0 items-center gap-2 text-sm" aria-label="Breadcrumb">
-                <a href="{{ route('tenant.manage.dashboard') }}" class="hidden shrink-0 font-medium text-slate-500 hover:text-slate-800 sm:block">Manage</a>
+                <a href="{{ auth()->user()->isOwner() ? route('tenant.manage.dashboard') : route('lms.manage.courses.index') }}" class="hidden shrink-0 font-medium text-slate-500 hover:text-slate-800 sm:block">{{ auth()->user()->isOwner() ? 'Manage' : 'Teaching' }}</a>
                 @if ($title && ! request()->routeIs('tenant.manage.dashboard'))
                     <x-icon name="chevron-right" class="hidden h-4 w-4 text-slate-300 sm:block" />
                     <span class="truncate font-semibold text-slate-900">{{ $title }}</span>

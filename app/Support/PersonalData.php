@@ -115,6 +115,7 @@ class PersonalData
             }
 
             $user->notifications()->delete();
+            DB::table('course_instructors')->where('user_id', $user->id)->delete();
 
             // Hand back any books still on loan so copies aren't stuck.
             LibraryCheckout::withoutGlobalScopes()

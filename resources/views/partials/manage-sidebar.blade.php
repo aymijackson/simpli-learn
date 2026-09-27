@@ -4,11 +4,22 @@
     <x-workspace-mark :tenant="$tenant" dark />
     <div class="min-w-0">
         <p class="truncate text-sm font-semibold text-white">{{ $tenant->name }}</p>
-        <p class="text-xs text-slate-400">Workspace admin</p>
+        <p class="text-xs text-slate-400">{{ auth()->user()->isOwner() ? 'Workspace admin' : 'Teaching' }}</p>
     </div>
 </div>
 
 <nav class="flex-1 overflow-y-auto px-3 pb-6">
+    @unless (auth()->user()->isOwner())
+        {{-- Instructors: only the courses they teach, and their marking. --}}
+        <x-sidebar-section title="Teaching">
+            <div class="pt-1"></div>
+            <x-sidebar-link :href="route('lms.manage.courses.index')" icon="academic-cap" :active="request()->routeIs('lms.manage.courses.*', 'lms.manage.lessons.*', 'lms.manage.modules.*')">My courses</x-sidebar-link>
+            @if ($hasModule(\App\Enums\Module::Cbt))
+                <x-sidebar-link :href="route('cbt.manage.marking.index')" icon="pencil" :badge="$reviews['marking'] ?? null" :active="request()->routeIs('cbt.manage.marking.*')">Marking</x-sidebar-link>
+            @endif
+            <x-sidebar-link :href="route('tenant.home')" icon="eye">View learner site</x-sidebar-link>
+        </x-sidebar-section>
+    @else
     <x-sidebar-section>
         <div class="pt-4"></div>
         <x-sidebar-link :href="route('tenant.manage.dashboard')" icon="dashboard" :active="request()->routeIs('tenant.manage.dashboard')">Dashboard</x-sidebar-link>
@@ -49,6 +60,7 @@
         <x-sidebar-link :href="route('tenant.manage.activity')" icon="list" :active="request()->routeIs('tenant.manage.activity')">Activity log</x-sidebar-link>
         <x-sidebar-link :href="route('tenant.home')" icon="eye">View learner site</x-sidebar-link>
     </x-sidebar-section>
+    @endunless
 </nav>
 
 <div class="border-t border-white/5 p-3">
@@ -58,7 +70,7 @@
         </span>
         <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-medium text-white">{{ auth()->user()->name }}</p>
-            <p class="truncate text-xs text-slate-400">Owner</p>
+            <p class="truncate text-xs text-slate-400">{{ auth()->user()->isOwner() ? 'Owner' : 'Instructor' }}</p>
         </div>
         <form method="POST" action="{{ route('tenant.logout') }}">
             @csrf

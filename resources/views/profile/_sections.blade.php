@@ -40,6 +40,15 @@
                         @error('email', 'details')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                 </div>
+                @if ($user->tenant_id)
+                    <div>
+                        <label for="bio" class="mb-1.5 block text-sm font-medium text-slate-700">About you <span class="font-normal text-slate-500">(optional)</span></label>
+                        <textarea id="bio" name="bio" rows="3" maxlength="1000"
+                                  class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">{{ old('bio', $user->bio) }}</textarea>
+                        <p class="mt-1 text-xs text-slate-500">Shown to learners on the courses you teach.</p>
+                        @error('bio', 'details')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                @endif
                 <x-button type="submit">Save details</x-button>
             </form>
         </x-card>

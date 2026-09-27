@@ -9,6 +9,7 @@ use App\Support\Achievements;
 use App\Support\SafeNotifier;
 use App\Support\Tenancy\Tenancy;
 use Elibrary\Cbt\Certificates\CertificateService;
+use Elibrary\Cbt\Contracts\ExamPlacements;
 use Elibrary\Cbt\Enums\AnswerType;
 use Elibrary\Cbt\Models\ExamAttempt;
 use Illuminate\Http\RedirectResponse;
@@ -23,11 +24,10 @@ use Illuminate\View\View;
  */
 class MarkingController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         return view('cbt::manage.marking.index', [
-            'attempts' => ExamAttempt::where('needs_marking', true)
-                ->whereNotNull('submitted_at')
+            'attempts' => $this->queue($request)
                 ->with(['exam', 'user'])
                 ->oldest('submitted_at')
                 ->get()
@@ -36,20 +36,22 @@ class MarkingController extends Controller
         ]);
     }
 
-    public function show(string $tenant, ExamAttempt $attempt): View
+    public function show(Request $request, string $tenant, ExamAttempt $attempt): View
     {
         abort_unless($attempt->isSubmitted(), 404);
+        $this->authorizeMarking($request, $attempt);
 
         return view('cbt::manage.marking.show', [
             'attempt' => $attempt->load(['exam', 'user']),
             'essays' => $this->essays($attempt),
-            'queue' => ExamAttempt::where('needs_marking', true)->whereNotNull('submitted_at')->count(),
+            'queue' => $this->queue($request)->count(),
         ]);
     }
 
     public function update(Request $request, string $tenant, ExamAttempt $attempt): RedirectResponse
     {
         abort_unless($attempt->isSubmitted(), 404);
+        $this->authorizeMarking($request, $attempt);
 
         $essays = $this->essays($attempt);
         $rules = [];
@@ -90,11 +92,27 @@ class MarkingController extends Controller
             }
         }
 
-        $next = ExamAttempt::where('needs_marking', true)->whereNotNull('submitted_at')->oldest('submitted_at')->first();
+        $next = $this->queue($request)->oldest('submitted_at')->first();
 
         return $next
             ? redirect()->route('cbt.manage.marking.show', $next)->with('status', "Marked — {$attempt->user?->name} scored {$attempt->score}%. Here's the next one.")
             : redirect()->route('cbt.manage.marking.index')->with('status', "Marked — {$attempt->user?->name} scored {$attempt->score}%. Nothing left to mark.");
+    }
+
+    /** Attempts waiting for marking that this person may mark. */
+    private function queue(Request $request)
+    {
+        $examIds = app(ExamPlacements::class)->markableExamIds($request->user());
+
+        return ExamAttempt::where('needs_marking', true)
+            ->whereNotNull('submitted_at')
+            ->when($examIds !== null, fn ($query) => $query->whereIn('exam_id', $examIds));
+    }
+
+    private function authorizeMarking(Request $request, ExamAttempt $attempt): void
+    {
+        $examIds = app(ExamPlacements::class)->markableExamIds($request->user());
+        abort_unless($examIds === null || in_array($attempt->exam_id, $examIds, true), 403, 'You can only mark exams in the courses you teach.');
     }
 
     /** @return \Illuminate\Support\Collection<int, array{question: \Elibrary\Cbt\Models\Question, answer: \Elibrary\Cbt\Models\ExamAttemptAnswer}> */

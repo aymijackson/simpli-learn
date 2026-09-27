@@ -40,6 +40,7 @@ class ProfileController extends Controller
                     ->where(fn ($query) => $user->tenant_id ? $query->where('tenant_id', $user->tenant_id) : $query->whereNull('tenant_id'))
                     ->ignore($user->id),
             ],
+            'bio' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $user->fill($validated)->save();

@@ -81,6 +81,10 @@
                         <x-button :href="route('tenant.manage.dashboard')" variant="dark" size="sm" icon="dashboard" class="hidden sm:inline-flex">
                             Manage
                         </x-button>
+                    @elseif ($hasModule(\App\Enums\Module::Lms) && \Elibrary\Lms\Support\Teaching::isInstructor($user))
+                        <x-button :href="route('lms.manage.courses.index')" variant="dark" size="sm" icon="academic-cap" class="hidden sm:inline-flex">
+                            Teaching
+                        </x-button>
                     @endif
 
                     <details data-dropdown class="relative">

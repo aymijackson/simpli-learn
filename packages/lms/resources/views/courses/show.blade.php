@@ -64,7 +64,8 @@
                     <p class="mt-4 text-base leading-relaxed text-slate-300">{{ \Illuminate\Support\Str::limit(trim(strip_tags($course->description)), 220) }}</p>
                 @endif
 
-                @if ($course->reviews_count > 0 || $course->instructor_name)
+                @php($byline = $course->instructors->isNotEmpty() ? $course->instructors->pluck('name')->join(', ', ' and ') : $course->instructor_name)
+                @if ($course->reviews_count > 0 || $byline)
                     <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
                         @if ($course->reviews_count > 0)
                             <a href="#reviews" class="inline-flex items-center gap-1.5 hover:underline">
@@ -73,8 +74,8 @@
                                 <span class="text-slate-400">({{ number_format($course->reviews_count) }} {{ \Illuminate\Support\Str::plural('rating', $course->reviews_count) }})</span>
                             </a>
                         @endif
-                        @if ($course->instructor_name)
-                            <span class="text-slate-300">Created by <a href="#instructor" class="font-medium text-white underline decoration-white/30 hover:decoration-white">{{ $course->instructor_name }}</a></span>
+                        @if ($byline)
+                            <span class="text-slate-300">Taught by <a href="#instructor" class="font-medium text-white underline decoration-white/30 hover:decoration-white">{{ $byline }}</a></span>
                         @endif
                     </div>
                 @endif
@@ -274,7 +275,26 @@
                     @endif
                 </section>
 
-                @if ($course->instructor_name)
+                @if ($course->instructors->isNotEmpty())
+                    <section id="instructor" class="scroll-mt-24 rounded-2xl bg-white p-6 ring-1 ring-slate-200/80 sm:p-8">
+                        <h2 class="text-xl font-bold text-slate-900">{{ $course->instructors->count() > 1 ? 'Your instructors' : 'Your instructor' }}</h2>
+                        <div class="mt-5 space-y-5">
+                            @foreach ($course->instructors as $instructor)
+                                <div class="flex gap-4">
+                                    <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-100 font-display text-lg font-bold text-brand-700">
+                                        {{ collect(explode(' ', $instructor->name))->filter()->take(2)->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->implode('') }}
+                                    </span>
+                                    <div>
+                                        <p class="text-base font-semibold text-slate-900">{{ $instructor->name }}</p>
+                                        @if ($instructor->bio)
+                                            <p class="mt-1 text-sm leading-relaxed whitespace-pre-line text-slate-600">{{ $instructor->bio }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </section>
+                @elseif ($course->instructor_name)
                     <section id="instructor" class="scroll-mt-24 rounded-2xl bg-white p-6 ring-1 ring-slate-200/80 sm:p-8">
                         <h2 class="text-xl font-bold text-slate-900">Your instructor</h2>
                         <div class="mt-5 flex gap-4">

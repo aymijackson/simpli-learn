@@ -11,14 +11,14 @@
 @endphp
 
 <x-app-layout :title="$course->title.' — completion'">
-    <a href="{{ route('lms.manage.courses.index') }}" class="mb-6 inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-800">
-        <x-icon name="arrow-left" class="h-4 w-4" /> Courses
+    <a href="{{ auth()->user()->isOwner() ? route('lms.manage.courses.index') : route('lms.manage.courses.edit', $course) }}" class="mb-6 inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-800">
+        <x-icon name="arrow-left" class="h-4 w-4" /> {{ auth()->user()->isOwner() ? 'Courses' : $course->title }}
     </a>
 
     <x-page-header :title="$course->title" subtitle="Who has completed this course, who is part-way through, and who hasn't started." eyebrow="Completion report">
         <x-slot:actions>
             <x-button :href="route('lms.manage.courses.report.export', $course)" variant="secondary" icon="download">Export CSV</x-button>
-            @unless ($course->isShared())
+            @unless ($course->isShared() || ! auth()->user()->isOwner())
                 <x-button :href="route('lms.manage.courses.edit', $course)" variant="secondary" icon="pencil">Edit course</x-button>
             @endunless
         </x-slot:actions>
@@ -43,6 +43,7 @@
         <div class="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-inset ring-red-600/20">{{ $errors->first() }}</div>
     @endif
 
+    @if (auth()->user()->isOwner())
     {{-- Assign --}}
     <x-card class="mb-6">
         <details @if ($errors->any()) open @endif>
@@ -94,6 +95,7 @@
             </form>
         </details>
     </x-card>
+    @endif
 
     {{-- Filters --}}
     <div class="scrollbar-none -mx-1 mb-4 flex gap-2 overflow-x-auto px-1">

@@ -5,6 +5,7 @@ namespace Elibrary\Cbt\Contracts;
 use App\Models\User;
 use Elibrary\Cbt\Models\Exam;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
 
 /**
  * Lets another module (the LMS) place exams inside its own content — a
@@ -22,6 +23,17 @@ interface ExamPlacements
      * shared course), or null when nothing can be shared.
      */
     public function sharedExamIds(int $tenantId): ?Builder;
+
+    /**
+     * Exam ids this person may mark (instructors: exams in their courses),
+     * or null when they may mark everything (owners).
+     *
+     * @return array<int, int>|null
+     */
+    public function markableExamIds(User $user): ?array;
+
+    /** Staff besides owners to tell when an attempt at this exam needs marking. */
+    public function markersFor(Exam $exam): Collection;
 
     /** Why this person can't take the exam yet because of where it sits, or null. */
     public function accessBlockReason(Exam $exam, User $user): ?string;

@@ -48,30 +48,35 @@ Route::middleware(['web', 'auth', 'module:lms'])
         Route::post('/courses/{course:slug}/certificate/purchase', [CoursePurchaseController::class, 'storeCertificate'])->name('courses.certificate-purchase.store');
         Route::get('/courses/{course:slug}/certificate', [CourseCertificateController::class, 'download'])->name('courses.certificate.download');
 
-        Route::middleware('owner')->prefix('manage')->name('manage.')->group(function () {
+        // Course content, reports and marking: owners and the course's instructors.
+        Route::middleware('teach')->prefix('manage')->name('manage.')->group(function () {
             Route::get('/courses', [ManageCourseController::class, 'index'])->name('courses.index');
-            Route::get('/courses/create', [ManageCourseController::class, 'create'])->name('courses.create');
-            Route::post('/courses', [ManageCourseController::class, 'store'])->name('courses.store');
             Route::get('/courses/{course:slug}/edit', [ManageCourseController::class, 'edit'])->name('courses.edit');
             Route::get('/courses/{course:slug}/report', [ManageCourseReportController::class, 'show'])->middleware('content:shared')->name('courses.report');
             Route::get('/courses/{course:slug}/report.csv', [ManageCourseReportController::class, 'export'])->middleware('content:shared')->name('courses.report.export');
-            Route::post('/courses/{course:slug}/assignments', [ManageCourseReportController::class, 'assign'])->middleware('content:shared')->name('courses.assign');
-            Route::delete('/courses/{course:slug}/assignments/{assignment}', [ManageCourseReportController::class, 'unassign'])->middleware('content:shared')->name('courses.unassign');
-            Route::put('/courses/{course:slug}', [ManageCourseController::class, 'update'])->name('courses.update');
-            Route::delete('/courses/{course:slug}', [ManageCourseController::class, 'destroy'])->name('courses.destroy');
-
             Route::get('/courses/{course:slug}/lessons/create', [ManageLessonController::class, 'create'])->name('lessons.create');
             Route::post('/courses/{course:slug}/lessons', [ManageLessonController::class, 'store'])->name('lessons.store');
             Route::get('/courses/{course:slug}/lessons/{lesson}/edit', [ManageLessonController::class, 'edit'])->name('lessons.edit');
             Route::put('/courses/{course:slug}/lessons/{lesson}', [ManageLessonController::class, 'update'])->name('lessons.update');
             Route::delete('/courses/{course:slug}/lessons/{lesson}', [ManageLessonController::class, 'destroy'])->name('lessons.destroy');
-
             Route::post('/courses/{course:slug}/lessons/{lesson}/attachments', [ManageLessonAttachmentController::class, 'store'])->name('lessons.attachments.store');
             Route::delete('/courses/{course:slug}/lessons/{lesson}/attachments/{attachment}', [ManageLessonAttachmentController::class, 'destroy'])->name('lessons.attachments.destroy');
-
             Route::post('/courses/{course:slug}/modules', [ManageCourseModuleController::class, 'store'])->name('modules.store');
             Route::put('/courses/{course:slug}/modules/{module}', [ManageCourseModuleController::class, 'update'])->name('modules.update');
             Route::delete('/courses/{course:slug}/modules/{module}', [ManageCourseModuleController::class, 'destroy'])->name('modules.destroy');
+        });
+
+        Route::middleware('owner')->prefix('manage')->name('manage.')->group(function () {
+            Route::put('/courses/{course:slug}/instructors', [ManageCourseController::class, 'instructors'])->name('courses.instructors');
+            Route::get('/courses/create', [ManageCourseController::class, 'create'])->name('courses.create');
+            Route::post('/courses', [ManageCourseController::class, 'store'])->name('courses.store');
+            Route::post('/courses/{course:slug}/assignments', [ManageCourseReportController::class, 'assign'])->middleware('content:shared')->name('courses.assign');
+            Route::delete('/courses/{course:slug}/assignments/{assignment}', [ManageCourseReportController::class, 'unassign'])->middleware('content:shared')->name('courses.unassign');
+            Route::put('/courses/{course:slug}', [ManageCourseController::class, 'update'])->name('courses.update');
+            Route::delete('/courses/{course:slug}', [ManageCourseController::class, 'destroy'])->name('courses.destroy');
+
+
+
 
             Route::get('/paths', [ManageLearningPathController::class, 'index'])->name('paths.index');
             Route::get('/paths/create', [ManageLearningPathController::class, 'create'])->name('paths.create');

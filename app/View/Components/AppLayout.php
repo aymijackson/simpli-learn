@@ -6,6 +6,7 @@ use App\Enums\Module;
 use App\Http\Controllers\ManageDashboardController;
 use App\Models\Tenant;
 use App\Support\Tenancy\Tenancy;
+use Elibrary\Cbt\Contracts\ExamPlacements;
 use Elibrary\Cbt\Models\ExamAttempt;
 use Illuminate\Support\Collection;
 use Illuminate\View\Component;
@@ -37,12 +38,16 @@ class AppLayout extends Component
             ->values();
 
         if ($this->isManageRoute()) {
-            $this->reviews = ManageDashboardController::pendingPaymentReviews(
+            $user = auth()->user();
+            $this->reviews = $user?->isOwner() ? ManageDashboardController::pendingPaymentReviews(
                 $this->enabledModules->map(fn ($tenantModule) => $tenantModule->module)
-            );
+            ) : [];
 
-            if ($this->hasModule(Module::Cbt)) {
-                $toMark = ExamAttempt::where('needs_marking', true)->whereNotNull('submitted_at')->count();
+            if ($this->hasModule(Module::Cbt) && $user) {
+                $examIds = app(ExamPlacements::class)->markableExamIds($user);
+                $toMark = ExamAttempt::where('needs_marking', true)->whereNotNull('submitted_at')
+                    ->when($examIds !== null, fn ($query) => $query->whereIn('exam_id', $examIds))
+                    ->count();
                 if ($toMark > 0) {
                     $this->reviews['marking'] = $toMark;
                 }

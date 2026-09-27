@@ -11,6 +11,7 @@ use App\Support\Tenancy\Tenancy;
 use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Models\CourseAssignment;
 use Elibrary\Lms\Reports\CourseProgressReport;
+use Elibrary\Lms\Support\Teaching;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -26,6 +27,7 @@ class CourseReportController extends Controller
 {
     public function show(Request $request, string $tenant, Course $course): View
     {
+        Teaching::authorize($course);
         $rows = CourseProgressReport::build($course, $this->people());
         $filter = $request->string('status')->value();
 
@@ -52,6 +54,7 @@ class CourseReportController extends Controller
 
     public function export(string $tenant, Course $course): StreamedResponse
     {
+        Teaching::authorize($course);
         $rows = CourseProgressReport::build($course, $this->people());
         ActivityLog::record('reports.exported', "Downloaded the completion report for {$course->title}", $course);
 

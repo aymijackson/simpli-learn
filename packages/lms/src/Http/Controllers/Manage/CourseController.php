@@ -3,7 +3,11 @@
 namespace Elibrary\Lms\Http\Controllers\Manage;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Scopes\TenantScope;
+use App\Models\User;
+use App\Notifications\InstructorAssigned;
+use App\Support\SafeNotifier;
 use App\Support\Tenancy\Tenancy;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Lms\Enums\AssessmentMode;
@@ -12,6 +16,7 @@ use Elibrary\Lms\Enums\CourseLevel;
 use Elibrary\Lms\Enums\CoursePricingPolicy;
 use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Support\SharedCourses;
+use Elibrary\Lms\Support\Teaching;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,15 +28,21 @@ use Illuminate\View\View;
 
 class CourseController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $tenantId = app(Tenancy::class)->id();
+        $isOwner = $request->user()->isOwner();
 
         return view('lms::manage.courses.index', [
-            'courses' => Course::withCount('lessons')->latest()->get(),
+            'isOwner' => $isOwner,
+            // Instructors see just the courses they teach.
+            'courses' => Course::withCount('lessons')
+                ->when(! $isOwner, fn ($query) => $query->whereIn('id', Teaching::courseIds($request->user())))
+                ->latest()
+                ->get(),
             // Read directly (the back office is strict): published courses
             // other workspaces open to all or share with this one.
-            'sharedCourses' => Course::withoutGlobalScope(TenantScope::class)
+            'sharedCourses' => ! $isOwner ? collect() : Course::withoutGlobalScope(TenantScope::class)
                 ->whereIn('id', SharedCourses::ids($tenantId))
                 ->with('tenant')
                 ->orderBy('title')
@@ -55,10 +66,15 @@ class CourseController extends Controller
         return redirect()->route('lms.manage.courses.edit', $course)->with('status', 'Course created.');
     }
 
-    public function edit(string $tenant, Course $course): View
+    public function edit(Request $request, string $tenant, Course $course): View
     {
+        Teaching::authorize($course);
+
         return view('lms::manage.courses.edit', [
             'course' => $course,
+            'isOwner' => $request->user()->isOwner(),
+            'members' => $request->user()->isOwner() ? app(Tenancy::class)->current()->users()->active()->orderBy('name')->get() : collect(),
+            'instructorIds' => $course->instructors()->pluck('users.id'),
             'lessons' => $course->lessons,
             'modules' => $course->modules,
             'exams' => Exam::orderBy('title')->get(),
@@ -72,6 +88,29 @@ class CourseController extends Controller
         $this->syncPrerequisites($request, $course);
 
         return redirect()->route('lms.manage.courses.edit', $course)->with('status', 'Course updated.');
+    }
+
+    /** Owners choose who teaches the course. */
+    public function instructors(Request $request, string $tenant, Course $course): RedirectResponse
+    {
+        $workspace = app(Tenancy::class)->current();
+        $validated = $request->validate([
+            'instructor_ids' => ['nullable', 'array'],
+            'instructor_ids.*' => ['integer', Rule::exists('users', 'id')->where('tenant_id', $workspace->id)->whereNull('deactivated_at')],
+        ]);
+
+        $ids = collect($validated['instructor_ids'] ?? [])->map(fn ($id) => (int) $id)->unique()->values();
+        $before = $course->instructors()->pluck('users.id');
+        $course->instructors()->sync($ids->mapWithKeys(fn ($id) => [$id => ['tenant_id' => $workspace->id]])->all());
+
+        $added = User::whereIn('id', $ids->diff($before))->get();
+        foreach ($added as $person) {
+            SafeNotifier::send($person, new InstructorAssigned($course, $workspace, $request->user()->name));
+        }
+
+        ActivityLog::record('courses.instructors', "Set the instructors for {$course->title}: ".(User::whereIn('id', $ids)->pluck('name')->join(', ') ?: 'none'), $course);
+
+        return redirect()->route('lms.manage.courses.edit', $course)->with('status', 'Instructors updated.');
     }
 
     public function destroy(string $tenant, Course $course): RedirectResponse

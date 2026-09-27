@@ -46,6 +46,13 @@ Route::middleware(['web', 'auth', 'module:cbt'])
         Route::get('/attempts/{attempt}/certificate/pay/bank-transfer/{payment}', [CertificatePaymentController::class, 'bankTransferShow'])->name('attempts.certificate-payment.bank-transfer.show');
         Route::post('/attempts/{attempt}/certificate/pay/bank-transfer/{payment}', [CertificatePaymentController::class, 'bankTransferReport'])->name('attempts.certificate-payment.bank-transfer.report');
 
+        // Marking: owners, and instructors for the exams in their courses.
+        Route::middleware('teach')->prefix('manage')->name('manage.')->group(function () {
+            Route::get('/marking', [ManageMarkingController::class, 'index'])->middleware('content:shared')->name('marking.index');
+            Route::get('/marking/{attempt}', [ManageMarkingController::class, 'show'])->middleware('content:shared')->name('marking.show');
+            Route::put('/marking/{attempt}', [ManageMarkingController::class, 'update'])->middleware('content:shared')->name('marking.update');
+        });
+
         Route::middleware('owner')->prefix('manage')->name('manage.')->group(function () {
             Route::get('/exams', [ManageExamController::class, 'index'])->name('exams.index');
             Route::get('/exams/create', [ManageExamController::class, 'create'])->name('exams.create');
@@ -80,9 +87,6 @@ Route::middleware(['web', 'auth', 'module:cbt'])
             Route::get('/analytics/{exam:slug}/export.pdf', [ManageAnalyticsController::class, 'exportPdf'])->name('analytics.export.pdf');
             Route::get('/analytics/{exam:slug}/attempts/{attempt}/integrity', [ManageAnalyticsController::class, 'integrityEvents'])->name('analytics.attempts.integrity');
 
-            Route::get('/marking', [ManageMarkingController::class, 'index'])->middleware('content:shared')->name('marking.index');
-            Route::get('/marking/{attempt}', [ManageMarkingController::class, 'show'])->middleware('content:shared')->name('marking.show');
-            Route::put('/marking/{attempt}', [ManageMarkingController::class, 'update'])->middleware('content:shared')->name('marking.update');
 
             Route::get('/certificates/settings', [ManageCertificateSettingsController::class, 'edit'])->name('certificates.settings.edit');
             Route::put('/certificates/settings', [ManageCertificateSettingsController::class, 'update'])->name('certificates.settings.update');

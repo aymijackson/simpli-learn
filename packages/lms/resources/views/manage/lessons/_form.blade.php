@@ -36,6 +36,7 @@
     </div>
 @endif
 
+@if (auth()->user()->isOwner())
 <div>
     <label class="mb-1.5 block text-sm font-medium text-slate-700">Exam required to unlock the next lesson (optional)</label>
     <select aria-label="Exam required to unlock the next lesson (optional)" name="exam_id" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
@@ -46,6 +47,9 @@
     </select>
     <p class="mt-1 text-xs text-slate-500">Only enforced when the course's exam requirements are set to "after each lesson".</p>
 </div>
+@elseif (($lesson ?? null)?->exam)
+    <p class="text-sm text-slate-500">Exam to unlock the next lesson: {{ $lesson->exam->title }} <span class="text-slate-500">(set by an owner)</span></p>
+@endif
 
 <label class="flex items-center gap-2 text-sm text-slate-600">
     <input type="checkbox" name="is_preview" value="1" class="rounded border-slate-300 text-brand-600 focus:ring-brand-600" @checked(old('is_preview', $lesson->is_preview ?? false))>

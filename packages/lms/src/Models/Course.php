@@ -152,6 +152,12 @@ class Course extends Model implements SharedAcrossTenants
             ->orderBy('title');
     }
 
+    /** Members who teach this course. */
+    public function instructors(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'course_instructors')->withPivot('tenant_id')->withTimestamps()->orderBy('name');
+    }
+
     /** Learning paths that include this course. */
     public function paths(): BelongsToMany
     {
