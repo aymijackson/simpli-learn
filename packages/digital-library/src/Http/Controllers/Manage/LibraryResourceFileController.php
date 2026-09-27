@@ -34,10 +34,11 @@ class LibraryResourceFileController extends Controller
             "That file type isn't allowed for {$format->label()} files."
         );
 
-        $disk = $accessLevel === LibraryFileAccessLevel::Open ? 'public' : 'local';
-        $directory = ($accessLevel === LibraryFileAccessLevel::Open ? 'library-files' : 'secure-library-files').'/'.$resource->tenant_id;
-        $filename = Str::random(40).'.'.$file->getClientOriginalExtension();
-        $path = $file->storeAs($directory, $filename, $disk);
+        // Private storage for every access level: files are only ever served
+        // through the app, which re-checks access on each request.
+        $directory = 'library-files/'.$resource->tenant_id;
+        $filename = Str::random(40).'.'.strtolower($file->getClientOriginalExtension());
+        $path = $file->storeAs($directory, $filename, 'local');
 
         $resource->files()->create([
             'title' => $validated['title'],

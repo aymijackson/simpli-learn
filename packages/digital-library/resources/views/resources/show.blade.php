@@ -27,49 +27,60 @@
                 @endif
             </div>
 
-            @if ($resource->external_url || $resource->requires_checkout)
+            @if ($resource->external_url || $resource->requires_checkout || $resource->isPaid())
                 <x-card class="space-y-4">
-                    @if ($resource->external_url)
-                        <x-button :href="$resource->external_url" target="_blank" rel="noopener noreferrer" class="w-full" icon-right="external">
-                            Open resource
-                        </x-button>
-                    @endif
-
-                    @if ($resource->requires_checkout)
-                        @if ($myCheckout)
-                            <div class="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
-                                You have this checked out &mdash; due {{ $myCheckout->due_at->format('M j, Y') }}
-                                @if ($myCheckout->isOverdue())
-                                    <span class="font-semibold text-red-600">(overdue)</span>
-                                @endif
-                            </div>
-                            <form method="POST" action="{{ route('library.checkouts.return', $myCheckout) }}">
-                                @csrf
-                                <x-button type="submit" variant="secondary" class="w-full">Return</x-button>
-                            </form>
-                        @elseif ($myHold && $myHold->hasLiveOffer())
-                            <p class="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">A copy is ready for you &mdash; claim by {{ $myHold->expires_at->format('M j, Y') }}.</p>
-                            <form method="POST" action="{{ route('library.holds.claim', $myHold) }}">
-                                @csrf
-                                <x-button type="submit" class="w-full">Claim your copy</x-button>
-                            </form>
-                        @elseif ($myHold)
-                            <p class="rounded-lg bg-slate-50 p-3 text-center text-sm text-slate-600">You're #{{ $myHold->position() }} on the waitlist.</p>
-                        @elseif ($resource->pricing_policy->value === 'paid' && ! $resource->isPurchasedBy(auth()->user()))
-                            <p class="text-2xl font-bold text-slate-900">{{ $resource->currency }} {{ number_format($resource->price, 2) }}</p>
+                    @if ($needsPurchase)
+                        {{-- A paid resource is bought first, whether or not it is also lent out. --}}
+                        <p class="text-2xl font-bold text-slate-900">{{ $resource->currency }} {{ number_format($resource->price, 2) }}</p>
+                        @if ($pendingPurchase?->gateway?->value === 'bank_transfer' && ! empty($pendingPurchase->metadata['reported_paid_at']))
+                            <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">Your bank transfer is awaiting confirmation by the organization.</p>
+                        @else
                             <x-button :href="route('library.resources.purchase.create', $resource)" class="w-full">
                                 Buy for {{ number_format($resource->price, 2) }} {{ $resource->currency }}
                             </x-button>
-                        @else
-                            <form method="POST" action="{{ route('library.resources.borrow', $resource) }}">
-                                @csrf
-                                <x-button type="submit" class="w-full" icon="bookmark">
-                                    {{ $resource->hasCopyAvailable() ? 'Borrow' : 'Join waitlist' }}
-                                </x-button>
-                            </form>
-                            @if (! $resource->hasCopyAvailable())
-                                <p class="text-center text-xs text-slate-500">No copies available right now.</p>
+                        @endif
+                    @else
+                        @if ($resource->external_url && $hasAccess)
+                            <x-button :href="$resource->external_url" target="_blank" rel="noopener noreferrer" class="w-full" icon-right="external">
+                                Open resource
+                            </x-button>
+                        @endif
+
+                        @if ($resource->requires_checkout)
+                            @if ($myCheckout)
+                                <div class="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+                                    You have this checked out &mdash; due {{ $myCheckout->due_at->format('M j, Y') }}
+                                    @if ($myCheckout->isOverdue())
+                                        <span class="font-semibold text-red-600">(overdue)</span>
+                                    @endif
+                                </div>
+                                <form method="POST" action="{{ route('library.checkouts.return', $myCheckout) }}">
+                                    @csrf
+                                    <x-button type="submit" variant="secondary" class="w-full">Return</x-button>
+                                </form>
+                            @elseif ($myHold && $myHold->hasLiveOffer())
+                                <p class="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">A copy is ready for you &mdash; claim by {{ $myHold->expires_at->format('M j, Y') }}.</p>
+                                <form method="POST" action="{{ route('library.holds.claim', $myHold) }}">
+                                    @csrf
+                                    <x-button type="submit" class="w-full">Claim your copy</x-button>
+                                </form>
+                            @elseif ($myHold)
+                                <p class="rounded-lg bg-slate-50 p-3 text-center text-sm text-slate-600">You're #{{ $myHold->position() }} on the waitlist.</p>
+                            @elseif (! $hasAccess)
+                                <form method="POST" action="{{ route('library.resources.borrow', $resource) }}">
+                                    @csrf
+                                    <x-button type="submit" class="w-full" icon="bookmark">
+                                        {{ $resource->hasCopyAvailable() ? 'Borrow' : 'Join waitlist' }}
+                                    </x-button>
+                                </form>
+                                @if (! $resource->hasCopyAvailable())
+                                    <p class="text-center text-xs text-slate-500">No copies available right now.</p>
+                                @endif
                             @endif
+                        @endif
+
+                        @if ($resource->isPaid() && ! $resource->requires_checkout && $resource->isPurchasedBy(auth()->user()))
+                            <p class="flex items-center gap-2 text-sm text-emerald-700"><x-icon name="check" class="h-4 w-4" /> You own this resource.</p>
                         @endif
                     @endif
                 </x-card>
@@ -140,12 +151,11 @@
             @endif
 
             @if ($resource->files->isNotEmpty())
-                @php($hasAccess = $resource->isAccessibleTo(auth()->user()))
                 <section>
                     <h2 class="text-lg font-bold text-slate-900">Files</h2>
                     @if (! $hasAccess)
                         <p class="mt-3 flex items-center gap-2 rounded-xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-200">
-                            <x-icon name="lock" class="h-4 w-4" /> This resource requires checkout to access its files.
+                            <x-icon name="lock" class="h-4 w-4" /> {{ $needsPurchase ? 'Buy this resource to access its files.' : 'Borrow this resource to access its files.' }}
                         </p>
                     @else
                         <div class="mt-3 divide-y divide-slate-100 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/80">

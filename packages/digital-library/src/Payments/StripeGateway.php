@@ -73,7 +73,7 @@ class StripeGateway implements PaymentGatewayContract
             ->first();
 
         if (! $purchase || ! $purchase->gateway_reference) {
-            return ['paid' => false, 'gateway_reference' => null];
+            return ['paid' => false, 'gateway_reference' => null, 'amount' => null, 'currency' => null];
         }
 
         $client = new StripeClient($credential->credentials['secret_key'] ?? '');
@@ -82,6 +82,8 @@ class StripeGateway implements PaymentGatewayContract
         return [
             'paid' => $session->payment_status === 'paid',
             'gateway_reference' => $session->id,
+            'amount' => $session->amount_total !== null ? $session->amount_total / 100 : null,
+            'currency' => $session->currency ? strtoupper($session->currency) : null,
         ];
     }
 }

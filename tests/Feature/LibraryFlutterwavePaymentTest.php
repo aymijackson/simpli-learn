@@ -91,7 +91,7 @@ class LibraryFlutterwavePaymentTest extends TestCase
         $purchase = LibraryResourcePurchase::where('resource_id', $resource->id)->first();
 
         Http::fake(['api.flutterwave.com/v3/transactions/verify_by_reference*' => Http::response([
-            'status' => 'success', 'data' => ['status' => 'successful', 'id' => 998877, 'tx_ref' => $purchase->reference],
+            'status' => 'success', 'data' => ['status' => 'successful', 'id' => 998877, 'tx_ref' => $purchase->reference, 'amount' => 15, 'currency' => 'NGN'],
         ])]);
 
         $payload = json_encode(['event' => 'charge.completed', 'data' => ['tx_ref' => $purchase->reference, 'status' => 'successful']]);

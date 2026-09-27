@@ -20,6 +20,11 @@ interface PaymentGatewayContract
 
     public function resolvePurchaseFromWebhook(Request $request): ?LibraryResourcePurchase;
 
-    /** @return array{paid: bool, gateway_reference: ?string} */
+    /**
+     * What the gateway itself says was charged. `amount` is in major units
+     * (e.g. 10.50), so LibraryPaymentConfirmation can check it matches.
+     *
+     * @return array{paid: bool, gateway_reference: ?string, amount?: float|null, currency?: string|null}
+     */
     public function verifyByReference(string $reference, LibraryPaymentGatewayCredential $credential): array;
 }

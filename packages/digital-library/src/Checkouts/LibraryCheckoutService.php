@@ -21,11 +21,7 @@ class LibraryCheckoutService
         return DB::transaction(function () use ($resource, $user) {
             $resource = LibraryResource::query()->whereKey($resource->id)->lockForUpdate()->firstOrFail();
 
-            abort_if(
-                $resource->pricing_policy->value === 'paid' && ! $resource->isPurchasedBy($user),
-                403,
-                'Purchase this resource before borrowing it.'
-            );
+            abort_if($resource->needsPurchaseBy($user), 403, 'Purchase this resource before borrowing it.');
 
             $existingCheckout = $resource->checkouts()->where('user_id', $user->id)->whereNull('returned_at')->first();
             if ($existingCheckout) {

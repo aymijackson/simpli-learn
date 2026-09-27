@@ -63,6 +63,8 @@ class FlutterwaveGateway implements PaymentGatewayContract
         return [
             'paid' => ($response['data']['status'] ?? null) === 'successful',
             'gateway_reference' => (string) ($response['data']['id'] ?? $reference),
+            'amount' => isset($response['data']['amount']) ? (float) $response['data']['amount'] : null,
+            'currency' => $response['data']['currency'] ?? null,
         ];
     }
 }

@@ -20,7 +20,7 @@ class LibraryResourcePurchaseController extends Controller
 {
     public function create(Request $request, string $tenant, LibraryResource $resource): View
     {
-        abort_if($resource->isPurchasedBy($request->user()), 404);
+        $this->ensurePurchasable($request, $resource);
 
         $tenantId = app(Tenancy::class)->id();
         $gateways = collect(LibraryPaymentGateway::cases())->filter(
@@ -38,7 +38,7 @@ class LibraryResourcePurchaseController extends Controller
 
     public function store(Request $request, string $tenant, LibraryResource $resource): RedirectResponse
     {
-        abort_if($resource->isPurchasedBy($request->user()), 404);
+        $this->ensurePurchasable($request, $resource);
 
         $validated = $request->validate([
             'gateway' => ['required', Rule::in(array_column(LibraryPaymentGateway::cases(), 'value'))],
@@ -70,6 +70,14 @@ class LibraryResourcePurchaseController extends Controller
         abort_unless($gatewayService, 404);
 
         return redirect()->away($gatewayService->checkoutUrl($purchase, $credential));
+    }
+
+    /** Only a published, priced, paid resource the person hasn't bought yet. */
+    private function ensurePurchasable(Request $request, LibraryResource $resource): void
+    {
+        abort_unless($resource->is_published && $resource->isPaid(), 404);
+        abort_unless((float) $resource->price > 0 && $resource->currency, 404);
+        abort_if($resource->isPurchasedBy($request->user()), 404);
     }
 
     public function bankTransferShow(Request $request, string $tenant, LibraryResource $resource, LibraryResourcePurchase $purchase): View

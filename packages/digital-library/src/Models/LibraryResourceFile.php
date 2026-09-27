@@ -37,8 +37,13 @@ class LibraryResourceFile extends Model
         return $this->hasMany(LibraryReadingProgress::class, 'resource_file_id');
     }
 
+    /**
+     * All library files live on the private disk and are only ever served
+     * through the app (see LibraryResourceFileController). Open files used
+     * to sit on the public disk; a migration moved them.
+     */
     public function disk(): string
     {
-        return $this->access_level === LibraryFileAccessLevel::Open ? 'public' : 'local';
+        return 'local';
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Scopes\TenantScope;
 use Elibrary\Library\Enums\LibraryPaymentGateway;
 use Elibrary\Library\Models\LibraryPaymentGatewayCredential;
+use Elibrary\Library\Payments\LibraryPaymentConfirmation;
 use Elibrary\Library\Payments\PaymentGatewayFactory;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -35,13 +36,8 @@ class WebhookController extends Controller
 
         abort_unless($credential && $service->verifyWebhookSignature($request, $credential), 403);
 
-        if ($purchase->isPending()) {
-            $result = $service->verifyByReference($purchase->reference, $credential);
-
-            if ($result['paid']) {
-                $purchase->markPaid(null, $result['gateway_reference']);
-            }
-        }
+        // Re-checks with the gateway, including the amount and currency.
+        app(LibraryPaymentConfirmation::class)->confirm($purchase);
 
         return response()->noContent();
     }

@@ -65,6 +65,9 @@ class PaystackGateway implements PaymentGatewayContract
         return [
             'paid' => ($response['data']['status'] ?? null) === 'success',
             'gateway_reference' => (string) ($response['data']['reference'] ?? $reference),
+            // Paystack reports the amount in the currency's subunit (kobo, cents).
+            'amount' => isset($response['data']['amount']) ? $response['data']['amount'] / 100 : null,
+            'currency' => $response['data']['currency'] ?? null,
         ];
     }
 }

@@ -15,7 +15,7 @@ class LibraryReaderController extends Controller
     public function show(Request $request, string $tenant, LibraryResource $resource, LibraryResourceFile $file): View
     {
         abort_unless($file->resource_id === $resource->id, 404);
-        abort_unless($resource->is_published, 404);
+        abort_unless($resource->is_published || $request->user()->isOwner(), 404);
         abort_unless($resource->isAccessibleTo($request->user()), 403);
         abort_unless(in_array($file->format, [LibraryFileFormat::Pdf, LibraryFileFormat::Epub], true), 404);
 

@@ -71,11 +71,13 @@ class LibraryResourceFileTest extends TestCase
         ]);
         $file = $resource->fresh()->files()->first();
 
-        $this->actingAs($member)
-            ->get("/t/acme/library/resources/physics-101/files/{$file->id}/download")
-            ->assertRedirect();
+        $response = $this->actingAs($member)->get("/t/acme/library/resources/physics-101/files/{$file->id}/download");
+        $response->assertOk();
+        $this->assertStringContainsString('attachment; filename=summary.txt', $response->headers->get('Content-Disposition'));
 
-        Storage::disk('public')->assertExists($file->disk_path);
+        // Served by the app from private storage — never a public link.
+        Storage::disk('local')->assertExists($file->disk_path);
+        Storage::disk('public')->assertMissing($file->disk_path);
     }
 
     public function test_a_secure_file_is_streamable_on_a_resource_that_does_not_require_checkout(): void

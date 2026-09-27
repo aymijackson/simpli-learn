@@ -3,10 +3,13 @@
 namespace Elibrary\Library\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Elibrary\Library\Enums\LibraryPaymentGateway;
 use Elibrary\Library\Models\LibraryResource;
+use Elibrary\Library\Payments\LibraryPaymentConfirmation;
 use Elibrary\Library\Models\ResourceTag;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Throwable;
 
 class ResourceController extends Controller
 {
@@ -54,6 +57,7 @@ class ResourceController extends Controller
         abort_unless($resource->is_published, 404);
 
         $user = $request->user();
+        $this->confirmReturningPayment($request, $resource);
 
         return view('library::resources.show', [
             'resource' => $resource->load('tags', 'files'),
@@ -61,6 +65,48 @@ class ResourceController extends Controller
             'myHold' => $resource->holds()->where('user_id', $user->id)->whereNull('fulfilled_at')->first(),
             'myRating' => $resource->ratingFor($user),
             'isFavorited' => $resource->isFavoritedBy($user),
+            'needsPurchase' => $resource->needsPurchaseBy($user),
+            'pendingPurchase' => $resource->pendingPurchaseFor($user),
+            'hasAccess' => $resource->isAccessibleTo($user),
         ]);
+    }
+
+    /**
+     * Card gateways send the learner back here after checkout (Paystack adds
+     * ?reference=, Flutterwave ?tx_ref=, Stripe ?paid=1). Confirm their
+     * pending payment with the gateway right away rather than waiting on the
+     * webhook, which may be late or not set up.
+     */
+    private function confirmReturningPayment(Request $request, LibraryResource $resource): void
+    {
+        if (! $request->hasAny(['reference', 'trxref', 'tx_ref', 'transaction_id', 'paid'])) {
+            return;
+        }
+
+        // Someone who started checkout twice may have paid the older attempt.
+        $pending = $resource->purchases()
+            ->where('user_id', $request->user()->id)
+            ->where('status', 'pending')
+            ->where('gateway', '!=', LibraryPaymentGateway::BankTransfer->value)
+            ->latest('id')->take(3)->get();
+
+        if ($pending->isEmpty()) {
+            return;
+        }
+
+        $confirmation = app(LibraryPaymentConfirmation::class);
+        foreach ($pending as $purchase) {
+            try {
+                if ($confirmation->confirm($purchase)) {
+                    session()->now('status', __('Payment received — this resource is yours.'));
+
+                    return;
+                }
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+
+        session()->now('status', __("We're still waiting for the payment provider to confirm your payment. Refresh in a minute."));
     }
 }

@@ -8,6 +8,12 @@
         </x-slot:actions>
     </x-page-header>
 
+    @if ($errors->any())
+        <div role="alert" class="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-inset ring-red-600/20">
+            {{ $errors->first() }}
+        </div>
+    @endif
+
     @if ($resources->isEmpty())
         <x-empty-state title="No resources yet" description="Add your first resource to get started." />
     @else

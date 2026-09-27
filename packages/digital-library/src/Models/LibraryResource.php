@@ -93,19 +93,40 @@ class LibraryResource extends Model
         return $this->favorites()->where('user_id', $user->id)->exists();
     }
 
+    public function isPaid(): bool
+    {
+        return $this->pricing_policy === LibraryPricingPolicy::Paid;
+    }
+
+    /** A paid resource this person still has to buy before anything else. */
+    public function needsPurchaseBy(User $user): bool
+    {
+        return $this->isPaid() && ! $user->isOwner() && ! $this->isPurchasedBy($user);
+    }
+
     /**
-     * The single access predicate used everywhere a file/reader needs to
-     * decide whether a user can actually get to a resource's content — a
-     * resource that doesn't require checkout is open to the whole tenant;
-     * one that does needs an active checkout.
+     * The single access predicate used everywhere a file, the reader or the
+     * external link decides whether a person can get to the content. Owners
+     * always can. A paid resource must be bought first — whether or not it
+     * is also lent out — and one that is lent out needs an active checkout.
      */
     public function isAccessibleTo(User $user): bool
     {
-        if (! $this->requires_checkout) {
+        if ($user->isOwner()) {
             return true;
         }
 
-        return $this->hasActiveCheckoutFor($user);
+        if ($this->needsPurchaseBy($user)) {
+            return false;
+        }
+
+        return ! $this->requires_checkout || $this->hasActiveCheckoutFor($user);
+    }
+
+    /** A card payment started but not yet confirmed, or a bank transfer awaiting the owner. */
+    public function pendingPurchaseFor(User $user): ?LibraryResourcePurchase
+    {
+        return $this->purchases()->where('user_id', $user->id)->where('status', 'pending')->latest('id')->first();
     }
 
     public function hasActiveCheckoutFor(User $user): bool

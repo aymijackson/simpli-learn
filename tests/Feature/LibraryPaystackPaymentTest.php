@@ -90,7 +90,7 @@ class LibraryPaystackPaymentTest extends TestCase
         $purchase = LibraryResourcePurchase::where('resource_id', $resource->id)->first();
 
         Http::fake(["api.paystack.co/transaction/verify/{$purchase->reference}" => Http::response([
-            'status' => true, 'data' => ['status' => 'success', 'reference' => $purchase->reference],
+            'status' => true, 'data' => ['status' => 'success', 'reference' => $purchase->reference, 'amount' => 1000, 'currency' => 'USD'],
         ])]);
 
         $payload = json_encode(['event' => 'charge.success', 'data' => ['reference' => $purchase->reference, 'status' => 'success']]);

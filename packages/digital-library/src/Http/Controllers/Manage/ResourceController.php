@@ -8,6 +8,7 @@ use Elibrary\Library\Models\LibraryResource;
 use Elibrary\Library\Models\ResourceTag;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -50,9 +51,25 @@ class ResourceController extends Controller
         return redirect()->route('library.manage.resources.index')->with('status', 'Resource updated.');
     }
 
+    /**
+     * Purchases are financial records, so a resource someone has paid for
+     * (or is paying for) can't be deleted — unpublish it instead. Otherwise
+     * its stored files and cover go with it rather than lingering on disk.
+     */
     public function destroy(string $tenant, LibraryResource $resource): RedirectResponse
     {
+        if ($resource->purchases()->whereIn('status', ['paid', 'pending'])->exists()) {
+            return back()->withErrors(['resource' => "\"{$resource->title}\" has purchases, so it can't be deleted — they're payment records. Unpublish it instead to hide it from members."]);
+        }
+
+        $paths = $resource->files()->pluck('disk_path')->all();
+
         $resource->delete();
+
+        Storage::disk('local')->delete($paths);
+        if ($resource->cover_image_path) {
+            Storage::disk('public')->delete($resource->cover_image_path);
+        }
 
         return redirect()->route('library.manage.resources.index')->with('status', 'Resource deleted.');
     }
@@ -79,9 +96,16 @@ class ResourceController extends Controller
             'total_copies' => ['nullable', 'integer', 'min:1'],
             'checkout_duration_days' => ['nullable', 'integer', 'min:1'],
             'pricing_policy' => ['nullable', Rule::in(array_column(\Elibrary\Library\Enums\LibraryPricingPolicy::cases(), 'value'))],
-            'price' => ['nullable', 'numeric', 'min:0'],
-            'currency' => ['nullable', 'string', 'size:3'],
+            'price' => ['nullable', 'required_if:pricing_policy,paid', 'numeric', 'min:0.01', 'max:99999999'],
+            'currency' => ['nullable', 'required_if:pricing_policy,paid', 'string', 'size:3', 'alpha'],
+        ], [
+            'price.required_if' => 'Set a price for a paid resource.',
+            'currency.required_if' => 'Set a currency for a paid resource.',
         ]);
+
+        if (isset($validated['currency'])) {
+            $validated['currency'] = strtoupper($validated['currency']);
+        }
 
         $validated['is_published'] = $request->boolean('is_published');
         $validated['requires_checkout'] = $request->boolean('requires_checkout');
@@ -98,6 +122,9 @@ class ResourceController extends Controller
             $directory = 'library-covers/'.$tenantId;
             $filename = Str::random(40).'.'.$file->getClientOriginalExtension();
             $validated['cover_image_path'] = $file->storeAs($directory, $filename, 'public');
+            if ($resource?->cover_image_path) {
+                Storage::disk('public')->delete($resource->cover_image_path);
+            }
         }
 
         return $validated;
