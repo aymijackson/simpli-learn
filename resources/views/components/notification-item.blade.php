@@ -18,9 +18,9 @@
         </span>
         <span class="min-w-0 flex-1">
             <span class="flex items-center gap-2">
-                <span class="truncate text-sm {{ $unread ? 'font-semibold text-slate-900' : 'font-medium text-slate-700' }}">{{ $data['title'] ?? 'Notification' }}</span>
+                <span class="truncate text-sm {{ $unread ? 'font-semibold text-slate-900' : 'font-medium text-slate-700' }}">{{ $data['title'] ?? __('Notification') }}</span>
                 @if ($unread)
-                    <span class="h-2 w-2 shrink-0 rounded-full bg-brand-600" aria-label="Unread"></span>
+                    <span class="h-2 w-2 shrink-0 rounded-full bg-brand-600" aria-label="{{ __('Unread') }}"></span>
                 @endif
             </span>
             <span class="{{ $compact ? 'line-clamp-2' : '' }} mt-0.5 block text-xs text-slate-500">{{ $data['body'] ?? '' }}</span>

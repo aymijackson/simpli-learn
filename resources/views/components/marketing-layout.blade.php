@@ -12,7 +12,7 @@
     ];
 @endphp
 <!DOCTYPE html>
-<html lang="en" class="h-full scroll-smooth bg-white">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full scroll-smooth bg-white">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">

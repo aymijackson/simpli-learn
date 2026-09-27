@@ -47,8 +47,8 @@
 
         <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
             <div class="lg:max-w-[calc(100%-24rem)] lg:pr-10">
-                <nav class="flex items-center gap-2 text-sm text-slate-400" aria-label="Breadcrumb">
-                    <a href="{{ route('lms.courses.index') }}" class="hover:text-white">Courses</a>
+                <nav class="flex items-center gap-2 text-sm text-slate-400" aria-label="{{ __('Breadcrumb') }}">
+                    <a href="{{ route('lms.courses.index') }}" class="hover:text-white">{{ __('Courses') }}</a>
                     <x-icon name="chevron-right" class="h-4 w-4" />
                     <span class="truncate text-slate-300">{{ $course->title }}</span>
                 </nav>
@@ -71,23 +71,23 @@
                             <a href="#reviews" class="inline-flex items-center gap-1.5 hover:underline">
                                 <span class="font-bold text-amber-300">{{ number_format($course->reviews_avg_stars, 1) }}</span>
                                 <x-stars :value="$course->reviews_avg_stars" />
-                                <span class="text-slate-400">({{ number_format($course->reviews_count) }} {{ \Illuminate\Support\Str::plural('rating', $course->reviews_count) }})</span>
+                                <span class="text-slate-400">({{ number_format($course->reviews_count) }} {{ trans_choice('rating|ratings', $course->reviews_count) }})</span>
                             </a>
                         @endif
                         @if ($byline)
-                            <span class="text-slate-300">Taught by <a href="#instructor" class="font-medium text-white underline decoration-white/30 hover:decoration-white">{{ $byline }}</a></span>
+                            <span class="text-slate-300">{{ __('Taught by') }} <a href="#instructor" class="font-medium text-white underline decoration-white/30 hover:decoration-white">{{ $byline }}</a></span>
                         @endif
                     </div>
                 @endif
 
                 <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-300">
-                    <span class="inline-flex items-center gap-1.5"><x-icon name="play" class="h-4 w-4 text-brand-300" /> {{ $course->lessons->count() }} {{ \Illuminate\Support\Str::plural('lesson', $course->lessons->count()) }}</span>
+                    <span class="inline-flex items-center gap-1.5"><x-icon name="play" class="h-4 w-4 text-brand-300" /> {{ $course->lessons->count() }} {{ trans_choice('lesson|lessons', $course->lessons->count()) }}</span>
                     @if ($course->modules->isNotEmpty())
-                        <span class="inline-flex items-center gap-1.5"><x-icon name="stack" class="h-4 w-4 text-brand-300" /> {{ $course->modules->count() }} {{ \Illuminate\Support\Str::plural('module', $course->modules->count()) }}</span>
+                        <span class="inline-flex items-center gap-1.5"><x-icon name="stack" class="h-4 w-4 text-brand-300" /> {{ $course->modules->count() }} {{ trans_choice('module|modules', $course->modules->count()) }}</span>
                     @endif
-                    <span class="inline-flex items-center gap-1.5"><x-icon name="users" class="h-4 w-4 text-brand-300" /> {{ number_format($course->enrollments_count) }} {{ \Illuminate\Support\Str::plural('learner', $course->enrollments_count) }}</span>
+                    <span class="inline-flex items-center gap-1.5"><x-icon name="users" class="h-4 w-4 text-brand-300" /> {{ number_format($course->enrollments_count) }} {{ trans_choice('learner|learners', $course->enrollments_count) }}</span>
                     @if ($course->certificate_policy->value !== 'none')
-                        <span class="inline-flex items-center gap-1.5"><x-icon name="trophy" class="h-4 w-4 text-amber-300" /> Certificate of completion</span>
+                        <span class="inline-flex items-center gap-1.5"><x-icon name="trophy" class="h-4 w-4 text-amber-300" /> {{ __('Certificate of completion') }}</span>
                     @endif
                     @if ($course->durationLabel())
                         <span class="inline-flex items-center gap-1.5"><x-icon name="clock" class="h-4 w-4 text-brand-300" /> {{ $course->durationLabel() }}</span>
@@ -95,20 +95,20 @@
                     @if ($course->level)
                         <span class="inline-flex items-center gap-1.5"><x-icon name="chart-bar" class="h-4 w-4 text-brand-300" /> {{ $course->level->label() }}</span>
                     @endif
-                    <span class="inline-flex items-center gap-1.5 text-slate-400"><x-icon name="calendar" class="h-4 w-4" /> Updated {{ $course->updated_at->format('M Y') }}</span>
+                    <span class="inline-flex items-center gap-1.5 text-slate-400"><x-icon name="calendar" class="h-4 w-4" /> {{ __('Updated :updated_at', ['updated_at' => $course->updated_at->translatedFormat('M Y')]) }}</span>
                 </div>
 
                 @if ($isEnrolled)
                     <div class="mt-6 max-w-md">
                         <div class="mb-2 flex items-center justify-between text-sm">
-                            <span class="font-medium text-white">Your progress</span>
-                            <span class="text-slate-300">{{ $progress }}% complete</span>
+                            <span class="font-medium text-white">{{ __('Your progress') }}</span>
+                            <span class="text-slate-300">{{ __(':progress% complete', ['progress' => $progress]) }}</span>
                         </div>
                         <div class="h-2 overflow-hidden rounded-full bg-white/15">
                             <div class="h-full rounded-full {{ $progress === 100 ? 'bg-emerald-400' : 'bg-brand-400' }}" style="width: {{ $progress }}%"></div>
                         </div>
                         @if ($course->assessment_mode->value !== 'none')
-                            <x-badge :color="$isPassed ? 'green' : 'amber'" class="mt-3">{{ $isPassed ? 'Passed' : 'Not yet passed' }}</x-badge>
+                            <x-badge :color="$isPassed ? 'green' : 'amber'" class="mt-3">{{ $isPassed ? __('Passed') : __('Not yet passed') }}</x-badge>
                         @endif
                     </div>
                 @endif
@@ -125,15 +125,15 @@
                         <div class="flex items-center gap-4">
                             <span class="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600"><x-icon name="trophy" class="h-6 w-6" /></span>
                             <div>
-                                <p class="font-semibold text-slate-900">Congratulations — you've completed this course!</p>
-                                <p class="text-sm text-slate-600">Your certificate of completion is ready.</p>
+                                <p class="font-semibold text-slate-900">{{ __('Congratulations — you\'ve completed this course!') }}</p>
+                                <p class="text-sm text-slate-600">{{ __('Your certificate of completion is ready.') }}</p>
                             </div>
                         </div>
                         @if ($certificate)
-                            <x-button :href="route('lms.courses.certificate.download', $course)" variant="dark" icon="download">Download certificate</x-button>
+                            <x-button :href="route('lms.courses.certificate.download', $course)" variant="dark" icon="download">{{ __('Download certificate') }}</x-button>
                         @elseif ($course->certificateIsPaidHere())
                             <x-button :href="route('lms.courses.certificate-purchase.create', $course)">
-                                Get certificate for {{ number_format($course->certificate_price, 2) }} {{ $course->certificate_currency }}
+                                {{ __('Get certificate for :certificate_price :certificate_currency', ['certificate_price' => number_format($course->certificate_price, 2), 'certificate_currency' => $course->certificate_currency]) }}
                             </x-button>
                         @endif
                     </div>
@@ -144,8 +144,8 @@
                         <div class="flex items-start gap-3">
                             <x-icon name="lock" class="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
                             <div class="min-w-0 flex-1">
-                                <p class="font-semibold text-amber-900">Complete {{ $unmetPrerequisites->count() === 1 ? 'this course' : 'these courses' }} first</p>
-                                <p class="mt-0.5 text-sm text-amber-800">This course opens once you've passed {{ $unmetPrerequisites->count() === 1 ? 'it' : 'each of them' }}.</p>
+                                <p class="font-semibold text-amber-900">{{ $unmetPrerequisites->count() === 1 ? __('Complete this course first') : __('Complete these courses first') }}</p>
+                                <p class="mt-0.5 text-sm text-amber-800">{{ $unmetPrerequisites->count() === 1 ? __('This course opens once you\'ve passed it.') : __('This course opens once you\'ve passed each of them.') }}</p>
                                 <ul class="mt-4 space-y-2">
                                     @foreach ($unmetPrerequisites as $prerequisite)
                                         @php($started = $prerequisite->isEnrolled($user))
@@ -153,7 +153,7 @@
                                             <a href="{{ route('lms.courses.show', $prerequisite) }}" class="flex items-center justify-between gap-4 rounded-xl bg-white px-4 py-3 ring-1 ring-amber-200 hover:ring-amber-300">
                                                 <span class="min-w-0 truncate text-sm font-medium text-slate-900">{{ $prerequisite->title }}</span>
                                                 <span class="shrink-0 text-xs font-semibold {{ $started ? 'text-brand-700' : 'text-slate-500' }}">
-                                                    {{ $started ? $prerequisite->progressPercentFor($user).'% done — continue' : 'Start' }} &rarr;
+                                                    {{ $started ? $prerequisite->progressPercentFor($user).'% done — continue' : __('Start') }} &rarr;
                                                 </span>
                                             </a>
                                         </li>
@@ -168,20 +168,16 @@
                     <div class="flex items-start gap-3 rounded-2xl bg-amber-50 p-5 ring-1 ring-amber-200">
                         <x-icon name="flag" class="mt-0.5 h-5 w-5 text-amber-600" />
                         <p class="text-sm font-medium text-amber-900">
-                            All lessons complete — pass
-                            @if ($course->finalExam?->is_published)
-                                <a href="{{ route('cbt.exams.show', $course->finalExam) }}" class="underline">{{ $course->finalExam->title }}</a>
-                            @else
-                                {{ $course->finalExam->title ?? 'the final exam' }}
-                            @endif
-                            to complete this course.
+                            {!! __('All lessons complete — pass :exam to complete this course.', ['exam' => $course->finalExam?->is_published
+                                ? '<a href="'.e(route('cbt.exams.show', $course->finalExam)).'" class="underline">'.e($course->finalExam->title).'</a>'
+                                : e($course->finalExam->title ?? __('the final exam'))]) !!}
                         </p>
                     </div>
                 @endif
 
                 @if (! empty($course->outcomes))
                     <section class="rounded-2xl bg-white p-6 ring-1 ring-slate-200/80 sm:p-8">
-                        <h2 class="text-xl font-bold text-slate-900">What you'll learn</h2>
+                        <h2 class="text-xl font-bold text-slate-900">{{ __('What you\'ll learn') }}</h2>
                         <ul class="mt-5 grid gap-x-8 gap-y-3 sm:grid-cols-2">
                             @foreach ($course->outcomes as $outcome)
                                 <li class="flex gap-3 text-[15px] text-slate-700"><x-icon name="check" class="mt-0.5 h-5 w-5 text-emerald-600" /> {{ $outcome }}</li>
@@ -192,19 +188,19 @@
 
                 @if (mb_strlen(trim(strip_tags((string) $course->description))) > 220 || ($course->subtitle && $course->description))
                     <section class="rounded-2xl bg-white p-6 ring-1 ring-slate-200/80 sm:p-8">
-                        <h2 class="text-xl font-bold text-slate-900">About this course</h2>
+                        <h2 class="text-xl font-bold text-slate-900">{{ __('About this course') }}</h2>
                         <div class="rich-text mt-4 text-[15px] text-slate-700">{!! $course->description !!}</div>
                     </section>
                 @endif
 
                 <section>
                     <div class="mb-4 flex items-end justify-between">
-                        <h2 class="text-xl font-bold text-slate-900">Course content</h2>
-                        <p class="text-sm text-slate-500">{{ $sections->count() }} {{ \Illuminate\Support\Str::plural('section', $sections->count()) }} &middot; {{ $course->lessons->count() }} {{ \Illuminate\Support\Str::plural('lesson', $course->lessons->count()) }}</p>
+                        <h2 class="text-xl font-bold text-slate-900">{{ __('Course content') }}</h2>
+                        <p class="text-sm text-slate-500">{{ $sections->count() }} {{ trans_choice('section|sections', $sections->count()) }} &middot; {{ $course->lessons->count() }} {{ trans_choice('lesson|lessons', $course->lessons->count()) }}</p>
                     </div>
 
                     @if ($course->lessons->isEmpty())
-                        <x-empty-state icon="play" title="No lessons yet" description="Lessons will appear here once they're published." />
+                        <x-empty-state icon="play" :title="__('No lessons yet')" :description="__('Lessons will appear here once they\'re published.')" />
                     @else
                         <div class="overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/80">
                             @foreach ($sections as $section)
@@ -216,7 +212,7 @@
                                             <span class="text-sm font-semibold text-slate-900">{{ $section['title'] }}</span>
                                         </span>
                                         <span class="shrink-0 text-xs text-slate-500">
-                                            @if ($isEnrolled){{ $doneInSection }} / @endif{{ $section['lessons']->count() }} {{ \Illuminate\Support\Str::plural('lesson', $section['lessons']->count()) }}
+                                            @if ($isEnrolled){{ $doneInSection }} / @endif{{ $section['lessons']->count() }} {{ trans_choice('lesson|lessons', $section['lessons']->count()) }}
                                         </span>
                                     </summary>
                                     <ul class="divide-y divide-slate-100">
@@ -240,18 +236,18 @@
                                                         </span>
                                                         <span class="truncate text-sm {{ $canOpen ? 'font-medium text-slate-900' : 'text-slate-500' }}">{{ $lesson->title }}</span>
                                                         @if ($lesson->is_preview && ! $isEnrolled)
-                                                            <x-badge color="brand">Preview</x-badge>
+                                                            <x-badge color="brand">{{ __('Preview') }}</x-badge>
                                                         @endif
                                                     </span>
                                                     <span class="flex shrink-0 items-center gap-3">
                                                         @if ($state['hasAccess'] && ! $state['unlocked'])
-                                                            <span class="hidden text-xs text-slate-500 sm:inline">{{ $unmetPrerequisites->isNotEmpty() ? 'Complete the required course first' : 'Finish the step above to unlock' }}</span>
+                                                            <span class="hidden text-xs text-slate-500 sm:inline">{{ $unmetPrerequisites->isNotEmpty() ? __('Complete the required course first') : __('Finish the step above to unlock') }}</span>
                                                         @endif
                                                         @if ($lesson->video_url)
-                                                            <x-icon name="play" class="h-4 w-4 text-slate-500" title="Video lesson" />
+                                                            <x-icon name="play" class="h-4 w-4 text-slate-500" :title="__('Video lesson')" />
                                                         @endif
                                                         @if ($lesson->attachments->isNotEmpty())
-                                                            <x-icon name="document" class="h-4 w-4 text-slate-500" title="Has attachments" />
+                                                            <x-icon name="document" class="h-4 w-4 text-slate-500" :title="__('Has attachments')" />
                                                         @endif
                                                     </span>
                                                 </a>
@@ -277,7 +273,7 @@
 
                 @if ($course->instructors->isNotEmpty())
                     <section id="instructor" class="scroll-mt-24 rounded-2xl bg-white p-6 ring-1 ring-slate-200/80 sm:p-8">
-                        <h2 class="text-xl font-bold text-slate-900">{{ $course->instructors->count() > 1 ? 'Your instructors' : 'Your instructor' }}</h2>
+                        <h2 class="text-xl font-bold text-slate-900">{{ $course->instructors->count() > 1 ? __('Your instructors') : __('Your instructor') }}</h2>
                         <div class="mt-5 space-y-5">
                             @foreach ($course->instructors as $instructor)
                                 <div class="flex gap-4">
@@ -296,7 +292,7 @@
                     </section>
                 @elseif ($course->instructor_name)
                     <section id="instructor" class="scroll-mt-24 rounded-2xl bg-white p-6 ring-1 ring-slate-200/80 sm:p-8">
-                        <h2 class="text-xl font-bold text-slate-900">Your instructor</h2>
+                        <h2 class="text-xl font-bold text-slate-900">{{ __('Your instructor') }}</h2>
                         <div class="mt-5 flex gap-4">
                             <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-100 font-display text-lg font-bold text-brand-700">
                                 {{ collect(explode(' ', $course->instructor_name))->filter()->take(2)->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->implode('') }}
@@ -324,83 +320,83 @@
                     @endif
                     <div class="p-6">
                         @if ($isEnrolled)
-                            <p class="text-sm font-medium text-slate-500">You're enrolled</p>
+                            <p class="text-sm font-medium text-slate-500">{{ __('You\'re enrolled') }}</p>
                             <x-progress class="mt-2" :value="$progress" label />
                             @if ($unmetPrerequisites->isNotEmpty())
                                 <x-button :href="route('lms.courses.show', $unmetPrerequisites->first())" class="mt-5 w-full" size="lg" variant="secondary" icon="lock">
-                                    Complete {{ \Illuminate\Support\Str::limit($unmetPrerequisites->first()->title, 28) }} first
+                                    {{ __('Complete :title first', ['title' => \Illuminate\Support\Str::limit($unmetPrerequisites->first()->title, 28)]) }}
                                 </x-button>
                             @elseif ($nextLesson)
                                 <x-button :href="route('lms.lessons.show', [$course, $nextLesson])" class="mt-5 w-full" size="lg" icon-right="arrow-right">
-                                    {{ $progress === 0 ? 'Start learning' : 'Continue learning' }}
+                                    {{ $progress === 0 ? __('Start learning') : __('Continue learning') }}
                                 </x-button>
-                                <p class="mt-2 truncate text-center text-xs text-slate-500">Next: {{ $nextLesson->title }}</p>
+                                <p class="mt-2 truncate text-center text-xs text-slate-500">{{ __('Next: :title', ['title' => $nextLesson->title]) }}</p>
                             @elseif ($nextCheckpoint)
                                 <x-button :href="route('cbt.exams.show', $nextCheckpoint['exam'])" class="mt-5 w-full" size="lg" icon-right="arrow-right">
-                                    Take the {{ strtolower($nextCheckpoint['label']) }}
+                                    {{ __('Take the :next_checkpoint', ['next_checkpoint' => strtolower($nextCheckpoint['label'])]) }}
                                 </x-button>
-                                <p class="mt-2 truncate text-center text-xs text-slate-500">{{ $nextCheckpoint['kind'] === 'final' ? 'Pass it to complete the course' : 'Pass it to continue' }}: {{ $nextCheckpoint['exam']->title }}</p>
+                                <p class="mt-2 truncate text-center text-xs text-slate-500">{{ $nextCheckpoint['kind'] === 'final' ? __('Pass it to complete the course') : __('Pass it to continue') }}: {{ $nextCheckpoint['exam']->title }}</p>
                             @elseif ($progress === 100)
-                                <p class="mt-5 flex items-center justify-center gap-2 rounded-lg bg-emerald-50 py-3 text-sm font-semibold text-emerald-700"><x-icon name="check-circle" /> All lessons complete</p>
+                                <p class="mt-5 flex items-center justify-center gap-2 rounded-lg bg-emerald-50 py-3 text-sm font-semibold text-emerald-700"><x-icon name="check-circle" /> {{ __('All lessons complete') }}</p>
                             @endif
                         @elseif ($unmetPrerequisites->isNotEmpty())
                             <p class="text-3xl font-bold {{ $course->isPaidHere() ? 'text-slate-900' : 'text-emerald-600' }}">
-                                {{ $course->isPaidHere() ? $course->currency.' '.number_format($course->price, 2) : 'Free' }}
+                                {{ $course->isPaidHere() ? $course->currency.' '.number_format($course->price, 2) : __('Free') }}
                             </p>
                             <p class="mt-4 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-sm text-amber-900 ring-1 ring-amber-200">
                                 <x-icon name="lock" class="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                                <span>Opens after you pass {{ $unmetPrerequisites->pluck('title')->map(fn ($title) => '"'.$title.'"')->join(', ', ' and ') }}.</span>
+                                <span>{{ __('Opens after you pass :join.', ['join' => $unmetPrerequisites->pluck('title')->map(fn ($title) => '“'.$title.'”')->join(', ', ' '.__('and').' ')]) }}</span>
                             </p>
-                            <x-button :href="route('lms.courses.show', $unmetPrerequisites->first())" class="mt-4 w-full" size="lg" icon-right="arrow-right">Go to {{ \Illuminate\Support\Str::limit($unmetPrerequisites->first()->title, 30) }}</x-button>
+                            <x-button :href="route('lms.courses.show', $unmetPrerequisites->first())" class="mt-4 w-full" size="lg" icon-right="arrow-right">{{ __('Go to :title', ['title' => \Illuminate\Support\Str::limit($unmetPrerequisites->first()->title, 30)]) }}</x-button>
                         @else
                             @if ($course->isPaidHere())
                                 <p class="text-3xl font-bold text-slate-900">{{ $course->currency }} {{ number_format($course->price, 2) }}</p>
-                                <x-button :href="route('lms.courses.purchase.create', $course)" class="mt-5 w-full" size="lg">Buy for {{ number_format($course->price, 2) }} {{ $course->currency }}</x-button>
+                                <x-button :href="route('lms.courses.purchase.create', $course)" class="mt-5 w-full" size="lg">{{ __('Buy for :price :currency', ['price' => number_format($course->price, 2), 'currency' => $course->currency]) }}</x-button>
                             @else
-                                <p class="text-3xl font-bold text-emerald-600">Free</p>
+                                <p class="text-3xl font-bold text-emerald-600">{{ __('Free') }}</p>
                                 <form method="POST" action="{{ route('lms.courses.enroll', $course) }}" class="mt-5">
                                     @csrf
-                                    <x-button type="submit" class="w-full" size="lg">Enroll</x-button>
+                                    <x-button type="submit" class="w-full" size="lg">{{ __('Enroll') }}</x-button>
                                 </form>
                             @endif
                             @if ($previewCount > 0)
-                                <p class="mt-3 text-center text-xs text-slate-500">{{ $previewCount }} free preview {{ \Illuminate\Support\Str::plural('lesson', $previewCount) }} available</p>
+                                <p class="mt-3 text-center text-xs text-slate-500">{{ __(':preview_count free preview :noun available', ['preview_count' => $previewCount, 'noun' => trans_choice('lesson|lessons', $previewCount)]) }}</p>
                             @endif
                         @endif
 
                         @if ($isEnrolled || \Elibrary\Lms\Support\Teaching::canManage($user, $course))
                             <a href="{{ route('lms.discussions.index', $course) }}" class="mt-4 flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-brand-700 ring-1 ring-inset ring-brand-200 hover:bg-brand-50">
-                                <x-icon name="chat" class="h-4 w-4" /> Discussions
+                                <x-icon name="chat" class="h-4 w-4" /> {{ __('Discussions') }}
                                 @if ($discussionCount)<span class="rounded-full bg-brand-100 px-2 text-xs">{{ $discussionCount }}</span>@endif
                             </a>
                         @endif
 
                         <div class="mt-6 border-t border-slate-100 pt-5">
-                            <p class="text-sm font-semibold text-slate-900">This course includes</p>
+                            <p class="text-sm font-semibold text-slate-900">{{ __('This course includes') }}</p>
                             <ul class="mt-3 space-y-2.5 text-sm text-slate-600">
-                                <li class="flex items-center gap-3"><x-icon name="play" class="h-4 w-4 text-slate-500" /> {{ $course->lessons->count() }} {{ \Illuminate\Support\Str::plural('lesson', $course->lessons->count()) }}</li>
+                                <li class="flex items-center gap-3"><x-icon name="play" class="h-4 w-4 text-slate-500" /> {{ $course->lessons->count() }} {{ trans_choice('lesson|lessons', $course->lessons->count()) }}</li>
                                 @if ($attachmentCount > 0)
-                                    <li class="flex items-center gap-3"><x-icon name="document" class="h-4 w-4 text-slate-500" /> {{ $attachmentCount }} downloadable {{ \Illuminate\Support\Str::plural('resource', $attachmentCount) }}</li>
+                                    <li class="flex items-center gap-3"><x-icon name="document" class="h-4 w-4 text-slate-500" /> {{ __(':attachment_count downloadable :noun', ['attachment_count' => $attachmentCount, 'noun' => trans_choice('resource|resources', $attachmentCount)]) }}</li>
                                 @endif
                                 @if ($course->isShared())
-                                    <li class="flex items-center gap-3"><x-icon name="globe" class="h-4 w-4 text-slate-500" /> Shared by {{ $course->tenant?->name ?? 'another workspace' }}</li>
+                                    <li class="flex items-center gap-3"><x-icon name="globe" class="h-4 w-4 text-slate-500" /> {{ __('Shared by :name', ['name' => $course->tenant?->name ?? __('another workspace')]) }}</li>
                                 @endif
                                 @if ($course->sequential_lessons)
-                                    <li class="flex items-center gap-3"><x-icon name="flag" class="h-4 w-4 text-slate-500" /> Lessons unlock in order</li>
+                                    <li class="flex items-center gap-3"><x-icon name="flag" class="h-4 w-4 text-slate-500" /> {{ __('Lessons unlock in order') }}</li>
                                 @endif
                                 @foreach ($course->paths->where('is_published', true) as $path)
-                                    <li class="flex items-start gap-3"><x-icon name="map" class="mt-0.5 h-4 w-4 text-slate-500" /> <span>Part of the <a href="{{ route('lms.paths.show', $path) }}" class="font-medium text-brand-700 hover:underline">{{ $path->title }}</a> path</span></li>
+                                    <li class="flex items-start gap-3"><x-icon name="map" class="mt-0.5 h-4 w-4 text-slate-500" /> <span>{!! __('Part of the :path path', ['path' => '<a href="'.e(route('lms.paths.show', $path)).'" class="font-medium text-brand-700 hover:underline">'.e($path->title).'</a>']) !!}</span></li>
                                 @endforeach
                                 @if ($course->prerequisites->isNotEmpty())
-                                    <li class="flex items-start gap-3"><x-icon name="lock" class="mt-0.5 h-4 w-4 text-slate-500" /> <span>Requires {{ $course->prerequisites->pluck('title')->join(', ', ' and ') }}</span></li>
+                                    <li class="flex items-start gap-3"><x-icon name="lock" class="mt-0.5 h-4 w-4 text-slate-500" /> <span>{{ __('Requires :join', ['join' => $course->prerequisites->pluck('title')->join(', ', ' '.__('and').' ')]) }}</span></li>
                                 @endif
                                 @if ($course->assessment_mode->value !== 'none')
-                                    <li class="flex items-center gap-3"><x-icon name="clipboard-check" class="h-4 w-4 text-slate-500" /> {{ $course->assessment_mode->value === 'course_final' ? 'Final exam' : 'Assessments along the way' }}</li>
+                                    <li class="flex items-center gap-3"><x-icon name="clipboard-check" class="h-4 w-4 text-slate-500" /> {{ $course->assessment_mode->value === 'course_final' ? __('Final exam') : __('Assessments along the way') }}</li>
                                 @endif
                                 @if ($course->certificate_policy->value !== 'none')
-                                    <li class="flex items-center gap-3"><x-icon name="trophy" class="h-4 w-4 text-slate-500" /> Certificate of completion{{ $course->certificateIsPaidHere() ? ' (paid)' : '' }}</li>
+                                    <li class="flex items-center gap-3"><x-icon name="trophy" class="h-4 w-4 text-slate-500" /> {{ ($course->certificateIsPaidHere() ? __('Certificate of completion (paid)') : __('Certificate of completion')) }}</li>
                                 @endif
-                                <li class="flex items-center gap-3"><x-icon name="device" class="h-4 w-4 text-slate-500" /> Learn on any device, at your own pace</li>
+                                <li class="flex items-center gap-3"><x-icon name="device" class="h-4 w-4 text-slate-500" /> {{ __('Learn on any device, at your own pace') }}</li>
                             </ul>
                         </div>
                     </div>

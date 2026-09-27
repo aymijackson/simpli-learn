@@ -103,7 +103,7 @@ class CourseCatalogDetailsTest extends TestCase
         $this->actingAs($this->learner())->get('/t/acme/lms/courses/data-security')
             ->assertOk()
             ->assertSee('Protect everyone')
-            ->assertSee("What you'll learn", false)->assertSee('Spot phishing')
+            ->assertSee("What you'll learn")->assertSee('Spot phishing')
             ->assertSee('Your instructor')->assertSee('Head of security')
             ->assertSee('4.0')->assertSee('Ada Obi')->assertSee('Really practical')
             ->assertDontSee('Rate this course'); // not enrolled

@@ -122,7 +122,7 @@ class CertificatePaymentController extends Controller
 
         return redirect()
             ->route('cbt.attempts.result', $attempt)
-            ->with('status', "Thanks — we've recorded your payment claim. The organization will confirm it shortly.");
+            ->with('status', __("Thanks — we've recorded your payment claim. The organization will confirm it shortly."));
     }
 
     private function assertPurchasable(ExamAttempt $attempt): void

@@ -12,19 +12,19 @@
 
 @if ($type === \Elibrary\Cbt\Enums\AnswerType::ShortAnswer)
     <label class="block">
-        <span class="sr-only">Your answer</span>
+        <span class="sr-only">{{ __('Your answer') }}</span>
         <input type="text" name="{{ $name }}" value="{{ $text }}" @if ($labelledBy) aria-labelledby="{{ $labelledBy }}" @endif maxlength="500" autocomplete="off" data-answer-input
-               placeholder="Type your answer"
+               placeholder="{{ __('Type your answer') }}"
                class="block w-full rounded-lg border-0 px-4 py-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600">
     </label>
 @elseif ($type === \Elibrary\Cbt\Enums\AnswerType::Essay)
     <label class="block">
-        <span class="sr-only">Your answer</span>
+        <span class="sr-only">{{ __('Your answer') }}</span>
         <textarea name="{{ $name }}" rows="9" @if ($labelledBy) aria-labelledby="{{ $labelledBy }}" @endif maxlength="20000" data-answer-input data-word-count
-                  placeholder="Write your answer here"
+                  placeholder="{{ __('Write your answer here') }}"
                   class="block w-full rounded-lg border-0 px-4 py-3 text-sm leading-relaxed text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600">{{ $text }}</textarea>
     </label>
-    <p class="text-right text-xs text-slate-500" data-word-count-for="{{ $name }}">0 words</p>
+    <p class="text-right text-xs text-slate-500" data-word-count-for="{{ $name }}">{{ __('0 words') }}</p>
     @once
         @push('scripts')
             <script>
@@ -40,7 +40,7 @@
             </script>
         @endpush
     @endonce
-    <p class="text-xs text-slate-500">This answer is marked by hand, so your result will show "Awaiting marking" until it has been marked.</p>
+    <p class="text-xs text-slate-500">{{ __('This answer is marked by hand, so your result will show "Awaiting marking" until it has been marked.') }}</p>
 @else
     @foreach ($question->options as $option)
         <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">

@@ -71,7 +71,7 @@ class AttemptController extends Controller
 
             return redirect()
                 ->route('cbt.attempts.result', $attempt)
-                ->with('status', 'Time expired before you submitted — this attempt was forfeited.');
+                ->with('status', __('Time expired before you submitted — this attempt was forfeited.'));
         }
 
         if ($attempt->exam->navigation_mode === NavigationMode::OneAtATime) {
@@ -109,7 +109,7 @@ class AttemptController extends Controller
 
                 return redirect()
                     ->route('cbt.attempts.result', $attempt)
-                    ->with('status', 'Time expired before you submitted — this attempt was forfeited.');
+                    ->with('status', __('Time expired before you submitted — this attempt was forfeited.'));
             }
 
             $questions = $attempt->exam->orderedQuestions($attempt);

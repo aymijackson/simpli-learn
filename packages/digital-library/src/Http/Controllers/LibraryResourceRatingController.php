@@ -21,6 +21,6 @@ class LibraryResourceRatingController extends Controller
             $validated,
         );
 
-        return redirect()->route('library.resources.show', $resource)->with('status', 'Thanks for your rating.');
+        return redirect()->route('library.resources.show', $resource)->with('status', __('Thanks for your rating.'));
     }
 }

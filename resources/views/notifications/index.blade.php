@@ -1,18 +1,18 @@
-<x-app-layout title="Notifications">
+<x-app-layout :title="__('Notifications')">
     <div class="mx-auto max-w-3xl">
-        <x-page-header title="Notifications" :subtitle="$unread ? $unread.' unread' : 'You\'re all caught up.'">
+        <x-page-header :title="__('Notifications')" :subtitle="$unread ? __(':count unread', ['count' => $unread]) : __('You\'re all caught up.')">
             @if ($unread)
                 <x-slot:actions>
                     <form method="POST" action="{{ route('tenant.notifications.read-all') }}">
                         @csrf
-                        <x-button type="submit" variant="secondary" icon="check">Mark all read</x-button>
+                        <x-button type="submit" variant="secondary" icon="check">{{ __('Mark all read') }}</x-button>
                     </form>
                 </x-slot:actions>
             @endif
         </x-page-header>
 
         @if ($notifications->isEmpty())
-            <x-empty-state icon="bell" title="No notifications yet" description="Course assignments, reminders and exam results will show up here." />
+            <x-empty-state icon="bell" :title="__('No notifications yet')" :description="__('Course assignments, reminders and exam results will show up here.')" />
         @else
             <x-card :padded="false" class="overflow-hidden">
                 <div class="divide-y divide-slate-100">

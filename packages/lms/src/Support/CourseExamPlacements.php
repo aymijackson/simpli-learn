@@ -75,13 +75,13 @@ class CourseExamPlacements implements ExamPlacements
             ['course' => $course, 'checkpoint' => $checkpoint] = $enrolled->first();
 
             return match ($checkpoint['kind']) {
-                'lesson' => "This quiz opens when you reach \"{$checkpoint['lesson']->title}\" in {$course->title}.",
-                'module' => "This test opens when you reach \"{$checkpoint['module']->title}\" in {$course->title}.",
-                default => "Keep going in {$course->title} to unlock this exam.",
+                'lesson' => __('This quiz opens when you reach “:lesson” in :course.', ['lesson' => $checkpoint['lesson']->title, 'course' => $course->title]),
+                'module' => __('This test opens when you reach “:module” in :course.', ['module' => $checkpoint['module']->title, 'course' => $course->title]),
+                default => __('Keep going in :course to unlock this exam.', ['course' => $course->title]),
             };
         }
 
-        return "This exam is part of the course \"{$placements->first()['course']->title}\". Enrol in the course to take it.";
+        return __('This exam is part of the course “:course”. Enrol in the course to take it.', ['course' => $placements->first()['course']->title]);
     }
 
     public function contextFor(Exam $exam, User $user): ?array
@@ -95,12 +95,12 @@ class CourseExamPlacements implements ExamPlacements
 
         ['course' => $course, 'checkpoint' => $checkpoint] = $placement;
         $courseUrl = route('lms.courses.show', $course);
-        [$nextLabel, $nextUrl] = ['Back to the course', $courseUrl];
+        [$nextLabel, $nextUrl] = [__('Back to the course'), $courseUrl];
 
         if ($course->isEnrolled($user) && $exam->passedBy($user)) {
             $lesson = $course->lessonAfterCheckpoint($checkpoint);
             if ($lesson && $lesson->isUnlockedFor($user)) {
-                [$nextLabel, $nextUrl] = ['Continue: '.$lesson->title, route('lms.lessons.show', [$course, $lesson])];
+                [$nextLabel, $nextUrl] = [__('Continue: :title', ['title' => $lesson->title]), route('lms.lessons.show', [$course, $lesson])];
             }
         }
 

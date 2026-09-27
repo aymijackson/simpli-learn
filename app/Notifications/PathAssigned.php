@@ -26,8 +26,10 @@ class PathAssigned extends Notification
     protected function inApp(object $notifiable): array
     {
         return [
-            'title' => 'New learning path assigned',
-            'body' => "{$this->assignedBy} assigned you {$this->path->title} ({$this->path->courses->count()} courses)".($this->dueAt ? ', due '.$this->dueAt->format('j M') : '').'.',
+            'title' => __('New learning path assigned'),
+            'body' => $this->dueAt
+                ? __(':by assigned you :path (:count courses), due :date.', ['by' => $this->assignedBy, 'path' => $this->path->title, 'count' => $this->path->courses->count(), 'date' => $this->dueAt->translatedFormat('j M')])
+                : __(':by assigned you :path (:count courses).', ['by' => $this->assignedBy, 'path' => $this->path->title, 'count' => $this->path->courses->count()]),
             'url' => $this->url(),
             'icon' => 'map',
             'tone' => 'indigo',
@@ -37,23 +39,23 @@ class PathAssigned extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $message = (new MailMessage)
-            ->subject("New learning path: {$this->path->title}")
-            ->greeting("Hello {$notifiable->name},")
-            ->line("{$this->assignedBy} has assigned you the learning path **{$this->path->title}** on {$this->tenant->name}. It has {$this->path->courses->count()} courses:");
+            ->subject(__('New learning path: :path', ['path' => $this->path->title]))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__(':by has assigned you the learning path **:path** on :workspace. It has :count courses:', ['by' => $this->assignedBy, 'path' => $this->path->title, 'workspace' => $this->tenant->name, 'count' => $this->path->courses->count()]));
 
         foreach ($this->path->courses as $index => $course) {
             $message->line(($index + 1).'. '.$course->title);
         }
 
         if ($this->dueAt) {
-            $message->line('Please complete it by **'.$this->dueAt->format('l, j F Y').'**.');
+            $message->line(__('Please complete it by **:date**.', ['date' => $this->dueAt->translatedFormat('l, j F Y')]));
         }
 
         if ($this->path->is_sequential) {
-            $message->line('The courses open in order, each once the one before it is passed.');
+            $message->line(__('The courses open in order, each once the one before it is passed.'));
         }
 
-        return $message->action('Open the path', $this->url());
+        return $message->action(__('Open the path'), $this->url());
     }
 
     private function url(): string

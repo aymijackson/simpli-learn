@@ -113,7 +113,7 @@ class CourseController extends Controller
 
         return redirect()
             ->route('lms.courses.show', $course)
-            ->with('status', "You're enrolled in {$course->title}.");
+            ->with('status', __("You're enrolled in :course.", ['course' => $course->title]));
     }
 
     /**
@@ -129,6 +129,6 @@ class CourseController extends Controller
         }
 
         return redirect()->route('lms.courses.show', $course)
-            ->with('error', 'Complete '.$unmet->pluck('title')->map(fn ($title) => "\"{$title}\"")->join(', ', ' and ').' before starting this course.');
+            ->with('error', __('Complete :courses before starting this course.', ['courses' => $unmet->pluck('title')->map(fn ($title) => "“{$title}”")->join(', ', ' '.__('and').' ')]));
     }
 }

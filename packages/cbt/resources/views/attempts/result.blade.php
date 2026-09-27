@@ -3,23 +3,23 @@
         &larr; {{ $placement['title'] ?? $exam->title }}
     </a>
 
-    <h1 class="sr-only">{{ $exam->title }} — your result</h1>
+    <h1 class="sr-only">{{ __(':title — your result', ['title' => $exam->title]) }}</h1>
 
     <x-card class="mb-8 text-center">
         @if ($attempt->isAwaitingMarking())
             <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-amber-600"><x-icon name="clock" class="h-7 w-7" /></span>
-            <p class="mt-4 text-2xl font-bold text-slate-900">Submitted — awaiting marking</p>
+            <p class="mt-4 text-2xl font-bold text-slate-900">{{ __('Submitted — awaiting marking') }}</p>
             <p class="mx-auto mt-2 max-w-md text-sm text-slate-500">
-                Some of your answers are marked by hand. Your score and result will appear here once marking is finished — we'll email you when it's ready.
+                {{ __('Some of your answers are marked by hand. Your score and result will appear here once marking is finished — we\'ll email you when it\'s ready.') }}
             </p>
         @else
-            <p class="text-sm font-medium text-slate-500">Your score</p>
+            <p class="text-sm font-medium text-slate-500">{{ __('Your score') }}</p>
             <p class="mt-2 text-5xl font-bold {{ $attempt->passed() ? 'text-emerald-600' : 'text-red-600' }}">
                 {{ $attempt->score }}%
             </p>
             <div class="mt-4">
                 <x-badge :color="$attempt->passed() ? 'green' : 'red'">
-                    {{ $attempt->passed() ? 'Passed' : 'Failed' }} &middot; pass mark {{ $exam->pass_percentage }}%
+                    {{ __(':passed · pass mark :pass_percentage%', ['passed' => $attempt->passed() ? __('Passed') : __('Failed'), 'pass_percentage' => $exam->pass_percentage]) }}
                 </x-badge>
             </div>
         @endif
@@ -28,16 +28,16 @@
             <div class="mt-6 flex items-center justify-center gap-3">
                 @if ($attempt->certificate)
                     <x-button :href="route('cbt.attempts.certificate.download', $attempt)" variant="secondary">
-                        Download certificate
+                        {{ __('Download certificate') }}
                         @if ($attempt->certificate->tier->value === 'unverified')
-                            (unverified)
+                            {{ __('(unverified)') }}
                         @endif
                     </x-button>
                     @if ($attempt->certificate->tier->value === 'unverified')
-                        <x-button :href="route('cbt.attempts.certificate-payment.create', $attempt)">Upgrade to verified</x-button>
+                        <x-button :href="route('cbt.attempts.certificate-payment.create', $attempt)">{{ __('Upgrade to verified') }}</x-button>
                     @endif
                 @elseif ($exam->certificatePolicy()->value === 'paid')
-                    <x-button :href="route('cbt.attempts.certificate-payment.create', $attempt)">Get certificate</x-button>
+                    <x-button :href="route('cbt.attempts.certificate-payment.create', $attempt)">{{ __('Get certificate') }}</x-button>
                 @endif
             </div>
         @endif
@@ -45,14 +45,14 @@
         @if ($placement)
             <div class="mt-6 flex flex-col items-center gap-2 border-t border-slate-100 pt-6">
                 <x-button :href="$placement['next_url']" icon-right="arrow-right">{{ $placement['next_label'] }}</x-button>
-                <p class="text-xs text-slate-500">{{ $placement['checkpoint'] }} in {{ $placement['title'] }}</p>
+                <p class="text-xs text-slate-500">{{ __(':checkpoint in :course', ['checkpoint' => $placement['checkpoint'], 'course' => $placement['title']]) }}</p>
             </div>
         @endif
     </x-card>
 
-    <h2 class="mb-4 text-sm font-semibold text-slate-900">Answer review</h2>
+    <h2 class="mb-4 text-sm font-semibold text-slate-900">{{ __('Answer review') }}</h2>
     @if ($attempt->answers->isEmpty())
-        <x-empty-state title="No answers were recorded for this attempt." />
+        <x-empty-state :title="__('No answers were recorded for this attempt.')" />
     @endif
     <div class="space-y-4">
         @foreach ($attempt->answers as $answer)
@@ -61,11 +61,11 @@
                 $type = $question->answer_type;
                 $questionScore = $question->scoreAnswer($answer);
                 [$badgeColor, $badgeLabel] = match (true) {
-                    $questionScore === null => ['amber', 'Awaiting marking'],
-                    $type === \Elibrary\Cbt\Enums\AnswerType::Essay => [$questionScore >= 1.0 ? 'green' : ($questionScore <= 0.0 ? 'red' : 'amber'), 'Marked'],
-                    $questionScore >= 1.0 => ['green', 'Correct'],
-                    $questionScore <= 0.0 => ['red', 'Incorrect'],
-                    default => ['amber', 'Partial credit'],
+                    $questionScore === null => ['amber', __('Awaiting marking')],
+                    $type === \Elibrary\Cbt\Enums\AnswerType::Essay => [$questionScore >= 1.0 ? 'green' : ($questionScore <= 0.0 ? 'red' : 'amber'), __('Marked')],
+                    $questionScore >= 1.0 => ['green', __('Correct')],
+                    $questionScore <= 0.0 => ['red', __('Incorrect')],
+                    default => ['amber', __('Partial credit')],
                 };
                 $correctOptions = $question->options->where('is_correct', true);
             @endphp
@@ -73,7 +73,7 @@
                 <div class="flex items-start justify-between gap-4">
                     <div class="flex-1">
                         <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                            Question {{ $loop->iteration }} &middot; {{ $question->points }} {{ \Illuminate\Support\Str::plural('point', $question->points) }}
+                            {{ __('Question :iteration · :points :noun', ['iteration' => $loop->iteration, 'points' => $question->points, 'noun' => trans_choice('point|points', $question->points)]) }}
                         </p>
                         <div class="rich-text mt-1 text-sm font-semibold text-slate-900">{!! $question->question_text !!}</div>
                     </div>
@@ -81,39 +81,39 @@
                 </div>
                 <div class="mt-3 space-y-1 text-sm">
                     @if ($type === \Elibrary\Cbt\Enums\AnswerType::Essay)
-                        <p class="text-slate-600">Your answer:</p>
-                        <p class="rounded-lg bg-slate-50 p-3 whitespace-pre-line text-slate-800 ring-1 ring-slate-200">{{ $answer->text_response ?: 'No answer' }}</p>
+                        <p class="text-slate-600">{{ __('Your answer:') }}</p>
+                        <p class="rounded-lg bg-slate-50 p-3 whitespace-pre-line text-slate-800 ring-1 ring-slate-200">{{ $answer->text_response ?: __('No answer') }}</p>
                         @if ($questionScore !== null && filled($answer->text_response))
-                            <p class="pt-2 font-medium text-slate-700">{{ rtrim(rtrim(number_format((float) $answer->awarded_points, 2), '0'), '.') }} of {{ $question->points }} {{ \Illuminate\Support\Str::plural('point', $question->points) }}</p>
+                            <p class="pt-2 font-medium text-slate-700">{{ __(':awarded_points of :points :noun', ['awarded_points' => rtrim(rtrim(number_format((float) $answer->awarded_points, 2), '0'), '.'), 'points' => $question->points, 'noun' => trans_choice('point|points', $question->points)]) }}</p>
                         @endif
                         @if ($answer->feedback)
-                            <p class="rounded-lg bg-brand-50 p-3 text-brand-900 ring-1 ring-brand-100"><span class="font-semibold">Feedback:</span> {{ $answer->feedback }}</p>
+                            <p class="rounded-lg bg-brand-50 p-3 text-brand-900 ring-1 ring-brand-100"><span class="font-semibold">{{ __('Feedback:') }}</span> {{ $answer->feedback }}</p>
                         @endif
                     @elseif ($type === \Elibrary\Cbt\Enums\AnswerType::ShortAnswer)
                         <p class="text-slate-600">
-                            Your answer:
-                            <span class="font-medium {{ $questionScore >= 1.0 ? 'text-emerald-700' : 'text-red-700' }}">{{ $answer->text_response ?: 'No answer' }}</span>
+                            {{ __('Your answer:') }}
+                            <span class="font-medium {{ $questionScore >= 1.0 ? 'text-emerald-700' : 'text-red-700' }}">{{ $answer->text_response ?: __('No answer') }}</span>
                         </p>
                         @if ($questionScore < 1.0)
                             <p class="text-slate-600">
-                                Accepted answer{{ $correctOptions->count() > 1 ? 's' : '' }}:
+                                {{ ($correctOptions->count() > 1 ? __('Accepted answers:') : __('Accepted answer:')) }}
                                 <span class="font-medium text-emerald-700">{{ $correctOptions->map(fn ($option) => strip_tags($option->option_text))->implode(', ') }}</span>
                             </p>
                         @endif
                     @else
                         <p class="text-slate-600">
-                            Your answer:
+                            {{ __('Your answer:') }}
                             <span class="rich-text font-medium {{ $questionScore >= 1.0 ? 'text-emerald-700' : 'text-red-700' }}">
                                 @forelse ($answer->selectedOptions as $selected)
                                     {!! $selected->option_text !!}@if (! $loop->last), @endif
                                 @empty
-                                    No answer
+                                    {{ __('No answer') }}
                                 @endforelse
                             </span>
                         </p>
                         @if ($questionScore < 1.0)
                             <p class="text-slate-600">
-                                Correct answer{{ $correctOptions->count() > 1 ? 's' : '' }}:
+                                {{ ($correctOptions->count() > 1 ? __('Correct answers:') : __('Correct answer:')) }}
                                 <span class="rich-text font-medium text-emerald-700">
                                     @foreach ($correctOptions as $correct)
                                         {!! $correct->option_text !!}@if (! $loop->last), @endif

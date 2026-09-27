@@ -41,13 +41,14 @@ class ProfileController extends Controller
                     ->ignore($user->id),
             ],
             'bio' => ['nullable', 'string', 'max:1000'],
+            'locale' => ['nullable', 'in:'.implode(',', array_keys(config('languages.available')))],
         ]);
 
         $user->fill($validated)->save();
 
         ActivityLog::record('profile.updated', 'Updated their name or email');
 
-        return redirect($this->routes($tenancy)['edit'])->with('status', 'Your details have been updated.');
+        return redirect($this->routes($tenancy)['edit'])->with('status', __('Your details have been updated.'));
     }
 
     public function updatePassword(Request $request, Tenancy $tenancy): RedirectResponse
@@ -63,7 +64,7 @@ class ProfileController extends Controller
 
         ActivityLog::record('profile.password_changed', 'Changed their password');
 
-        return redirect($this->routes($tenancy)['edit'])->with('status', 'Your password has been changed.');
+        return redirect($this->routes($tenancy)['edit'])->with('status', __('Your password has been changed.'));
     }
 
     /** Right of access for the signed-in person. */

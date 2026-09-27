@@ -30,8 +30,8 @@ class LibraryCheckoutController extends Controller
         $result = $service->borrow($resource, $request->user());
 
         $status = $result instanceof LibraryCheckout
-            ? "You've borrowed \"{$resource->title}\" — due back ".$result->due_at->format('M j, Y').'.'
-            : "No copies available right now — you're #{$result->position()} on the waitlist for \"{$resource->title}\".";
+            ? __("You've borrowed “:title” — due back :date.", ['title' => $resource->title, 'date' => $result->due_at->translatedFormat('M j, Y')])
+            : __("No copies available right now — you're #:position on the waitlist for “:title”.", ['position' => $result->position(), 'title' => $resource->title]);
 
         return redirect()->route('library.resources.show', $resource)->with('status', $status);
     }
@@ -42,7 +42,7 @@ class LibraryCheckoutController extends Controller
 
         $service->return($checkout);
 
-        return redirect()->route('library.checkouts.index')->with('status', 'Returned. Thanks!');
+        return redirect()->route('library.checkouts.index')->with('status', __('Returned. Thanks!'));
     }
 
     public function claimHold(Request $request, string $tenant, LibraryHold $hold, LibraryCheckoutService $service): RedirectResponse
@@ -51,6 +51,6 @@ class LibraryCheckoutController extends Controller
 
         $service->claim($hold);
 
-        return redirect()->route('library.resources.show', $hold->resource)->with('status', 'Your hold has been checked out.');
+        return redirect()->route('library.resources.show', $hold->resource)->with('status', __('Your hold has been checked out.'));
     }
 }

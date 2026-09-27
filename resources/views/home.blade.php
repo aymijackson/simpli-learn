@@ -16,12 +16,12 @@
         <div class="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-12 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8 lg:py-16">
             <div class="max-w-2xl">
                 <p class="text-sm font-medium text-brand-300">{{ $tenant->name }}</p>
-                <h1 class="mt-2 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">Welcome back, {{ $firstName }}</h1>
+                <h1 class="mt-2 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">{{ __('Welcome back, :first_name', ['first_name' => $firstName]) }}</h1>
                 <p class="mt-3 text-base text-slate-300">
                     @if ($inProgress->isNotEmpty())
-                        You have {{ $inProgress->count() }} {{ \Illuminate\Support\Str::plural('course', $inProgress->count()) }} in progress. Keep the momentum going.
+                        {{ __('You have :in_progress :noun in progress. Keep the momentum going.', ['in_progress' => $inProgress->count(), 'noun' => trans_choice('course|courses', $inProgress->count())]) }}
                     @else
-                        Pick something new to learn today &mdash; every lesson counts.
+                        {{ __('Pick something new to learn today — every lesson counts.') }}
                     @endif
                 </p>
             </div>
@@ -31,14 +31,14 @@
                     @php
                         $heroStats = [];
                         if ($enabledModules->contains(fn ($m) => $m->module->value === 'lms')) {
-                            $heroStats[] = ['value' => $myCourses->count(), 'label' => 'Enrolled'];
-                            $heroStats[] = ['value' => $completed->count(), 'label' => 'Completed'];
+                            $heroStats[] = ['value' => $myCourses->count(), 'label' => __('Enrolled')];
+                            $heroStats[] = ['value' => $completed->count(), 'label' => __('Completed')];
                         }
                         if ($enabledModules->contains(fn ($m) => $m->module->value === 'cbt')) {
-                            $heroStats[] = ['value' => $passedCount, 'label' => 'Exams passed'];
+                            $heroStats[] = ['value' => $passedCount, 'label' => __('Exams passed')];
                         }
                         if ($enabledModules->contains(fn ($m) => $m->module->value === 'library')) {
-                            $heroStats[] = ['value' => $checkouts->count(), 'label' => 'On loan'];
+                            $heroStats[] = ['value' => $checkouts->count(), 'label' => __('On loan')];
                         }
                         $heroStats = array_slice($heroStats, 0, 3);
                     @endphp
@@ -57,8 +57,8 @@
         @if ($enabledModules->isEmpty())
             <x-empty-state
                 icon="stack"
-                title="No modules are enabled yet"
-                description="Contact your administrator to enable Learning, CBT, or Library access for this organization."
+                :title="__('No modules are enabled yet')"
+                :description="__('Contact your administrator to enable Learning, CBT, or Library access for this organization.')"
             />
         @endif
 
@@ -76,11 +76,11 @@
                         <div class="flex items-center gap-4">
                             <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700"><x-icon name="clock" /></span>
                             <div>
-                                <p class="text-sm font-semibold text-slate-900">You have an unfinished attempt at {{ $attempt->exam->title }}</p>
-                                <p class="text-xs text-slate-600">Started {{ $attempt->started_at->diffForHumans() }}</p>
+                                <p class="text-sm font-semibold text-slate-900">{{ __('You have an unfinished attempt at :title', ['title' => $attempt->exam->title]) }}</p>
+                                <p class="text-xs text-slate-600">{{ __('Started :started_at', ['started_at' => $attempt->started_at->diffForHumans()]) }}</p>
                             </div>
                         </div>
-                        <x-button :href="route('cbt.attempts.take', $attempt)" variant="dark" icon-right="arrow-right">Resume exam</x-button>
+                        <x-button :href="route('cbt.attempts.take', $attempt)" variant="dark" icon-right="arrow-right">{{ __('Resume exam') }}</x-button>
                     </div>
                 @endforeach
             </section>
@@ -90,8 +90,8 @@
         @if ($assignments->isNotEmpty())
             <section>
                 <div class="mb-5">
-                    <h2 class="text-xl font-bold tracking-tight text-slate-900">Assigned to you</h2>
-                    <p class="mt-1 text-sm text-slate-500">Courses {{ $tenant->name }} has asked you to complete.</p>
+                    <h2 class="text-xl font-bold tracking-tight text-slate-900">{{ __('Assigned to you') }}</h2>
+                    <p class="mt-1 text-sm text-slate-500">{{ __('Courses :name has asked you to complete.', ['name' => $tenant->name]) }}</p>
                 </div>
                 <div class="grid gap-4 md:grid-cols-2">
                     @foreach ($assignments as $assignment)
@@ -103,10 +103,10 @@
                                 <p class="truncate text-sm font-semibold text-slate-900 group-hover:text-brand-700">{{ $assignment->course->title }}</p>
                                 <p class="mt-0.5 text-xs {{ $overdue ? 'font-semibold text-rose-600' : 'text-slate-500' }}">
                                     @if ($assignment->due_at)
-                                        {{ $overdue ? 'Overdue — was due' : 'Due' }} {{ $assignment->due_at->format('D, M j') }}
+                                        {{ $overdue ? __('Overdue — was due :date', ['date' => $assignment->due_at->translatedFormat('D, M j')]) : __('Due :date', ['date' => $assignment->due_at->translatedFormat('D, M j')]) }}
                                         @unless ($overdue) ({{ $assignment->due_at->diffForHumans() }}) @endunless
                                     @else
-                                        No due date
+                                        {{ __('No due date') }}
                                     @endif
                                 </p>
                                 <x-progress class="mt-2" :value="$assignment->progress" label />
@@ -122,10 +122,10 @@
             <section>
                 <div class="mb-5 flex items-end justify-between">
                     <div>
-                        <h2 class="text-xl font-bold tracking-tight text-slate-900">Continue learning</h2>
-                        <p class="mt-1 text-sm text-slate-500">Your enrolled courses, most recent first.</p>
+                        <h2 class="text-xl font-bold tracking-tight text-slate-900">{{ __('Continue learning') }}</h2>
+                        <p class="mt-1 text-sm text-slate-500">{{ __('Your enrolled courses, most recent first.') }}</p>
                     </div>
-                    <a href="{{ route('lms.courses.index') }}" class="hidden text-sm font-semibold text-brand-700 hover:text-brand-600 sm:block">Browse all courses &rarr;</a>
+                    <a href="{{ route('lms.courses.index') }}" class="hidden text-sm font-semibold text-brand-700 hover:text-brand-600 sm:block">{{ __('Browse all courses →') }}</a>
                 </div>
                 <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ($inProgress->concat($completed) as $course)
@@ -141,8 +141,8 @@
                 @if ($recentAttempts->isNotEmpty())
                     <x-card :padded="false">
                         <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                            <h2 class="flex items-center gap-2 text-base font-semibold text-slate-900"><x-icon name="chart-bar" class="h-5 w-5 text-emerald-600" /> Recent results</h2>
-                            <a href="{{ route('cbt.exams.index') }}" class="text-sm font-medium text-brand-700 hover:text-brand-600">All exams</a>
+                            <h2 class="flex items-center gap-2 text-base font-semibold text-slate-900"><x-icon name="chart-bar" class="h-5 w-5 text-emerald-600" /> {{ __('Recent results') }}</h2>
+                            <a href="{{ route('cbt.exams.index') }}" class="text-sm font-medium text-brand-700 hover:text-brand-600">{{ __('All exams') }}</a>
                         </div>
                         <ul class="divide-y divide-slate-100">
                             @foreach ($recentAttempts as $attempt)
@@ -154,10 +154,10 @@
                                         </div>
                                         <div class="flex shrink-0 items-center gap-3">
                                             @if ($attempt->isAwaitingMarking())
-                                                <x-badge color="amber">Awaiting marking</x-badge>
+                                                <x-badge color="amber">{{ __('Awaiting marking') }}</x-badge>
                                             @else
                                                 <span class="text-sm font-bold {{ $attempt->passed() ? 'text-emerald-600' : 'text-rose-600' }}">{{ $attempt->score }}%</span>
-                                                <x-badge :color="$attempt->passed() ? 'green' : 'red'">{{ $attempt->passed() ? 'Passed' : 'Failed' }}</x-badge>
+                                                <x-badge :color="$attempt->passed() ? 'green' : 'red'">{{ $attempt->passed() ? __('Passed') : __('Failed') }}</x-badge>
                                             @endif
                                         </div>
                                     </a>
@@ -170,8 +170,8 @@
                 @if ($checkouts->isNotEmpty())
                     <x-card :padded="false">
                         <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                            <h2 class="flex items-center gap-2 text-base font-semibold text-slate-900"><x-icon name="bookmark" class="h-5 w-5 text-amber-600" /> On loan</h2>
-                            <a href="{{ route('library.checkouts.index') }}" class="text-sm font-medium text-brand-700 hover:text-brand-600">My checkouts</a>
+                            <h2 class="flex items-center gap-2 text-base font-semibold text-slate-900"><x-icon name="bookmark" class="h-5 w-5 text-amber-600" /> {{ __('On loan') }}</h2>
+                            <a href="{{ route('library.checkouts.index') }}" class="text-sm font-medium text-brand-700 hover:text-brand-600">{{ __('My checkouts') }}</a>
                         </div>
                         <ul class="divide-y divide-slate-100">
                             @foreach ($checkouts as $checkout)
@@ -179,9 +179,9 @@
                                     <a href="{{ route('library.resources.show', $checkout->resource) }}" class="flex items-center justify-between gap-4 px-6 py-3.5 hover:bg-slate-50">
                                         <p class="min-w-0 truncate text-sm font-medium text-slate-900">{{ $checkout->resource->title }}</p>
                                         @if ($checkout->isOverdue())
-                                            <x-badge color="red">Overdue</x-badge>
+                                            <x-badge color="red">{{ __('Overdue') }}</x-badge>
                                         @elseif ($checkout->due_at)
-                                            <span class="shrink-0 text-xs text-slate-500">Due {{ $checkout->due_at->format('M j') }}</span>
+                                            <span class="shrink-0 text-xs text-slate-500">{{ __('Due :due_at', ['due_at' => $checkout->due_at->translatedFormat('M j')]) }}</span>
                                         @endif
                                     </a>
                                 </li>
@@ -197,10 +197,10 @@
             <section>
                 <div class="mb-5 flex items-end justify-between">
                     <div>
-                        <h2 class="text-xl font-bold tracking-tight text-slate-900">{{ $myCourses->isEmpty() ? 'Start learning today' : 'Recommended for you' }}</h2>
-                        <p class="mt-1 text-sm text-slate-500">Fresh courses from {{ $tenant->name }}.</p>
+                        <h2 class="text-xl font-bold tracking-tight text-slate-900">{{ $myCourses->isEmpty() ? __('Start learning today') : __('Recommended for you') }}</h2>
+                        <p class="mt-1 text-sm text-slate-500">{{ __('Fresh courses from :name.', ['name' => $tenant->name]) }}</p>
                     </div>
-                    <a href="{{ route('lms.courses.index') }}" class="text-sm font-semibold text-brand-700 hover:text-brand-600">View all &rarr;</a>
+                    <a href="{{ route('lms.courses.index') }}" class="text-sm font-semibold text-brand-700 hover:text-brand-600">{{ __('View all →') }}</a>
                 </div>
                 <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ($suggestedCourses as $course)
@@ -214,10 +214,10 @@
             <section>
                 <div class="mb-5 flex items-end justify-between">
                     <div>
-                        <h2 class="text-xl font-bold tracking-tight text-slate-900">Test your knowledge</h2>
-                        <p class="mt-1 text-sm text-slate-500">Timed exams with instant, auto-graded results.</p>
+                        <h2 class="text-xl font-bold tracking-tight text-slate-900">{{ __('Test your knowledge') }}</h2>
+                        <p class="mt-1 text-sm text-slate-500">{{ __('Timed exams with instant, auto-graded results.') }}</p>
                     </div>
-                    <a href="{{ route('cbt.exams.index') }}" class="text-sm font-semibold text-brand-700 hover:text-brand-600">View all &rarr;</a>
+                    <a href="{{ route('cbt.exams.index') }}" class="text-sm font-semibold text-brand-700 hover:text-brand-600">{{ __('View all →') }}</a>
                 </div>
                 <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($suggestedExams as $exam)
@@ -231,10 +231,10 @@
             <section>
                 <div class="mb-5 flex items-end justify-between">
                     <div>
-                        <h2 class="text-xl font-bold tracking-tight text-slate-900">New in the library</h2>
-                        <p class="mt-1 text-sm text-slate-500">Books, papers and study material to read online.</p>
+                        <h2 class="text-xl font-bold tracking-tight text-slate-900">{{ __('New in the library') }}</h2>
+                        <p class="mt-1 text-sm text-slate-500">{{ __('Books, papers and study material to read online.') }}</p>
                     </div>
-                    <a href="{{ route('library.resources.index') }}" class="text-sm font-semibold text-brand-700 hover:text-brand-600">Browse library &rarr;</a>
+                    <a href="{{ route('library.resources.index') }}" class="text-sm font-semibold text-brand-700 hover:text-brand-600">{{ __('Browse library →') }}</a>
                 </div>
                 <div class="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
                     @foreach ($newResources as $resource)
@@ -247,7 +247,7 @@
         {{-- Explore by area --}}
         @if ($enabledModules->isNotEmpty())
             <section>
-                <h2 class="mb-5 text-xl font-bold tracking-tight text-slate-900">Explore</h2>
+                <h2 class="mb-5 text-xl font-bold tracking-tight text-slate-900">{{ __('Explore') }}</h2>
                 <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($enabledModules as $tenantModule)
                         @php($module = $tenantModule->module)
@@ -256,8 +256,8 @@
                                 <x-icon :name="$moduleIcons[$module->value]" class="h-6 w-6" />
                             </span>
                             <span class="min-w-0 flex-1">
-                                <span class="block text-base font-semibold text-slate-900">{{ $module->label() }}</span>
-                                <span class="block text-sm text-slate-500">{{ $module->tagline() }}</span>
+                                <span class="block text-base font-semibold text-slate-900">{{ __($module->label()) }}</span>
+                                <span class="block text-sm text-slate-500">{{ __($module->tagline()) }}</span>
                             </span>
                             <x-icon name="arrow-right" class="h-5 w-5 text-slate-300 transition group-hover:translate-x-1 group-hover:text-brand-600" />
                         </a>

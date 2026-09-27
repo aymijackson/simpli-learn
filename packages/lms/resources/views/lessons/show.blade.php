@@ -25,11 +25,11 @@
         <article class="min-w-0 flex-1">
             <div class="rounded-2xl bg-white ring-1 ring-slate-200/80">
                 <div class="border-b border-slate-100 px-6 py-6 sm:px-10">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-brand-600">Lesson {{ $position }} of {{ $lessons->count() }}</p>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-brand-600">{{ __('Lesson :position of :lessons', ['position' => $position, 'lessons' => $lessons->count()]) }}</p>
                     <div class="mt-2 flex flex-wrap items-start justify-between gap-4">
                         <h1 class="font-display text-2xl leading-tight font-bold text-slate-900 sm:text-3xl">{{ $lesson->title }}</h1>
                         @if ($isCompleted)
-                            <x-badge color="green" icon="check">Completed</x-badge>
+                            <x-badge color="green" icon="check">{{ __('Completed') }}</x-badge>
                         @endif
                     </div>
                 </div>
@@ -51,15 +51,15 @@
                     </div>
                     @if ($course->isEnrolled(auth()->user()))
                         <div class="flex items-center gap-3 border-b border-slate-100 px-6 py-3 text-xs text-slate-500 sm:px-10">
-                            <span class="shrink-0">Watched <strong class="text-slate-700" data-video-percent>{{ $videoPercent }}%</strong></span>
+                            <span class="shrink-0">{{ __('Watched') }} <strong class="text-slate-700" data-video-percent>{{ $videoPercent }}%</strong></span>
                             <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full bg-brand-600 transition-all" style="width: {{ $videoPercent }}%" data-video-bar></div></div>
                             @if ($lesson->require_video_watch && ! $isCompleted)
-                                <span class="hidden shrink-0 sm:inline">Completes at {{ \Elibrary\Lms\Support\VideoEmbed::WATCHED_TO_COMPLETE }}%</span>
+                                <span class="hidden shrink-0 sm:inline">{{ __('Completes at :watched_to_complete%', ['watched_to_complete' => \Elibrary\Lms\Support\VideoEmbed::WATCHED_TO_COMPLETE]) }}</span>
                             @endif
                         </div>
                         <div class="hidden items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-6 py-3 text-sm text-emerald-800 sm:px-10" data-video-complete-banner>
-                            <span class="flex items-center gap-2"><x-icon name="check-circle" class="h-5 w-5" /> Lesson complete.</span>
-                            <a href="{{ route('lms.lessons.show', [$course, $lesson]) }}" class="font-semibold underline">Continue</a>
+                            <span class="flex items-center gap-2"><x-icon name="check-circle" class="h-5 w-5" /> {{ __('Lesson complete.') }}</span>
+                            <a href="{{ route('lms.lessons.show', [$course, $lesson]) }}" class="font-semibold underline">{{ __('Continue') }}</a>
                         </div>
                     @endif
                 @endif
@@ -78,11 +78,11 @@
                         </div>
                     </div>
                     @if ($scormProgress?->scorm_score !== null)
-                        <p class="border-b border-slate-100 px-6 py-3 text-sm text-slate-600 sm:px-10">Your score: <strong>{{ rtrim(rtrim(number_format($scormProgress->scorm_score, 1), '0'), '.') }}%</strong></p>
+                        <p class="border-b border-slate-100 px-6 py-3 text-sm text-slate-600 sm:px-10">{{ __('Your score:') }} <strong>{{ rtrim(rtrim(number_format($scormProgress->scorm_score, 1), '0'), '.') }}%</strong></p>
                     @endif
                     <div class="hidden items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-6 py-3 text-sm text-emerald-800 sm:px-10" data-scorm-complete-banner>
-                        <span class="flex items-center gap-2"><x-icon name="check-circle" class="h-5 w-5" /> Activity complete.</span>
-                        <a href="{{ route('lms.lessons.show', [$course, $lesson]) }}" class="font-semibold underline">Continue</a>
+                        <span class="flex items-center gap-2"><x-icon name="check-circle" class="h-5 w-5" /> {{ __('Activity complete.') }}</span>
+                        <a href="{{ route('lms.lessons.show', [$course, $lesson]) }}" class="font-semibold underline">{{ __('Continue') }}</a>
                     </div>
                 @endif
 
@@ -92,18 +92,18 @@
 
                 @if ($lesson->attachments->isNotEmpty())
                     <div class="space-y-3 border-t border-slate-100 px-6 py-8 sm:px-10">
-                        <h2 class="flex items-center gap-2 text-sm font-semibold text-slate-900"><x-icon name="document" class="h-4 w-4 text-slate-500" /> Attachments</h2>
+                        <h2 class="flex items-center gap-2 text-sm font-semibold text-slate-900"><x-icon name="document" class="h-4 w-4 text-slate-500" /> {{ __('Attachments') }}</h2>
                         @foreach ($lesson->attachments as $attachment)
                             <div class="rounded-xl border border-slate-200 p-4">
                                 <p class="mb-3 text-sm font-medium text-slate-900">{{ $attachment->title }}</p>
                                 @if ($attachment->access_level->value === 'open')
-                                    <x-button :href="route('lms.lessons.attachments.download', [$course, $lesson, $attachment])" variant="secondary" size="sm" icon="download">Download</x-button>
+                                    <x-button :href="route('lms.lessons.attachments.download', [$course, $lesson, $attachment])" variant="secondary" size="sm" icon="download">{{ __('Download') }}</x-button>
                                 @elseif ($attachment->type->value === 'video')
                                     <video controls preload="none" class="w-full rounded-lg bg-black" src="{{ route('lms.lessons.attachments.stream', [$course, $lesson, $attachment]) }}"></video>
                                 @elseif ($attachment->type->value === 'audio')
                                     <audio controls preload="none" class="w-full" src="{{ route('lms.lessons.attachments.stream', [$course, $lesson, $attachment]) }}"></audio>
                                 @else
-                                    <x-button :href="route('lms.lessons.attachments.stream', [$course, $lesson, $attachment])" target="_blank" variant="secondary" size="sm" icon="eye">View</x-button>
+                                    <x-button :href="route('lms.lessons.attachments.stream', [$course, $lesson, $attachment])" target="_blank" variant="secondary" size="sm" icon="eye">{{ __('View') }}</x-button>
                                 @endif
                             </div>
                         @endforeach
@@ -116,9 +116,9 @@
                         <p>
                             <strong>{{ $checkpoint['label'] }}:</strong> {{ $checkpoint['exam']->title }}.
                             @if ($checkpoint['kind'] === 'final')
-                                Pass it to complete the course.
+                                {{ __('Pass it to complete the course.') }}
                             @else
-                                Pass it to unlock what comes next.
+                                {{ __('Pass it to unlock what comes next.') }}
                             @endif
                         </p>
                     </div>
@@ -126,15 +126,15 @@
 
                 @if ($course->isEnrolled(auth()->user()) || \Elibrary\Lms\Support\Teaching::canManage(auth()->user(), $course))
                     <div class="flex items-center justify-between gap-3 border-t border-slate-100 px-6 py-4 text-sm sm:px-10">
-                        <span class="flex items-center gap-2 text-slate-600"><x-icon name="chat" class="h-4 w-4 text-slate-500" /> Questions about this lesson?</span>
-                        <a href="{{ route('lms.discussions.index', [$course, 'lesson' => $lesson->id]) }}" class="font-semibold text-brand-700 hover:underline">Discuss it</a>
+                        <span class="flex items-center gap-2 text-slate-600"><x-icon name="chat" class="h-4 w-4 text-slate-500" /> {{ __('Questions about this lesson?') }}</span>
+                        <a href="{{ route('lms.discussions.index', [$course, 'lesson' => $lesson->id]) }}" class="font-semibold text-brand-700 hover:underline">{{ __('Discuss it') }}</a>
                     </div>
                 @endif
 
                 <div class="flex flex-col-reverse gap-3 border-t border-slate-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-10">
                     <div>
                         @if ($previous)
-                            <x-button variant="ghost" :href="route('lms.lessons.show', [$course, $previous])" icon="arrow-left">Previous</x-button>
+                            <x-button variant="ghost" :href="route('lms.lessons.show', [$course, $previous])" icon="arrow-left">{{ __('Previous') }}</x-button>
                         @endif
                     </div>
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -144,18 +144,18 @@
                             @else
                                 <form method="POST" action="{{ route('lms.lessons.complete', [$course, $lesson]) }}">
                                     @csrf
-                                    <x-button type="submit" icon="check" class="w-full sm:w-auto">Mark as complete</x-button>
+                                    <x-button type="submit" icon="check" class="w-full sm:w-auto">{{ __('Mark as complete') }}</x-button>
                                 </form>
                             @endif
                         @endunless
                         @if ($checkpoint && $checkpoint['exam']->is_published && in_array($checkpoint['status'], ['open', 'marking'], true))
                             <x-button :variant="$isCompleted ? 'primary' : 'secondary'" :href="route('cbt.exams.show', $checkpoint['exam'])" icon="clipboard-check">
-                                {{ $checkpoint['status'] === 'marking' ? 'Quiz awaiting marking' : 'Take the '.strtolower($checkpoint['label']) }}
+                                {{ $checkpoint['status'] === 'marking' ? __('Quiz awaiting marking') : __('Take the :next_checkpoint', ['next_checkpoint' => mb_strtolower($checkpoint['label'])]) }}
                             </x-button>
                         @elseif ($next && $nextIsOpen)
-                            <x-button :variant="$isCompleted ? 'primary' : 'secondary'" :href="route('lms.lessons.show', [$course, $next])" icon-right="arrow-right">Next lesson</x-button>
+                            <x-button :variant="$isCompleted ? 'primary' : 'secondary'" :href="route('lms.lessons.show', [$course, $next])" icon-right="arrow-right">{{ __('Next lesson') }}</x-button>
                         @elseif ($next && $isCompleted)
-                            <x-button variant="secondary" :href="route('lms.courses.show', $course)" icon-right="arrow-right">Back to the course</x-button>
+                            <x-button variant="secondary" :href="route('lms.courses.show', $course)" icon-right="arrow-right">{{ __('Back to the course') }}</x-button>
                         @endif
                     </div>
                 </div>
@@ -166,8 +166,8 @@
         <aside class="lg:w-80 lg:shrink-0">
             <div class="overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/80 lg:sticky lg:top-32">
                 <div class="border-b border-slate-100 px-5 py-4">
-                    <p class="text-sm font-semibold text-slate-900">Course content</p>
-                    <p class="text-xs text-slate-500">{{ $completedIds->count() }} of {{ $lessons->count() }} complete</p>
+                    <p class="text-sm font-semibold text-slate-900">{{ __('Course content') }}</p>
+                    <p class="text-xs text-slate-500">{{ __(':completed_ids of :lessons complete', ['completed_ids' => $completedIds->count(), 'lessons' => $lessons->count()]) }}</p>
                 </div>
                 <ol class="max-h-[60vh] divide-y divide-slate-100 overflow-y-auto">
                     @foreach ($lessons as $item)

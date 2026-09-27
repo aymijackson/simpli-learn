@@ -6,14 +6,24 @@ namespace App\Models;
 use App\Enums\UserRole;
 use App\Models\Concerns\BelongsToTenant;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasLocalePreference
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, BelongsToTenant;
+
+    /**
+     * The language for this person's emails and in-app notifications: their
+     * own choice, else their workspace's default, else the app default.
+     */
+    public function preferredLocale(): ?string
+    {
+        return $this->locale ?? $this->tenant?->locale;
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -24,7 +34,7 @@ class User extends Authenticatable
         'tenant_id',
         'role',
         'name',
-        'email', 'bio',
+        'email', 'bio', 'locale',
         'password',
     ];
 

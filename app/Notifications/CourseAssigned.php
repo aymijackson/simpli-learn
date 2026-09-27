@@ -27,8 +27,10 @@ class CourseAssigned extends Notification
         $course = $this->assignment->course;
 
         return [
-            'title' => 'New course assigned',
-            'body' => "{$this->assignedBy} assigned you {$course->title}".($this->assignment->due_at ? ', due '.$this->assignment->due_at->format('j M') : '').'.',
+            'title' => __('New course assigned'),
+            'body' => $this->assignment->due_at
+                ? __(':by assigned you :course, due :date.', ['by' => $this->assignedBy, 'course' => $course->title, 'date' => $this->assignment->due_at->translatedFormat('j M')])
+                : __(':by assigned you :course.', ['by' => $this->assignedBy, 'course' => $course->title]),
             'url' => route('lms.courses.show', ['tenant' => $this->tenant->slug, 'course' => $course->slug]),
             'icon' => 'academic-cap',
             'tone' => 'indigo',
@@ -39,16 +41,16 @@ class CourseAssigned extends Notification
     {
         $course = $this->assignment->course;
         $message = (new MailMessage)
-            ->subject("New course assigned: {$course->title}")
-            ->greeting("Hello {$notifiable->name},")
-            ->line("{$this->assignedBy} has assigned you the course **{$course->title}** on {$this->tenant->name}.");
+            ->subject(__('New course assigned: :course', ['course' => $course->title]))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__(':by has assigned you the course **:course** on :workspace.', ['by' => $this->assignedBy, 'course' => $course->title, 'workspace' => $this->tenant->name]));
 
         if ($this->assignment->due_at) {
-            $message->line('Please complete it by **'.$this->assignment->due_at->format('l, j F Y').'**.');
+            $message->line(__('Please complete it by **:date**.', ['date' => $this->assignment->due_at->translatedFormat('l, j F Y')]));
         }
 
         return $message
-            ->line("You're already enrolled — just sign in and start. Your progress is saved as you go.")
-            ->action('Start the course', route('lms.courses.show', ['tenant' => $this->tenant->slug, 'course' => $course->slug]));
+            ->line(__("You're already enrolled — just sign in and start. Your progress is saved as you go."))
+            ->action(__('Start the course'), route('lms.courses.show', ['tenant' => $this->tenant->slug, 'course' => $course->slug]));
     }
 }

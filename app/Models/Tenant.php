@@ -23,6 +23,7 @@ class Tenant extends Model
         'brand_color',
         'sso_providers',
         'sso_domains',
+        'locale',
     ];
 
     protected function casts(): array

@@ -70,7 +70,7 @@ class LessonController extends Controller
 
         return redirect()
             ->route('lms.lessons.show', [$course, $lesson])
-            ->with('status', 'Marked as complete.');
+            ->with('status', __('Marked as complete.'));
     }
 
     /**

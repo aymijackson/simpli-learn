@@ -12,15 +12,15 @@
 
         <div class="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-4 text-xs text-slate-500">
             @isset($exam->questions_count)
-                <span class="inline-flex items-center gap-1"><x-icon name="question" class="h-3.5 w-3.5" /> {{ $exam->questions_per_attempt ? min($exam->questions_per_attempt, $exam->questions_count) : $exam->questions_count }} questions</span>
+                <span class="inline-flex items-center gap-1"><x-icon name="question" class="h-3.5 w-3.5" /> {{ __(':questions_count questions', ['questions_count' => $exam->questions_per_attempt ? min($exam->questions_per_attempt, $exam->questions_count) : $exam->questions_count]) }}</span>
             @endisset
-            <span class="inline-flex items-center gap-1"><x-icon name="clock" class="h-3.5 w-3.5" /> {{ $exam->duration_minutes }} min</span>
-            <span class="inline-flex items-center gap-1"><x-icon name="flag" class="h-3.5 w-3.5" /> Pass {{ $exam->pass_percentage }}%</span>
+            <span class="inline-flex items-center gap-1"><x-icon name="clock" class="h-3.5 w-3.5" /> {{ __(':duration_minutes min', ['duration_minutes' => $exam->duration_minutes]) }}</span>
+            <span class="inline-flex items-center gap-1"><x-icon name="flag" class="h-3.5 w-3.5" /> {{ __('Pass :pass_percentage%', ['pass_percentage' => $exam->pass_percentage]) }}</span>
         </div>
 
         @if ($best !== null)
             <div class="mt-3 flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs">
-                <span class="text-slate-500">Your best</span>
+                <span class="text-slate-500">{{ __('Your best') }}</span>
                 <span class="font-bold {{ $best >= $exam->pass_percentage ? 'text-emerald-700' : 'text-rose-700' }}">{{ $best }}%</span>
             </div>
         @endif

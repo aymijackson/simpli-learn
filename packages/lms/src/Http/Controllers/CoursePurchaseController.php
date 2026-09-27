@@ -148,6 +148,6 @@ class CoursePurchaseController extends Controller
 
         return redirect()
             ->route('lms.courses.show', $course)
-            ->with('status', "Thanks — we've recorded your payment claim. The organization will confirm it shortly.");
+            ->with('status', __("Thanks — we've recorded your payment claim. The organization will confirm it shortly."));
     }
 }

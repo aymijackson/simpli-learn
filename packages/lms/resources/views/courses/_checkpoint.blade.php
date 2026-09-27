@@ -31,15 +31,15 @@
         @unless ($compact ?? false)
             <span class="shrink-0 text-xs">
                 @if (! $exam->is_published)
-                    <span class="text-slate-500">Not available yet</span>
+                    <span class="text-slate-500">{{ __('Not available yet') }}</span>
                 @elseif ($status === 'passed')
-                    <x-badge color="green">Passed</x-badge>
+                    <x-badge color="green">{{ __('Passed') }}</x-badge>
                 @elseif ($status === 'marking')
-                    <x-badge color="amber">Awaiting marking</x-badge>
+                    <x-badge color="amber">{{ __('Awaiting marking') }}</x-badge>
                 @elseif ($status === 'open')
-                    <span class="font-semibold text-brand-700">Take it &rarr;</span>
+                    <span class="font-semibold text-brand-700">{{ __('Take it →') }}</span>
                 @else
-                    <span class="text-slate-500">Unlocks as you progress</span>
+                    <span class="text-slate-500">{{ __('Unlocks as you progress') }}</span>
                 @endif
             </span>
         @endunless

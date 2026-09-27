@@ -53,7 +53,7 @@ class LearningPathController extends Controller
         $step = $path->stepsFor($request->user())->first(fn ($step) => in_array($step['status'], ['in_progress', 'not_started'], true));
 
         if (! $step) {
-            return redirect()->route('lms.paths.show', $path)->with('status', 'Nothing more to start here right now.');
+            return redirect()->route('lms.paths.show', $path)->with('status', __('Nothing more to start here right now.'));
         }
 
         $course = $step['course'];
@@ -66,6 +66,6 @@ class LearningPathController extends Controller
             $course->enrollments()->firstOrCreate(['user_id' => $request->user()->id], ['enrolled_at' => now()]);
         }
 
-        return redirect()->route('lms.courses.show', $course)->with('status', "Part of {$path->title}: {$course->title}.");
+        return redirect()->route('lms.courses.show', $course)->with('status', __('Part of :path: :course.', ['path' => $path->title, 'course' => $course->title]));
     }
 }

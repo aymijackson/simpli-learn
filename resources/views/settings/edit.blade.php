@@ -52,6 +52,16 @@
                     @error('brand_color')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </fieldset>
 
+                <div>
+                    <label for="workspace-locale" class="mb-1.5 block text-sm font-medium text-slate-700">Default language</label>
+                    <select id="workspace-locale" name="locale" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                        @foreach (config('languages.available') as $code => $name)
+                            <option value="{{ $code }}" @selected(old('locale', $workspace->locale ?? config('app.locale')) === $code)>{{ $name }}@if (in_array($code, config('languages.beta'), true)) (beta — machine-drafted, please review)@endif</option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-slate-500">What learners see unless they choose another language in their profile. The back office is in English for now.</p>
+                </div>
+
                 <fieldset class="space-y-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
                     <legend class="px-1 text-sm font-semibold text-slate-900">Single sign-on</legend>
                     @if ($ssoAvailable)

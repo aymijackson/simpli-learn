@@ -23,7 +23,7 @@ class BadgeEarned extends Notification
     protected function inApp(object $notifiable): array
     {
         return [
-            'title' => 'Badge earned: '.$this->badge->label(),
+            'title' => __('Badge earned: :badge', ['badge' => $this->badge->label()]),
             'body' => $this->badge->description(),
             'url' => route('tenant.home', ['tenant' => $this->tenant->slug]).'#achievements',
             'icon' => $this->badge->icon(),

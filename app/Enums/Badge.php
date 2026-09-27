@@ -16,26 +16,26 @@ enum Badge: string
     public function label(): string
     {
         return match ($this) {
-            self::FirstLesson => 'First step',
-            self::FirstCourse => 'Course finisher',
-            self::FiveCourses => 'Dedicated learner',
-            self::FirstPass => 'Exam passed',
-            self::PerfectScore => 'Perfect score',
-            self::Streak7 => 'Week streak',
-            self::Streak30 => 'Month streak',
+            self::FirstLesson => __('First step'),
+            self::FirstCourse => __('Course finisher'),
+            self::FiveCourses => __('Dedicated learner'),
+            self::FirstPass => __('Exam passed'),
+            self::PerfectScore => __('Perfect score'),
+            self::Streak7 => __('Week streak'),
+            self::Streak30 => __('Month streak'),
         };
     }
 
     public function description(): string
     {
         return match ($this) {
-            self::FirstLesson => 'Completed your first lesson.',
-            self::FirstCourse => 'Completed a whole course.',
-            self::FiveCourses => 'Completed five courses.',
-            self::FirstPass => 'Passed an exam.',
-            self::PerfectScore => 'Scored 100% on an exam.',
-            self::Streak7 => 'Learned on 7 days in a row.',
-            self::Streak30 => 'Learned on 30 days in a row.',
+            self::FirstLesson => __('Completed your first lesson.'),
+            self::FirstCourse => __('Completed a whole course.'),
+            self::FiveCourses => __('Completed five courses.'),
+            self::FirstPass => __('Passed an exam.'),
+            self::PerfectScore => __('Scored 100% on an exam.'),
+            self::Streak7 => __('Learned on 7 days in a row.'),
+            self::Streak30 => __('Learned on 30 days in a row.'),
         };
     }
 

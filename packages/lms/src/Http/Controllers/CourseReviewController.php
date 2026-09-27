@@ -30,7 +30,7 @@ class CourseReviewController extends Controller
             ['tenant_id' => app(Tenancy::class)->id(), 'stars' => $validated['stars'], 'comment' => $validated['comment'] ?? null],
         );
 
-        return redirect(route('lms.courses.show', $course).'#reviews')->with('status', 'Thanks for your review!');
+        return redirect(route('lms.courses.show', $course).'#reviews')->with('status', __('Thanks for your review!'));
     }
 
     public function destroy(Request $request, string $tenant, Course $course, CourseReview $review): RedirectResponse
@@ -47,6 +47,6 @@ class CourseReviewController extends Controller
 
         $review->delete();
 
-        return redirect(route('lms.courses.show', $course).'#reviews')->with('status', 'Review removed.');
+        return redirect(route('lms.courses.show', $course).'#reviews')->with('status', __('Review removed.'));
     }
 }

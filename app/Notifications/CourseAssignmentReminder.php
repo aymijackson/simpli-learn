@@ -28,8 +28,8 @@ class CourseAssignmentReminder extends Notification
         $overdue = $this->assignment->due_at->isPast();
 
         return [
-            'title' => $overdue ? 'Course overdue' : 'Course due soon',
-            'body' => "{$course->title} ".($overdue ? 'was' : 'is').' due '.$this->assignment->due_at->format('j M')." — you're {$this->progress}% through.",
+            'title' => $overdue ? __('Course overdue') : __('Course due soon'),
+            'body' => __($overdue ? ":course was due :date — you're :progress% through." : ":course is due :date — you're :progress% through.", ['course' => $course->title, 'date' => $this->assignment->due_at->translatedFormat('j M'), 'progress' => $this->progress]),
             'url' => route('lms.courses.show', ['tenant' => $this->tenant->slug, 'course' => $course->slug]),
             'icon' => 'clock',
             'tone' => $overdue ? 'rose' : 'amber',
@@ -43,13 +43,15 @@ class CourseAssignmentReminder extends Notification
         $overdue = $due->isPast();
 
         return (new MailMessage)
-            ->subject($overdue ? "Overdue: {$course->title}" : "Reminder: {$course->title} is due ".$due->format('j M'))
-            ->greeting("Hello {$notifiable->name},")
+            ->subject($overdue ? __('Overdue: :course', ['course' => $course->title]) : __('Reminder: :course is due :date', ['course' => $course->title, 'date' => $due->translatedFormat('j M')]))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
             ->line($overdue
-                ? "The course **{$course->title}** was due on ".$due->format('l, j F Y').' and is not finished yet.'
-                : "The course **{$course->title}** is due on **".$due->format('l, j F Y').'**.')
-            ->line("You're {$this->progress}% of the way through.")
-            ->action($this->progress > 0 ? 'Continue the course' : 'Start the course', route('lms.courses.show', ['tenant' => $this->tenant->slug, 'course' => $course->slug]))
-            ->line("If you've already finished, make sure every lesson is marked complete".($course->final_exam_id ? ' and the final assessment is passed' : '').'.');
+                ? __('The course **:course** was due on :date and is not finished yet.', ['course' => $course->title, 'date' => $due->translatedFormat('l, j F Y')])
+                : __('The course **:course** is due on **:date**.', ['course' => $course->title, 'date' => $due->translatedFormat('l, j F Y')]))
+            ->line(__("You're :progress% of the way through.", ['progress' => $this->progress]))
+            ->action($this->progress > 0 ? __('Continue the course') : __('Start the course'), route('lms.courses.show', ['tenant' => $this->tenant->slug, 'course' => $course->slug]))
+            ->line($course->final_exam_id
+                ? __("If you've already finished, make sure every lesson is marked complete and the final assessment is passed.")
+                : __("If you've already finished, make sure every lesson is marked complete."));
     }
 }

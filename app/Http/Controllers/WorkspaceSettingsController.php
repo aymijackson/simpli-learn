@@ -41,12 +41,16 @@ class WorkspaceSettingsController extends Controller
             'sso_providers' => ['nullable', 'array'],
             'sso_providers.*' => [Rule::in(array_keys(SingleSignOn::available()))],
             'sso_domains' => ['nullable', 'string', 'max:500'],
+            'locale' => ['nullable', Rule::in(array_keys(config('languages.available')))],
         ], [
             'brand_color.regex' => 'Use a colour like #1d4ed8.',
             'logo.mimes' => 'Upload a PNG, JPG or WebP image.',
         ]);
 
         $changes = ['name' => $validated['name']];
+        if ($request->exists('locale')) {
+            $changes['locale'] = $validated['locale'] ?? null;
+        }
         // Only touch the colour when the form sent the field (empty = back to the default).
         if ($request->exists('brand_color')) {
             $changes['brand_color'] = filled($validated['brand_color'] ?? null) ? strtolower($validated['brand_color']) : null;

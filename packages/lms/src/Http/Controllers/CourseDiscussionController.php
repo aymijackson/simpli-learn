@@ -72,7 +72,7 @@ class CourseDiscussionController extends Controller
         }
         SafeNotifier::send($staff->values(), new DiscussionActivity($discussion, 'new', $request->user()->name, app(Tenancy::class)->current()));
 
-        return redirect()->route('lms.discussions.show', [$course, $discussion])->with('status', 'Your question is posted.');
+        return redirect()->route('lms.discussions.show', [$course, $discussion])->with('status', __('Your question is posted.'));
     }
 
     public function show(Request $request, string $tenant, Course $course, CourseDiscussion $discussion): View
@@ -118,7 +118,7 @@ class CourseDiscussionController extends Controller
             ->values();
         SafeNotifier::send($people, new DiscussionActivity($discussion, 'reply', $request->user()->name, app(Tenancy::class)->current()));
 
-        return redirect()->to(route('lms.discussions.show', [$course, $discussion]).'#latest')->with('status', 'Reply posted.');
+        return redirect()->to(route('lms.discussions.show', [$course, $discussion]).'#latest')->with('status', __('Reply posted.'));
     }
 
     /** The asker, or staff, marks the reply that answered the question. */
@@ -131,7 +131,7 @@ class CourseDiscussionController extends Controller
         $discussion->forceFill(['answer_reply_id' => $discussion->answer_reply_id === $reply->id ? null : $reply->id])->save();
 
         return redirect()->route('lms.discussions.show', [$course, $discussion])
-            ->with('status', $discussion->answer_reply_id ? 'Marked as the answer.' : 'Answer unmarked.');
+            ->with('status', $discussion->answer_reply_id ? __('Marked as the answer.') : __('Answer unmarked.'));
     }
 
     public function moderate(Request $request, string $tenant, Course $course, CourseDiscussion $discussion): RedirectResponse
@@ -148,10 +148,10 @@ class CourseDiscussionController extends Controller
         })->save();
 
         return back()->with('status', match ($action) {
-            'pin' => 'Discussion pinned to the top.',
-            'unpin' => 'Discussion unpinned.',
-            'lock' => 'Discussion closed to new replies.',
-            'unlock' => 'Discussion reopened.',
+            'pin' => __('Discussion pinned to the top.'),
+            'unpin' => __('Discussion unpinned.'),
+            'lock' => __('Discussion closed to new replies.'),
+            'unlock' => __('Discussion reopened.'),
         });
     }
 
@@ -164,7 +164,7 @@ class CourseDiscussionController extends Controller
 
         $discussion->delete();
 
-        return redirect()->route('lms.discussions.index', $course)->with('status', 'Discussion deleted.');
+        return redirect()->route('lms.discussions.index', $course)->with('status', __('Discussion deleted.'));
     }
 
     public function destroyReply(Request $request, string $tenant, Course $course, CourseDiscussion $discussion, CourseDiscussionReply $reply): RedirectResponse
@@ -180,7 +180,7 @@ class CourseDiscussionController extends Controller
             ])->save();
         });
 
-        return redirect()->route('lms.discussions.show', [$course, $discussion])->with('status', 'Reply deleted.');
+        return redirect()->route('lms.discussions.show', [$course, $discussion])->with('status', __('Reply deleted.'));
     }
 
     private function authorizeParticipant(Request $request, Course $course): void

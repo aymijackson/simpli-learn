@@ -45,14 +45,14 @@ class SingleSignOnController extends Controller
         try {
             $account = Socialite::driver($provider)->redirectUrl(route('sso.callback', $provider))->user();
         } catch (Throwable) {
-            return $login('Sign-in with '.SingleSignOn::PROVIDERS[$provider].' was cancelled or failed. Please try again.');
+            return $login(__('Sign-in with :provider was cancelled or failed. Please try again.', ['provider' => SingleSignOn::PROVIDERS[$provider]]));
         }
 
         $email = Str::lower(trim((string) $account->getEmail()));
         // Google says whether it verified the address; Microsoft work accounts are managed by the organisation.
         $verified = $provider !== 'google' || (bool) ($account->user['email_verified'] ?? $account->user['verified_email'] ?? false);
         if ($email === '' || ! $verified) {
-            return $login('Your '.SingleSignOn::PROVIDERS[$provider].' account has no verified email address.');
+            return $login(__('Your :provider account has no verified email address.', ['provider' => SingleSignOn::PROVIDERS[$provider]]));
         }
 
         $user = User::withoutGlobalScopes()->where('tenant_id', $workspace->id)->whereRaw('lower(email) = ?', [$email])->first();
@@ -70,10 +70,10 @@ class SingleSignOnController extends Controller
         }
 
         if (! $user) {
-            return $login("There's no account for {$email} in {$workspace->name}. Ask your administrator to invite you.");
+            return $login(__("There's no account for :email in :workspace. Ask your administrator to invite you.", ['email' => $email, 'workspace' => $workspace->name]));
         }
         if ($user->isDeactivated()) {
-            return $login('This account has been deactivated. Contact your workspace administrator.');
+            return $login(__('This account has been deactivated. Contact your workspace administrator.'));
         }
 
         // Two-step login still applies after SSO.

@@ -25,21 +25,21 @@ class AddedToWorkspace extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $message = (new MailMessage)
-            ->subject("You've been invited to {$this->tenant->name}")
-            ->greeting("Welcome, {$notifiable->name}!")
-            ->line("{$this->addedBy} has added you to **{$this->tenant->name}** on e-Library, where you can take courses, sit exams and use the digital library.");
+            ->subject(__("You've been invited to :workspace", ['workspace' => $this->tenant->name]))
+            ->greeting(__('Welcome, :name!', ['name' => $notifiable->name]))
+            ->line(__(':by has added you to **:workspace** on e-Library, where you can take courses, sit exams and use the digital library.', ['by' => $this->addedBy, 'workspace' => $this->tenant->name]));
 
         if ($this->setPasswordUrl) {
             return $message
-                ->line('To get started, choose a password for your account.')
-                ->action('Set your password', $this->setPasswordUrl)
-                ->line("This link works for 7 days. After that, use **Forgot password?** on the login page, or ask {$this->addedBy} to send a new invitation.")
-                ->line('Your login email is '.$notifiable->email.'.');
+                ->line(__('To get started, choose a password for your account.'))
+                ->action(__('Set your password'), $this->setPasswordUrl)
+                ->line(__('This link works for 7 days. After that, use **Forgot password?** on the login page, or ask :by to send a new invitation.', ['by' => $this->addedBy]))
+                ->line(__('Your login email is :email.', ['email' => $notifiable->email]));
         }
 
         return $message
-            ->line("Log in with this email address ({$notifiable->email}).")
-            ->action('Log in', route('tenant.login', $this->tenant->slug))
-            ->line("Don't know your password? Use **Forgot password?** on the login page to set your own.");
+            ->line(__('Log in with this email address (:email).', ['email' => $notifiable->email]))
+            ->action(__('Log in'), route('tenant.login', $this->tenant->slug))
+            ->line(__("Don't know your password? Use **Forgot password?** on the login page to set your own."));
     }
 }

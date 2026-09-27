@@ -177,11 +177,11 @@ class Exam extends Model implements SharedAcrossTenants
         }
 
         if ($this->available_from && now()->lt($this->available_from)) {
-            return 'This exam opens '.$this->available_from->format('M j, Y g:ia').'.';
+            return __('This exam opens :date.', ['date' => $this->available_from->translatedFormat('M j, Y g:ia')]);
         }
 
         if ($this->available_until && now()->gt($this->available_until)) {
-            return 'This exam closed '.$this->available_until->format('M j, Y g:ia').'.';
+            return __('This exam closed :date.', ['date' => $this->available_until->translatedFormat('M j, Y g:ia')]);
         }
 
         $submittedCount = $this->attempts()->where('user_id', $user->id)->whereNotNull('submitted_at')->count();
@@ -191,11 +191,11 @@ class Exam extends Model implements SharedAcrossTenants
         }
 
         if (! $this->allow_retakes) {
-            return 'You have already taken this exam and retakes are not allowed.';
+            return __('You have already taken this exam and retakes are not allowed.');
         }
 
         if ($this->max_attempts && $submittedCount >= $this->max_attempts) {
-            return "You've used all {$this->max_attempts} attempt(s) for this exam.";
+            return __("You've used all :count attempt(s) for this exam.", ['count' => $this->max_attempts]);
         }
 
         return null;

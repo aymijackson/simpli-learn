@@ -6,11 +6,11 @@
         <div class="relative aspect-[16/9] overflow-hidden bg-slate-100">
             <img src="{{ $course->coverUrl() }}" alt="" loading="lazy" class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]">
             @if ($progress === null && ! $course->isPaidHere())
-                <span class="absolute bottom-3 left-4 rounded-full bg-black/40 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">Free</span>
+                <span class="absolute bottom-3 left-4 rounded-full bg-black/40 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">{{ __('Free') }}</span>
             @endif
         </div>
     @else
-        <x-cover :seed="$course->title" icon="academic-cap" class="aspect-[16/9]" :label="$progress === null ? ($course->isPaidHere() ? null : 'Free') : null" />
+        <x-cover :seed="$course->title" icon="academic-cap" class="aspect-[16/9]" :label="$progress === null ? ($course->isPaidHere() ? null : __('Free')) : null" />
     @endif
 
     <div class="flex flex-1 flex-col p-5">
@@ -36,13 +36,13 @@
 
         <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
             @isset($course->lessons_count)
-                <span class="inline-flex items-center gap-1"><x-icon name="play" class="h-3.5 w-3.5" /> {{ $course->lessons_count }} {{ \Illuminate\Support\Str::plural('lesson', $course->lessons_count) }}</span>
+                <span class="inline-flex items-center gap-1"><x-icon name="play" class="h-3.5 w-3.5" /> {{ $course->lessons_count }} {{ trans_choice('lesson|lessons', $course->lessons_count) }}</span>
             @endisset
             @if ($course->certificate_policy->value !== 'none')
-                <span class="inline-flex items-center gap-1"><x-icon name="trophy" class="h-3.5 w-3.5" /> Certificate</span>
+                <span class="inline-flex items-center gap-1"><x-icon name="trophy" class="h-3.5 w-3.5" /> {{ __('Certificate') }}</span>
             @endif
             @if ($course->assessment_mode->value !== 'none')
-                <span class="inline-flex items-center gap-1"><x-icon name="clipboard-check" class="h-3.5 w-3.5" /> Assessed</span>
+                <span class="inline-flex items-center gap-1"><x-icon name="clipboard-check" class="h-3.5 w-3.5" /> {{ __('Assessed') }}</span>
             @endif
             @if ($course->durationLabel())
                 <span class="inline-flex items-center gap-1"><x-icon name="clock" class="h-3.5 w-3.5" /> {{ $course->durationLabel() }}</span>
@@ -56,12 +56,12 @@
             @if ($progress !== null)
                 <x-progress :value="$progress" label />
                 <p class="mt-2 text-xs font-semibold {{ $progress === 100 ? 'text-emerald-600' : 'text-brand-700' }}">
-                    {{ $progress === 100 ? 'Completed' : ($progress === 0 ? 'Start course' : 'Continue learning') }} &rarr;
+                    {{ $progress === 100 ? __('Completed') : ($progress === 0 ? __('Start course') : __('Continue learning')) }} &rarr;
                 </p>
             @elseif ($course->isPaidHere())
                 <p class="text-base font-bold text-slate-900">{{ $course->currency }} {{ number_format($course->price, 2) }}</p>
             @else
-                <p class="text-base font-bold text-emerald-700">Free</p>
+                <p class="text-base font-bold text-emerald-700">{{ __('Free') }}</p>
             @endif
         </div>
     </div>

@@ -25,8 +25,8 @@ class InstructorAssigned extends Notification
     protected function inApp(object $notifiable): array
     {
         return [
-            'title' => 'You now teach a course',
-            'body' => "{$this->assignedBy} made you an instructor on {$this->course->title}.",
+            'title' => __('You now teach a course'),
+            'body' => __(':by made you an instructor on :course.', ['by' => $this->assignedBy, 'course' => $this->course->title]),
             'url' => $this->url(),
             'icon' => 'academic-cap',
             'tone' => 'brand',
@@ -36,11 +36,11 @@ class InstructorAssigned extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("You're teaching {$this->course->title}")
-            ->greeting("Hello {$notifiable->name},")
-            ->line("{$this->assignedBy} has made you an instructor on **{$this->course->title}** at {$this->tenant->name}.")
-            ->line('You can now edit its lessons, follow learners\' progress and mark written exam answers. Sign-in needs two-step login for this, so you may be asked to turn it on first.')
-            ->action('Open the course', $this->url());
+            ->subject(__("You're teaching :course", ['course' => $this->course->title]))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__(':by has made you an instructor on **:course** at :workspace.', ['by' => $this->assignedBy, 'course' => $this->course->title, 'workspace' => $this->tenant->name]))
+            ->line(__("You can now edit its lessons, follow learners' progress and mark written exam answers. Sign-in needs two-step login for this, so you may be asked to turn it on first."))
+            ->action(__('Open the course'), $this->url());
     }
 
     private function url(): string

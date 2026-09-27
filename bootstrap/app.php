@@ -8,6 +8,7 @@ use App\Http\Middleware\EnsureTenantOwner;
 use App\Http\Middleware\IdentifyTenant;
 use App\Http\Middleware\RequireTwoFactor;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetLocale;
 use App\Support\Monitoring\ErrorAlerter;
 use App\Support\Tenancy\Tenancy;
 use Elibrary\Lms\Http\Middleware\EnsureCanTeach;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             IdentifyTenant::class,
             SecurityHeaders::class,
             EnsureAccountIsActive::class,
+            SetLocale::class,
         ]);
 
         // Tenant resolution must happen before auth/guest checks, since which

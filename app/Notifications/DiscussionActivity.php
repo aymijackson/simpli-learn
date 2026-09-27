@@ -28,8 +28,8 @@ class DiscussionActivity extends Notification
         $title = Str::limit($this->discussion->title, 80);
 
         return [
-            'title' => $this->kind === 'new' ? "New question in {$course->title}" : "New reply: {$title}",
-            'body' => $this->kind === 'new' ? "{$this->by} asked: {$title}" : "{$this->by} replied in {$course->title}.",
+            'title' => $this->kind === 'new' ? __('New question in :course', ['course' => $course->title]) : __('New reply: :title', ['title' => $title]),
+            'body' => $this->kind === 'new' ? __(':by asked: :title', ['by' => $this->by, 'title' => $title]) : __(':by replied in :course.', ['by' => $this->by, 'course' => $course->title]),
             'url' => route('lms.discussions.show', ['tenant' => $this->tenant->slug, 'course' => $course->slug, 'discussion' => $this->discussion->id]),
             'icon' => 'chat',
             'tone' => 'indigo',

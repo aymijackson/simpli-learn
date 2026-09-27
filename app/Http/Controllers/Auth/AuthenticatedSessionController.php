@@ -46,7 +46,7 @@ class AuthenticatedSessionController extends Controller
             $seconds = RateLimiter::availableIn($throttleKey);
 
             throw ValidationException::withMessages([
-                'email' => 'Too many login attempts. Please try again in '.ceil($seconds / 60).' '.Str::plural('minute', (int) ceil($seconds / 60)).'.',
+                'email' => __('Too many login attempts. Please try again in :minutes :noun.', ['minutes' => (int) ceil($seconds / 60), 'noun' => trans_choice('minute|minutes', (int) ceil($seconds / 60))]),
             ]);
         }
 
@@ -59,7 +59,7 @@ class AuthenticatedSessionController extends Controller
             event(new Failed('web', $guard->getLastAttempted(), $credentials));
 
             return back()->withErrors([
-                'email' => 'These credentials do not match our records.',
+                'email' => __('These credentials do not match our records.'),
             ])->onlyInput('email');
         }
 
@@ -70,7 +70,7 @@ class AuthenticatedSessionController extends Controller
             ActivityLog::record('auth.failed', 'Sign-in blocked: account is deactivated', actor: $user);
 
             return back()->withErrors([
-                'email' => 'This account has been deactivated. Contact your workspace administrator.',
+                'email' => __('This account has been deactivated. Contact your workspace administrator.'),
             ])->onlyInput('email');
         }
 

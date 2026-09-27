@@ -12,8 +12,8 @@
         <div class="bg-dots absolute inset-0 -z-10"></div>
         <div class="absolute -top-32 right-10 -z-10 h-80 w-80 rounded-full bg-indigo-500/25 blur-3xl"></div>
         <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-            <nav class="flex items-center gap-2 text-sm text-slate-400" aria-label="Breadcrumb">
-                <a href="{{ route('lms.paths.index') }}" class="hover:text-white">Paths</a>
+            <nav class="flex items-center gap-2 text-sm text-slate-400" aria-label="{{ __('Breadcrumb') }}">
+                <a href="{{ route('lms.paths.index') }}" class="hover:text-white">{{ __('Paths') }}</a>
                 <x-icon name="chevron-right" class="h-4 w-4" />
                 <span class="truncate text-slate-300">{{ $path->title }}</span>
             </nav>
@@ -24,24 +24,24 @@
                         <p class="mt-4 text-base leading-relaxed whitespace-pre-line text-slate-300">{{ $path->description }}</p>
                     @endif
                     <p class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-300">
-                        <span class="inline-flex items-center gap-1.5"><x-icon name="academic-cap" class="h-4 w-4 text-indigo-300" /> {{ $steps->count() }} {{ \Illuminate\Support\Str::plural('course', $steps->count()) }}</span>
+                        <span class="inline-flex items-center gap-1.5"><x-icon name="academic-cap" class="h-4 w-4 text-indigo-300" /> {{ $steps->count() }} {{ trans_choice('course|courses', $steps->count()) }}</span>
                         @if ($path->is_sequential)
-                            <span class="inline-flex items-center gap-1.5"><x-icon name="flag" class="h-4 w-4 text-indigo-300" /> Taken in order</span>
+                            <span class="inline-flex items-center gap-1.5"><x-icon name="flag" class="h-4 w-4 text-indigo-300" /> {{ __('Taken in order') }}</span>
                         @endif
                     </p>
                 </div>
                 <div class="w-full shrink-0 rounded-2xl bg-white/5 p-5 ring-1 ring-white/10 lg:w-80">
-                    <p class="text-sm text-slate-300">Your progress</p>
+                    <p class="text-sm text-slate-300">{{ __('Your progress') }}</p>
                     <p class="mt-1 text-3xl font-bold">{{ $percent }}%</p>
                     <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div class="h-full rounded-full bg-emerald-400" style="width: {{ $percent }}%"></div></div>
                     @if ($percent === 100)
-                        <p class="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-300"><x-icon name="check-circle" class="h-5 w-5" /> Path complete</p>
+                        <p class="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-300"><x-icon name="check-circle" class="h-5 w-5" /> {{ __('Path complete') }}</p>
                     @elseif ($next)
                         <form method="POST" action="{{ route('lms.paths.start', $path) }}" class="mt-4">
                             @csrf
-                            <x-button type="submit" class="w-full" icon-right="arrow-right">{{ $percent === 0 && $next['status'] === 'not_started' ? 'Start the path' : 'Continue' }}</x-button>
+                            <x-button type="submit" class="w-full" icon-right="arrow-right">{{ $percent === 0 && $next['status'] === 'not_started' ? __('Start the path') : __('Continue') }}</x-button>
                         </form>
-                        <p class="mt-2 truncate text-center text-xs text-slate-400">Next: {{ $next['course']->title }}</p>
+                        <p class="mt-2 truncate text-center text-xs text-slate-400">{{ __('Next: :title', ['title' => $next['course']->title]) }}</p>
                     @endif
                 </div>
             </div>
@@ -49,7 +49,7 @@
     </section>
 
     <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-        <h2 class="mb-4 text-xl font-bold text-slate-900">Courses</h2>
+        <h2 class="mb-4 text-xl font-bold text-slate-900">{{ __('Courses') }}</h2>
         <ol class="relative space-y-4 before:absolute before:top-4 before:bottom-4 before:left-5 before:w-px before:bg-slate-200">
             @foreach ($steps as $step)
                 @php([$label, $color] = $labels[$step['status']])
@@ -73,7 +73,7 @@
                                     <p class="mt-0.5 line-clamp-2 text-sm text-slate-600">{{ $course->subtitle }}</p>
                                 @endif
                                 <p class="mt-2 text-xs text-slate-500">
-                                    {{ $course->lessons_count }} {{ \Illuminate\Support\Str::plural('lesson', $course->lessons_count) }}
+                                    {{ $course->lessons_count }} {{ trans_choice('lesson|lessons', $course->lessons_count) }}
                                     @if ($course->pricing_policy->value === 'paid') &middot; {{ $course->currency }} {{ number_format($course->price, 2) }} @endif
                                 </p>
                             </div>
@@ -82,7 +82,7 @@
                         @if ($step['status'] === 'in_progress')
                             <x-progress class="mt-3" :value="$step['percent']" label />
                         @elseif ($step['status'] === 'locked')
-                            <p class="mt-3 text-xs text-slate-500">Opens after you pass {{ $course->unmetPrerequisitesFor(auth()->user())->pluck('title')->join(', ', ' and ') }}.</p>
+                            <p class="mt-3 text-xs text-slate-500">{{ __('Opens after you pass :join.', ['join' => $course->unmetPrerequisitesFor(auth()->user())->pluck('title')->join(', ', ' '.__('and').' ')]) }}</p>
                         @endif
                     </a>
                 </li>

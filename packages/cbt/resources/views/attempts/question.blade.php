@@ -2,17 +2,17 @@
     <div class="mb-6 flex items-center justify-between gap-4">
         <div>
             <h1 class="text-xl font-bold text-slate-900">{{ $exam->title }}</h1>
-            <p class="text-sm text-slate-500">Question {{ $page }} of {{ $totalPages }}</p>
+            <p class="text-sm text-slate-500">{{ __('Question :page of :total_pages', ['page' => $page, 'total_pages' => $totalPages]) }}</p>
         </div>
         <p id="countdown-announcer" class="sr-only" aria-live="polite"></p>
-        <div id="countdown" role="timer" aria-label="Time remaining" class="rounded-lg bg-slate-900 px-3 py-1.5 font-mono text-sm font-semibold text-white">
+        <div id="countdown" role="timer" aria-label="{{ __('Time remaining') }}" class="rounded-lg bg-slate-900 px-3 py-1.5 font-mono text-sm font-semibold text-white">
             {{ $exam->duration_minutes }}:00
         </div>
     </div>
 
     @if ($exam->instructions && $page === 1)
         <x-card class="mb-6 bg-slate-50">
-            <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Instructions</p>
+            <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Instructions') }}</p>
             <div class="rich-text text-sm text-slate-700">{!! $exam->instructions !!}</div>
         </x-card>
     @endif
@@ -34,12 +34,12 @@
         <x-card>
             <div class="flex items-start justify-between gap-4">
                 <div class="flex-1">
-                    <p id="q-{{ $question->id }}-number" class="text-xs font-semibold uppercase tracking-wide text-slate-500">Question {{ $page }}</p>
+                    <p id="q-{{ $question->id }}-number" class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Question :page', ['page' => $page]) }}</p>
                     <div id="q-{{ $question->id }}-text" class="rich-text mt-1 text-sm font-semibold text-slate-900">{!! $question->question_text !!}</div>
                 </div>
                 <label class="flex shrink-0 items-center gap-1.5 text-xs font-medium text-amber-700">
                     <input type="checkbox" name="flagged" value="1" class="rounded border-amber-300 text-amber-600 focus:ring-amber-600" @checked($isFlagged)>
-                    Flag<span class="sr-only"> question {{ $page }} for review</span>
+                    {{ __('Flag') }}<span class="sr-only"> {{ __('question :page for review', ['page' => $page]) }}</span>
                 </label>
             </div>
             <div class="mt-4 space-y-2" role="group" aria-labelledby="q-{{ $question->id }}-number q-{{ $question->id }}-text">
@@ -55,12 +55,12 @@
         <div class="flex items-center justify-between">
             <div>
                 @if ($exam->allow_backward_navigation && $page > 1)
-                    <x-button variant="secondary" :href="route('cbt.attempts.questions.show', [$attempt, $page - 1])">&larr; Previous</x-button>
+                    <x-button variant="secondary" :href="route('cbt.attempts.questions.show', [$attempt, $page - 1])">{{ __('← Previous') }}</x-button>
                 @endif
             </div>
             <div class="flex items-center gap-3">
-                <a href="{{ route('cbt.attempts.review', $attempt) }}" class="text-sm font-medium text-slate-500 hover:text-slate-700">Review pane</a>
-                <x-button type="submit">{{ $page >= $totalPages ? 'Save & review' : 'Save & continue' }} &rarr;</x-button>
+                <a href="{{ route('cbt.attempts.review', $attempt) }}" class="text-sm font-medium text-slate-500 hover:text-slate-700">{{ __('Review pane') }}</a>
+                <x-button type="submit">{{ $page >= $totalPages ? __('Save & review') : __('Save & continue') }} &rarr;</x-button>
             </div>
         </div>
     </form>

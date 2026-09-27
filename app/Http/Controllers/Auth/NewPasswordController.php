@@ -61,6 +61,6 @@ class NewPasswordController extends Controller
 
         return redirect()
             ->route($tenant ? 'tenant.login' : 'login', $tenant ?: [])
-            ->with('status', $request->boolean('invite') ? 'Your password is set. Log in to get started.' : __($status));
+            ->with('status', $request->boolean('invite') ? __('Your password is set. Log in to get started.') : __($status));
     }
 }

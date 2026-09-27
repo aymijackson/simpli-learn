@@ -121,7 +121,7 @@ class AttemptQuestionController extends Controller
 
             return redirect()
                 ->route('cbt.attempts.result', $attempt)
-                ->with('status', 'Time expired before you submitted — this attempt was forfeited.');
+                ->with('status', __('Time expired before you submitted — this attempt was forfeited.'));
         }
 
         return null;

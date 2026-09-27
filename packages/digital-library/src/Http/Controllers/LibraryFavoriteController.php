@@ -22,13 +22,13 @@ class LibraryFavoriteController extends Controller
     {
         $resource->favorites()->firstOrCreate(['user_id' => $request->user()->id]);
 
-        return back()->with('status', 'Added to favorites.');
+        return back()->with('status', __('Added to favorites.'));
     }
 
     public function destroy(Request $request, string $tenant, LibraryResource $resource): RedirectResponse
     {
         $resource->favorites()->where('user_id', $request->user()->id)->delete();
 
-        return back()->with('status', 'Removed from favorites.');
+        return back()->with('status', __('Removed from favorites.'));
     }
 }

@@ -94,8 +94,8 @@ class Lesson extends Model implements SharedAcrossTenants
     public function completionBlocker(User $user): ?string
     {
         return match (true) {
-            $this->hasScorm() && $this->scorm_required => 'Finish the activity above to complete this lesson.',
-            $this->mustWatchVideo($user) => 'Watch the video to complete this lesson.',
+            $this->hasScorm() && $this->scorm_required => __('Finish the activity above to complete this lesson.'),
+            $this->mustWatchVideo($user) => __('Watch the video to complete this lesson.'),
             default => null,
         };
     }

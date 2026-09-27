@@ -1,8 +1,8 @@
 <x-guest-layout>
     @php($loginTenant = app(\App\Support\Tenancy\Tenancy::class)->current())
     <div class="mb-8">
-        <h1 class="font-display text-3xl font-bold tracking-tight text-slate-900">Welcome back</h1>
-        <p class="mt-2 text-sm text-slate-500">Log in to {{ $loginTenant ? $loginTenant->name : 'your account' }} to continue.</p>
+        <h1 class="font-display text-3xl font-bold tracking-tight text-slate-900">{{ __('Welcome back') }}</h1>
+        <p class="mt-2 text-sm text-slate-500">{{ __('Log in to :name to continue.', ['name' => $loginTenant ? $loginTenant->name : __('your account')]) }}</p>
     </div>
 
     <x-card class="sm:p-8">
@@ -10,27 +10,27 @@
         <form method="POST" action="{{ $action }}" class="space-y-5">
             @csrf
 
-            <x-input type="email" name="email" label="Email" value="{{ old('email') }}" required autofocus />
-            <x-input type="password" name="password" label="Password" required />
+            <x-input type="email" name="email" :label="__('Email')" value="{{ old('email') }}" required autofocus />
+            <x-input type="password" name="password" :label="__('Password')" required />
 
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 text-sm text-slate-600">
                     <input type="checkbox" name="remember" class="rounded border-slate-300 text-brand-600 focus:ring-brand-600">
-                    Remember me
+                    {{ __('Remember me') }}
                 </label>
 
                 <a href="{{ $forgotPasswordRoute }}" class="text-sm font-medium text-brand-600 hover:text-brand-500">
-                    Forgot password?
+                    {{ __('Forgot password?') }}
                 </a>
             </div>
 
-            <x-button type="submit" class="w-full">Log in</x-button>
+            <x-button type="submit" class="w-full">{{ __('Log in') }}</x-button>
         </form>
 
         @php($ssoProviders = ($ssoTenant = app(\App\Support\Tenancy\Tenancy::class)->current()) ? \App\Support\SingleSignOn::enabledFor($ssoTenant) : [])
         @if ($ssoProviders)
             <div class="my-5 flex items-center gap-3 text-xs text-slate-500">
-                <span class="h-px flex-1 bg-slate-200"></span> or <span class="h-px flex-1 bg-slate-200"></span>
+                <span class="h-px flex-1 bg-slate-200"></span> {{ __('or') }} <span class="h-px flex-1 bg-slate-200"></span>
             </div>
             <div class="space-y-3">
                 @foreach ($ssoProviders as $key => $label)
@@ -41,7 +41,7 @@
                         @else
                             <svg class="h-5 w-5" viewBox="0 0 23 23" aria-hidden="true"><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>
                         @endif
-                        Continue with {{ $label }}
+                        {{ __('Continue with :label', ['label' => $label]) }}
                     </a>
                 @endforeach
             </div>
@@ -50,8 +50,8 @@
 
     @unless (app(\App\Support\Tenancy\Tenancy::class)->current())
         <p class="mt-6 text-center text-sm text-slate-500">
-            Don't have a workspace yet?
-            <a href="{{ route('signup') }}" class="font-medium text-brand-600 hover:text-brand-500">Sign up</a>
+            {{ __('Don\'t have a workspace yet?') }}
+            <a href="{{ route('signup') }}" class="font-medium text-brand-600 hover:text-brand-500">{{ __('Sign up') }}</a>
         </p>
     @endunless
 </x-guest-layout>

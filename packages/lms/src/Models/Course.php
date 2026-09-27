@@ -232,12 +232,12 @@ class Course extends Model implements SharedAcrossTenants
         $points = match ($this->assessment_mode) {
             AssessmentMode::PerLesson => $this->lessons
                 ->filter(fn (Lesson $lesson) => $lesson->exam_id && $lesson->exam)
-                ->map(fn (Lesson $lesson) => ['kind' => 'lesson', 'label' => 'Lesson quiz', 'exam' => $lesson->exam, 'lesson' => $lesson, 'module' => null, 'after' => $lesson]),
+                ->map(fn (Lesson $lesson) => ['kind' => 'lesson', 'label' => __('Lesson quiz'), 'exam' => $lesson->exam, 'lesson' => $lesson, 'module' => null, 'after' => $lesson]),
             AssessmentMode::PerModule => $this->modules
                 ->filter(fn (CourseModule $module) => $module->exam_id && $module->exam && $module->lessons->isNotEmpty())
-                ->map(fn (CourseModule $module) => ['kind' => 'module', 'label' => 'Module test', 'exam' => $module->exam, 'lesson' => null, 'module' => $module, 'after' => $module->lessons->last()]),
+                ->map(fn (CourseModule $module) => ['kind' => 'module', 'label' => __('Module test'), 'exam' => $module->exam, 'lesson' => null, 'module' => $module, 'after' => $module->lessons->last()]),
             AssessmentMode::CourseFinal => $this->final_exam_id && $this->finalExam
-                ? collect([['kind' => 'final', 'label' => 'Final exam', 'exam' => $this->finalExam, 'lesson' => null, 'module' => null, 'after' => $this->lessons->last()]])
+                ? collect([['kind' => 'final', 'label' => __('Final exam'), 'exam' => $this->finalExam, 'lesson' => null, 'module' => null, 'after' => $this->lessons->last()]])
                 : collect(),
             default => collect(),
         };

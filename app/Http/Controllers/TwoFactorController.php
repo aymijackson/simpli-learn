@@ -38,7 +38,7 @@ class TwoFactorController extends Controller
         }
 
         if (! TwoFactor::verify($user, $user->two_factor_secret, (string) $request->input('code'))) {
-            return $this->backToSection($tenancy)->withErrors(['code' => 'That code is not valid. Check the time on your phone is set automatically, then try the newest code.'], 'twoFactor');
+            return $this->backToSection($tenancy)->withErrors(['code' => __('That code is not valid. Check the time on your phone is set automatically, then try the newest code.')], 'twoFactor');
         }
 
         $codes = TwoFactor::generateRecoveryCodes();
@@ -46,7 +46,7 @@ class TwoFactorController extends Controller
         ActivityLog::record('security.two_factor_enabled', 'Turned on two-step login');
 
         return $this->backToSection($tenancy)
-            ->with('status', 'Two-step login is on.')
+            ->with('status', __('Two-step login is on.'))
             ->with('recovery_codes', $codes);
     }
 
@@ -72,7 +72,7 @@ class TwoFactorController extends Controller
         ])->save();
         ActivityLog::record('security.two_factor_disabled', 'Turned off two-step login');
 
-        return $this->backToSection($tenancy)->with('status', 'Two-step login is off.');
+        return $this->backToSection($tenancy)->with('status', __('Two-step login is off.'));
     }
 
     public function regenerateRecoveryCodes(Request $request, Tenancy $tenancy): RedirectResponse
@@ -87,7 +87,7 @@ class TwoFactorController extends Controller
         ActivityLog::record('security.recovery_codes_regenerated', 'Generated new two-step recovery codes');
 
         return $this->backToSection($tenancy)
-            ->with('status', 'New recovery codes generated. Your old codes no longer work.')
+            ->with('status', __('New recovery codes generated. Your old codes no longer work.'))
             ->with('recovery_codes', $codes);
     }
 

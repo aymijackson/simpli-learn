@@ -2,17 +2,17 @@
     <div class="mb-6 flex items-center justify-between gap-4">
         <div>
             <h1 class="text-xl font-bold text-slate-900">{{ $exam->title }}</h1>
-            <p class="text-sm text-slate-500">Answer every question, then submit.</p>
+            <p class="text-sm text-slate-500">{{ __('Answer every question, then submit.') }}</p>
         </div>
         <p id="countdown-announcer" class="sr-only" aria-live="polite"></p>
-        <div id="countdown" role="timer" aria-label="Time remaining" class="rounded-lg bg-slate-900 px-3 py-1.5 font-mono text-sm font-semibold text-white">
+        <div id="countdown" role="timer" aria-label="{{ __('Time remaining') }}" class="rounded-lg bg-slate-900 px-3 py-1.5 font-mono text-sm font-semibold text-white">
             {{ $exam->duration_minutes }}:00
         </div>
     </div>
 
     @if ($exam->instructions)
         <x-card class="mb-6 bg-slate-50">
-            <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Instructions</p>
+            <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Instructions') }}</p>
             <div class="rich-text text-sm text-slate-700">{!! $exam->instructions !!}</div>
         </x-card>
     @endif
@@ -39,12 +39,12 @@
             <x-card id="question-{{ $question->id }}" data-question-card data-question-id="{{ $question->id }}">
                 <div class="flex items-start justify-between gap-4">
                     <div class="flex-1">
-                        <p id="q-{{ $question->id }}-number" class="text-xs font-semibold uppercase tracking-wide text-slate-500">Question {{ $loop->iteration }}</p>
+                        <p id="q-{{ $question->id }}-number" class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Question :iteration', ['iteration' => $loop->iteration]) }}</p>
                         <div id="q-{{ $question->id }}-text" class="rich-text mt-1 text-sm font-semibold text-slate-900">{!! $question->question_text !!}</div>
                     </div>
                     <label class="flex shrink-0 items-center gap-1.5 text-xs font-medium text-amber-700">
                         <input type="checkbox" name="flagged[]" value="{{ $question->id }}" data-flag-input class="rounded border-amber-300 text-amber-600 focus:ring-amber-600">
-                        Flag<span class="sr-only"> question {{ $loop->iteration }} for review</span>
+                        {{ __('Flag') }}<span class="sr-only"> {{ __('question :iteration for review', ['iteration' => $loop->iteration]) }}</span>
                     </label>
                 </div>
                 <div class="mt-4 space-y-2" role="group" aria-labelledby="q-{{ $question->id }}-number q-{{ $question->id }}-text">
@@ -53,7 +53,7 @@
             </x-card>
         @endforeach
 
-        <x-button type="submit" class="w-full">Submit exam</x-button>
+        <x-button type="submit" class="w-full">{{ __('Submit exam') }}</x-button>
     </form>
 
     @push('scripts')

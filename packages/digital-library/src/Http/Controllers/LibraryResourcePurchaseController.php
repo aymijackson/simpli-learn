@@ -99,6 +99,6 @@ class LibraryResourcePurchaseController extends Controller
 
         return redirect()
             ->route('library.resources.show', $resource)
-            ->with('status', "Thanks — we've recorded your payment claim. The organization will confirm it shortly.");
+            ->with('status', __("Thanks — we've recorded your payment claim. The organization will confirm it shortly."));
     }
 }

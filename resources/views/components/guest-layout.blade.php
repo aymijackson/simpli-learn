@@ -7,7 +7,7 @@
     $brandInitial = mb_strtoupper(mb_substr($brandName, 0, 1));
 @endphp
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,7 +15,7 @@
     @include('partials.assets')
 </head>
 <body class="min-h-full font-sans text-slate-900 antialiased">
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-700 focus:shadow-lg focus:ring-2 focus:ring-brand-600">Skip to content</a>
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-700 focus:shadow-lg focus:ring-2 focus:ring-brand-600">{{ __('Skip to content') }}</a>
     <div class="grid min-h-screen lg:grid-cols-[minmax(0,1fr)_minmax(0,34rem)] xl:grid-cols-[minmax(0,1fr)_minmax(0,40rem)]">
         {{-- Form column --}}
         <div class="flex flex-col px-4 py-8 sm:px-8">
@@ -36,11 +36,17 @@
                 </div>
             </main>
 
+            <nav class="mb-3 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs" aria-label="{{ __('Language') }}">
+                @foreach (config('languages.available') as $code => $name)
+                    <a href="{{ request()->fullUrlWithQuery(['lang' => $code]) }}" @if (app()->getLocale() === $code) aria-current="true" @endif
+                       class="{{ app()->getLocale() === $code ? 'font-semibold text-slate-900' : 'text-slate-500 hover:text-slate-800' }}" lang="{{ $code }}">{{ $name }}</a>
+                @endforeach
+            </nav>
             <footer class="text-center text-xs text-slate-500">
                 @if ($authTenant)
-                    Powered by <a href="{{ route('home') }}" class="font-medium hover:text-slate-600">{{ config('app.powered_by') }}</a>
+                    {{ __('Powered by') }} <a href="{{ route('home') }}" class="font-medium hover:text-slate-600">{{ config('app.powered_by') }}</a>
                 @else
-                    &copy; {{ now()->year }} e-Library
+                    {{ __('© :year e-Library', ['year' => now()->year]) }}
                 @endif
             </footer>
         </div>
@@ -52,25 +58,25 @@
             <div class="absolute bottom-0 -left-24 -z-10 h-80 w-80 rounded-full bg-sky-500/20 blur-3xl"></div>
 
             <span class="inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-brand-200 ring-1 ring-white/15">
-                <x-icon name="sparkles" class="h-3.5 w-3.5" /> {{ $authTenant ? 'Your learning space' : 'Learning · Testing · Library' }}
+                <x-icon name="sparkles" class="h-3.5 w-3.5" /> {{ $authTenant ? __('Your learning space') : __('Learning · Testing · Library') }}
             </span>
 
             <div>
                 <h2 class="font-display text-4xl leading-tight font-bold text-white">
                     @if ($authTenant)
-                        Welcome to {{ $authTenant->name }}
+                        {{ __('Welcome to :name', ['name' => $authTenant->name]) }}
                     @else
-                        Learn anywhere. Test fairly. Read freely.
+                        {{ __('Learn anywhere. Test fairly. Read freely.') }}
                     @endif
                 </h2>
                 <ul class="mt-8 space-y-4 text-slate-300">
-                    <li class="flex items-center gap-3"><span class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-300"><x-icon name="academic-cap" /></span> Courses you can take at your own pace</li>
-                    <li class="flex items-center gap-3"><span class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300"><x-icon name="clipboard-check" /></span> Timed exams with instant results</li>
-                    <li class="flex items-center gap-3"><span class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/15 text-amber-300"><x-icon name="book-open" /></span> A digital library that's always open</li>
+                    <li class="flex items-center gap-3"><span class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-300"><x-icon name="academic-cap" /></span> {{ __('Courses you can take at your own pace') }}</li>
+                    <li class="flex items-center gap-3"><span class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300"><x-icon name="clipboard-check" /></span> {{ __('Timed exams with instant results') }}</li>
+                    <li class="flex items-center gap-3"><span class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/15 text-amber-300"><x-icon name="book-open" /></span> {{ __('A digital library that\'s always open') }}</li>
                 </ul>
             </div>
 
-            <p class="text-sm text-slate-500">Secure sign-in &middot; Your progress is saved automatically</p>
+            <p class="text-sm text-slate-500">{{ __('Secure sign-in · Your progress is saved automatically') }}</p>
         </aside>
     </div>
 

@@ -25,8 +25,8 @@ class ExamResultReady extends Notification
     protected function inApp(object $notifiable): array
     {
         return [
-            'title' => 'Your result is ready',
-            'body' => "{$this->attempt->exam->title}: {$this->attempt->score}% — ".($this->attempt->passed() ? 'passed.' : 'not passed this time.'),
+            'title' => __('Your result is ready'),
+            'body' => __($this->attempt->passed() ? ':exam: :score% — passed.' : ':exam: :score% — not passed this time.', ['exam' => $this->attempt->exam->title, 'score' => $this->attempt->score]),
             'url' => route('cbt.attempts.result', ['tenant' => $this->tenant->slug, 'attempt' => $this->attempt->id]),
             'icon' => 'clipboard-check',
             'tone' => $this->attempt->passed() ? 'emerald' : 'rose',
@@ -37,14 +37,14 @@ class ExamResultReady extends Notification
     {
         $exam = $this->attempt->exam;
         $message = (new MailMessage)
-            ->subject("Your result is ready: {$exam->title}")
-            ->greeting("Hello {$notifiable->name},")
-            ->line("Your written answers on **{$exam->title}** have been marked. You scored **{$this->attempt->score}%** (pass mark {$exam->pass_percentage}%).");
+            ->subject(__('Your result is ready: :exam', ['exam' => $exam->title]))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__('Your written answers on **:exam** have been marked. You scored **:score%** (pass mark :pass%).', ['exam' => $exam->title, 'score' => $this->attempt->score, 'pass' => $exam->pass_percentage]));
 
         $message->line($this->attempt->passed()
-            ? 'Congratulations — you passed.'
-            : "You didn't reach the pass mark this time. Your result page shows the marker's feedback.");
+            ? __('Congratulations — you passed.')
+            : __("You didn't reach the pass mark this time. Your result page shows the marker's feedback."));
 
-        return $message->action('View your result', route('cbt.attempts.result', ['tenant' => $this->tenant->slug, 'attempt' => $this->attempt->id]));
+        return $message->action(__('View your result'), route('cbt.attempts.result', ['tenant' => $this->tenant->slug, 'attempt' => $this->attempt->id]));
     }
 }

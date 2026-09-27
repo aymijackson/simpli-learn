@@ -39,7 +39,7 @@ class TwoFactorChallengeController extends Controller
         $user = $this->pendingUser($request);
 
         if (! $user) {
-            return redirect()->route($loginRoute)->withErrors(['email' => 'Your sign-in expired. Please enter your password again.']);
+            return redirect()->route($loginRoute)->withErrors(['email' => __('Your sign-in expired. Please enter your password again.')]);
         }
 
         $request->validate([
@@ -51,7 +51,7 @@ class TwoFactorChallengeController extends Controller
         if (RateLimiter::tooManyAttempts($key, self::MAX_ATTEMPTS)) {
             $request->session()->forget('two_factor.login');
 
-            return redirect()->route($loginRoute)->withErrors(['email' => 'Too many incorrect codes. Please sign in again.']);
+            return redirect()->route($loginRoute)->withErrors(['email' => __('Too many incorrect codes. Please sign in again.')]);
         }
 
         $usedRecoveryCode = false;
@@ -63,7 +63,7 @@ class TwoFactorChallengeController extends Controller
             RateLimiter::hit($key, 300);
             ActivityLog::record('auth.failed', 'Failed sign-in (wrong two-step code)', actor: $user);
 
-            return back()->withErrors([$request->filled('recovery_code') ? 'recovery_code' : 'code' => 'That code is not valid. Please try again.']);
+            return back()->withErrors([$request->filled('recovery_code') ? 'recovery_code' : 'code' => __('That code is not valid. Please try again.')]);
         }
 
         RateLimiter::clear($key);
@@ -78,7 +78,7 @@ class TwoFactorChallengeController extends Controller
             ActivityLog::record('security.recovery_code_used', "Signed in with a recovery code ({$left} left)");
 
             return redirect()->route($tenancy->current() ? 'tenant.profile.edit' : 'profile.edit')
-                ->with('status', "You signed in with a recovery code. You have {$left} left — if you've lost your phone, set up two-step login again below.");
+                ->with('status', __("You signed in with a recovery code. You have :left left — if you've lost your phone, set up two-step login again below.", ['left' => $left]));
         }
 
         return redirect()->intended(route($tenancy->current() ? 'tenant.home' : 'admin.dashboard'));
