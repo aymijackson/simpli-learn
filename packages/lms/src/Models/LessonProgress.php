@@ -11,7 +11,7 @@ class LessonProgress extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'lesson_id', 'user_id', 'completed_at'];
+    protected $fillable = ['tenant_id', 'lesson_id', 'user_id', 'completed_at', 'video_percent'];
 
     protected function casts(): array
     {

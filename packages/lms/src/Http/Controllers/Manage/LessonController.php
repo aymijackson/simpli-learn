@@ -7,6 +7,7 @@ use App\Support\Tenancy\Tenancy;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Models\Lesson;
+use Elibrary\Lms\Support\VideoEmbed;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -67,7 +68,12 @@ class LessonController extends Controller
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'content' => ['required', 'string'],
+            'content' => ['required_without:video_url', 'nullable', 'string'],
+            'video_url' => ['nullable', 'string', 'max:500', function ($attribute, $value, $fail) {
+                if ($value && ! VideoEmbed::parse($value)) {
+                    $fail('Paste a YouTube, Vimeo or Bunny Stream video link.');
+                }
+            }],
             'position' => ['required', 'integer', 'min:0'],
             'course_module_id' => [
                 'nullable',
@@ -77,6 +83,8 @@ class LessonController extends Controller
         ]);
 
         $validated['is_preview'] = $request->boolean('is_preview');
+        $validated['require_video_watch'] = $request->boolean('require_video_watch');
+        $validated['content'] = $validated['content'] ?? '';
 
         return $validated;
     }

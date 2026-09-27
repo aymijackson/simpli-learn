@@ -8,6 +8,7 @@ use App\Models\User;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Lms\Enums\AssessmentMode;
 use Elibrary\Lms\Support\SharedCourses;
+use Elibrary\Lms\Support\VideoEmbed;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,12 +24,13 @@ class Lesson extends Model implements SharedAcrossTenants
     }
 
 
-    protected $fillable = ['tenant_id', 'course_id', 'course_module_id', 'exam_id', 'title', 'content', 'position', 'is_preview'];
+    protected $fillable = ['tenant_id', 'course_id', 'course_module_id', 'exam_id', 'title', 'content', 'video_url', 'require_video_watch', 'position', 'is_preview'];
 
     protected function casts(): array
     {
         return [
             'is_preview' => 'boolean',
+            'require_video_watch' => 'boolean',
         ];
     }
 
@@ -60,6 +62,26 @@ class Lesson extends Model implements SharedAcrossTenants
     public function isAccessibleTo(User $user): bool
     {
         return $this->course->isEnrolled($user) || $this->is_preview;
+    }
+
+    /** @return array{provider: string, label: string, embed_url: string}|null */
+    public function video(): ?array
+    {
+        return VideoEmbed::parse($this->video_url);
+    }
+
+    /** How much of the lesson video this person has watched, 0-100. */
+    public function videoPercentFor(User $user): int
+    {
+        return (int) $this->progress()->where('user_id', $user->id)->value('video_percent');
+    }
+
+    /** Whether the video still stands between this person and completing the lesson. */
+    public function mustWatchVideo(User $user): bool
+    {
+        return $this->video() !== null
+            && $this->require_video_watch
+            && $this->videoPercentFor($user) < VideoEmbed::WATCHED_TO_COMPLETE;
     }
 
     public function isCompletedBy(User $user): bool

@@ -35,6 +35,7 @@ Route::middleware(['web', 'auth', 'module:lms'])
         Route::delete('/courses/{course:slug}/reviews/{review}', [CourseReviewController::class, 'destroy'])->name('courses.reviews.destroy');
         Route::get('/courses/{course:slug}/lessons/{lesson}', [LessonController::class, 'show'])->name('lessons.show');
         Route::post('/courses/{course:slug}/lessons/{lesson}/complete', [LessonController::class, 'complete'])->name('lessons.complete');
+        Route::post('/courses/{course:slug}/lessons/{lesson}/video-progress', [LessonController::class, 'videoProgress'])->middleware('throttle:60,1')->name('lessons.video-progress');
         Route::get('/courses/{course:slug}/lessons/{lesson}/attachments/{attachment}/download', [LessonAttachmentController::class, 'download'])->name('lessons.attachments.download');
         Route::get('/courses/{course:slug}/lessons/{lesson}/attachments/{attachment}/stream', [LessonAttachmentController::class, 'stream'])->name('lessons.attachments.stream');
 

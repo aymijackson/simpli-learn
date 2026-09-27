@@ -246,6 +246,9 @@
                                                         @if ($state['hasAccess'] && ! $state['unlocked'])
                                                             <span class="hidden text-xs text-slate-500 sm:inline">{{ $unmetPrerequisites->isNotEmpty() ? 'Complete the required course first' : 'Finish the step above to unlock' }}</span>
                                                         @endif
+                                                        @if ($lesson->video_url)
+                                                            <x-icon name="play" class="h-4 w-4 text-slate-400" title="Video lesson" />
+                                                        @endif
                                                         @if ($lesson->attachments->isNotEmpty())
                                                             <x-icon name="document" class="h-4 w-4 text-slate-400" title="Has attachments" />
                                                         @endif

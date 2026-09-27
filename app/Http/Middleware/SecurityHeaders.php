@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Elibrary\Lms\Support\VideoEmbed;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -53,12 +54,14 @@ class SecurityHeaders
     public static function policy(): string
     {
         $cdn = 'https://cdn.jsdelivr.net';
+        $videoFrames = implode(' ', VideoEmbed::FRAME_HOSTS);
+        $videoScripts = implode(' ', VideoEmbed::SCRIPT_HOSTS);
 
         return implode('; ', [
             "default-src 'self'",
             // Tailwind's browser build, Trix, pdf.js, epub.js and the QR code library come from jsDelivr;
             // small inline scripts remain in a few views (theme guard, exam timer, integrity monitor).
-            "script-src 'self' 'unsafe-inline' {$cdn}",
+            "script-src 'self' 'unsafe-inline' {$cdn} {$videoScripts}",
             "style-src 'self' 'unsafe-inline' {$cdn} https://fonts.bunny.net",
             "font-src 'self' data: https://fonts.bunny.net",
             "img-src 'self' data: blob: https:",
@@ -66,7 +69,8 @@ class SecurityHeaders
             "connect-src 'self' {$cdn}",
             // pdf.js wraps its CDN worker in a blob:, epub.js renders chapters in blob: iframes.
             "worker-src 'self' blob:",
-            "frame-src 'self' blob:",
+            // Lesson videos: only the YouTube, Vimeo and Bunny Stream players.
+            "frame-src 'self' blob: {$videoFrames}",
             "frame-ancestors 'self'",
             "object-src 'none'",
             "base-uri 'self'",

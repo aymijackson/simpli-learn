@@ -34,7 +34,39 @@
                     </div>
                 </div>
 
-                <div class="rich-text px-6 py-8 text-[15px] leading-relaxed text-slate-700 sm:px-10">{!! $lesson->content !!}</div>
+                @if ($video)
+                    <div class="border-b border-slate-100 bg-ink-950">
+                        <div class="relative aspect-video w-full" data-lesson-video
+                             data-provider="{{ $video['provider'] }}"
+                             data-progress-url="{{ route('lms.lessons.video-progress', [$course, $lesson]) }}"
+                             data-token="{{ csrf_token() }}"
+                             data-key="{{ auth()->id() }}-{{ $lesson->id }}"
+                             data-percent="{{ $videoPercent }}"
+                             data-threshold="{{ \Elibrary\Lms\Support\VideoEmbed::WATCHED_TO_COMPLETE }}"
+                             data-completed="{{ $isCompleted ? '1' : '0' }}">
+                            <iframe src="{{ $video['embed_url'] }}" title="{{ $lesson->title }} — video" class="absolute inset-0 h-full w-full"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen
+                                    referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                        </div>
+                    </div>
+                    @if ($course->isEnrolled(auth()->user()))
+                        <div class="flex items-center gap-3 border-b border-slate-100 px-6 py-3 text-xs text-slate-500 sm:px-10">
+                            <span class="shrink-0">Watched <strong class="text-slate-700" data-video-percent>{{ $videoPercent }}%</strong></span>
+                            <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full bg-brand-600 transition-all" style="width: {{ $videoPercent }}%" data-video-bar></div></div>
+                            @if ($lesson->require_video_watch && ! $isCompleted)
+                                <span class="hidden shrink-0 sm:inline">Completes at {{ \Elibrary\Lms\Support\VideoEmbed::WATCHED_TO_COMPLETE }}%</span>
+                            @endif
+                        </div>
+                        <div class="hidden items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-6 py-3 text-sm text-emerald-800 sm:px-10" data-video-complete-banner>
+                            <span class="flex items-center gap-2"><x-icon name="check-circle" class="h-5 w-5" /> Lesson complete.</span>
+                            <a href="{{ route('lms.lessons.show', [$course, $lesson]) }}" class="font-semibold underline">Continue</a>
+                        </div>
+                    @endif
+                @endif
+
+                @if (trim(strip_tags((string) $lesson->content)) !== '')
+                    <div class="rich-text px-6 py-8 text-[15px] leading-relaxed text-slate-700 sm:px-10">{!! $lesson->content !!}</div>
+                @endif
 
                 @if ($lesson->attachments->isNotEmpty())
                     <div class="space-y-3 border-t border-slate-100 px-6 py-8 sm:px-10">
@@ -78,10 +110,14 @@
                     </div>
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                         @unless ($isCompleted)
-                            <form method="POST" action="{{ route('lms.lessons.complete', [$course, $lesson]) }}">
-                                @csrf
-                                <x-button type="submit" icon="check" class="w-full sm:w-auto">Mark as complete</x-button>
-                            </form>
+                            @if ($mustWatch)
+                                <p class="flex items-center gap-2 text-sm text-slate-500" data-must-watch><x-icon name="play" class="h-4 w-4" /> Watch the video to complete this lesson</p>
+                            @else
+                                <form method="POST" action="{{ route('lms.lessons.complete', [$course, $lesson]) }}">
+                                    @csrf
+                                    <x-button type="submit" icon="check" class="w-full sm:w-auto">Mark as complete</x-button>
+                                </form>
+                            @endif
                         @endunless
                         @if ($checkpoint && $checkpoint['exam']->is_published && in_array($checkpoint['status'], ['open', 'marking'], true))
                             <x-button :variant="$isCompleted ? 'primary' : 'secondary'" :href="route('cbt.exams.show', $checkpoint['exam'])" icon="clipboard-check">
@@ -126,4 +162,15 @@
             </div>
         </aside>
     </div>
+    @if ($video)
+        @push('scripts')
+            <script src="{{ asset('js/lesson-video.js') }}?v={{ filemtime(public_path('js/lesson-video.js')) }}" defer></script>
+            <script>
+                document.addEventListener('lesson-video:completed', () => {
+                    document.querySelector('[data-video-complete-banner]')?.classList.replace('hidden', 'flex');
+                    document.querySelector('[data-must-watch]')?.remove();
+                });
+            </script>
+        @endpush
+    @endif
 </x-app-layout>
