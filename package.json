@@ -1,0 +1,12 @@
+{
+    "private": true,
+    "description": "Local build tooling only. The server needs no Node: public/css/tailwind.css is committed.",
+    "scripts": {
+        "build:css": "tailwindcss -i resources/css/tailwind.css -o public/css/tailwind.css --minify",
+        "watch:css": "tailwindcss -i resources/css/tailwind.css -o public/css/tailwind.css --watch"
+    },
+    "devDependencies": {
+        "@tailwindcss/cli": "^4.1.0",
+        "tailwindcss": "^4.1.0"
+    }
+}

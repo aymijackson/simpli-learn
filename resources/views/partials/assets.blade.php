@@ -1,43 +1,51 @@
-{{-- Shared <head> assets for every layout. No build step: Tailwind generates
-     styles in the browser from the classes on the page, and third-party
+{{-- Shared <head> assets for every layout. Styles come prebuilt from
+     public/css/tailwind.css (see resources/css/tailwind.css); third-party
      libraries load from jsDelivr. --}}
 <link rel="preconnect" href="https://fonts.bunny.net">
 <link rel="stylesheet" href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700|fraunces:600,700">
-<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-{{-- Reveal the page once Tailwind has generated styles (see .tw-ready in app.css);
-     the timeout keeps the page usable if the CDN is slow or blocked. --}}
-<script>
-    (function () {
-        var ready = function () { document.documentElement.classList.add('tw-ready'); };
-        document.addEventListener('DOMContentLoaded', function () {
-            requestAnimationFrame(function () { requestAnimationFrame(ready); });
-        });
-        setTimeout(ready, 2000);
-    })();
-</script>
-<style type="text/tailwindcss">
-    @theme {
-        --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-            'Segoe UI Symbol', 'Noto Color Emoji';
-        --font-display: 'Fraunces', ui-serif, Georgia, serif;
-
-        --color-brand-50: #f5f3ff;
-        --color-brand-100: #ede9fe;
-        --color-brand-200: #ddd6fe;
-        --color-brand-300: #c4b5fd;
-        --color-brand-400: #a78bfa;
-        --color-brand-500: #8b5cf6;
-        --color-brand-600: #7c3aed;
-        --color-brand-700: #6d28d9;
-        --color-brand-800: #5b21b6;
-        --color-brand-900: #4c1d95;
-        --color-brand-950: #2e1065;
-
-        --color-ink-800: #1e1b3a;
-        --color-ink-900: #15122b;
-        --color-ink-950: #0d0b1d;
-    }
-</style>
+@php($builtCss = public_path('css/tailwind.css'))
+@if (is_file($builtCss))
+    {{-- Prebuilt styles (npm run build:css): nothing to generate in the browser. --}}
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}?v={{ filemtime($builtCss) }}">
+    <script>document.documentElement.classList.add('tw-ready');</script>
+@else
+    {{-- Fallback: Tailwind generates styles in the browser from the classes on the page. --}}
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    {{-- Reveal the page once Tailwind has generated styles (see .tw-ready in app.css);
+         the timeout keeps the page usable if the CDN is slow or blocked. --}}
+    <script>
+        (function () {
+            var ready = function () { document.documentElement.classList.add('tw-ready'); };
+            document.addEventListener('DOMContentLoaded', function () {
+                requestAnimationFrame(function () { requestAnimationFrame(ready); });
+            });
+            setTimeout(ready, 2000);
+        })();
+    </script>
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+                'Segoe UI Symbol', 'Noto Color Emoji';
+            --font-display: 'Fraunces', ui-serif, Georgia, serif;
+    
+            --color-brand-50: #f5f3ff;
+            --color-brand-100: #ede9fe;
+            --color-brand-200: #ddd6fe;
+            --color-brand-300: #c4b5fd;
+            --color-brand-400: #a78bfa;
+            --color-brand-500: #8b5cf6;
+            --color-brand-600: #7c3aed;
+            --color-brand-700: #6d28d9;
+            --color-brand-800: #5b21b6;
+            --color-brand-900: #4c1d95;
+            --color-brand-950: #2e1065;
+    
+            --color-ink-800: #1e1b3a;
+            --color-ink-900: #15122b;
+            --color-ink-950: #0d0b1d;
+        }
+    </style>
+@endif
 @php($brandTenant = app(\App\Support\Tenancy\Tenancy::class)->current())
 @if ($brandTenant?->brand_color && \App\Support\BrandColor::isValidHex($brandTenant->brand_color))
     {{-- Workspace brand colour: overrides the palette above (doubled :root wins over Tailwind's own). --}}

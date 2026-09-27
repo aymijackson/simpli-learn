@@ -1,0 +1,45 @@
+/*
+ * Source for public/css/tailwind.css, the prebuilt stylesheet every page
+ * uses. Rebuild after changing classes in views, PHP or JS:
+ *
+ *     npm install        (once)
+ *     npm run build:css
+ *
+ * and commit public/css/tailwind.css. The server needs no Node. If the built
+ * file is missing, pages fall back to generating styles in the browser.
+ */
+@import "tailwindcss" source(none);
+
+/* Every place class names are written (list each package: directory globs
+   aren't matched). A new package needs a line here. */
+@source "../views";
+@source "../../packages/cbt/resources/views";
+@source "../../packages/digital-library/resources/views";
+@source "../../packages/lms/resources/views";
+@source "../../app";
+@source "../../packages/cbt/src";
+@source "../../packages/digital-library/src";
+@source "../../packages/lms/src";
+@source "../../public/js";
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Fraunces', ui-serif, Georgia, serif;
+
+    --color-brand-50: #f5f3ff;
+    --color-brand-100: #ede9fe;
+    --color-brand-200: #ddd6fe;
+    --color-brand-300: #c4b5fd;
+    --color-brand-400: #a78bfa;
+    --color-brand-500: #8b5cf6;
+    --color-brand-600: #7c3aed;
+    --color-brand-700: #6d28d9;
+    --color-brand-800: #5b21b6;
+    --color-brand-900: #4c1d95;
+    --color-brand-950: #2e1065;
+
+    --color-ink-800: #1e1b3a;
+    --color-ink-900: #15122b;
+    --color-ink-950: #0d0b1d;
+}

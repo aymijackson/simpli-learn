@@ -34,8 +34,11 @@
 #     support) and copies existing uploads into it; set PUBLIC_DISK_ROOT in
 #     .env so new uploads are written there
 #
-# There is no build step: the assets in public/ are committed as-is and
-# Tailwind runs in the browser (see resources/views/partials/assets.blade.php).
+# The server has no build step: the assets in public/ are committed as-is.
+# public/css/tailwind.css is built on a developer machine — after changing
+# classes in views, PHP or JS, run `npm run build:css` and commit the result
+# (see resources/css/tailwind.css). If that file is missing, pages fall back
+# to generating styles in the browser.
 
 set -euo pipefail
 
