@@ -92,6 +92,7 @@ class CourseController extends Controller
             'isPassed' => $course->isPassedBy($request->user()),
             'certificate' => $course->certificateFor($request->user()),
             'unmetPrerequisites' => $course->unmetPrerequisitesFor($request->user()),
+            'discussionCount' => $course->discussions()->count(),
         ]);
     }
 

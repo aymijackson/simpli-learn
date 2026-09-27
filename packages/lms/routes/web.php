@@ -1,8 +1,9 @@
 <?php
 
 use Elibrary\Lms\Http\Controllers\CourseCertificateController;
-use Elibrary\Lms\Http\Controllers\CoursePurchaseController;
 use Elibrary\Lms\Http\Controllers\CourseController;
+use Elibrary\Lms\Http\Controllers\CourseDiscussionController;
+use Elibrary\Lms\Http\Controllers\CoursePurchaseController;
 use Elibrary\Lms\Http\Controllers\CourseReviewController;
 use Elibrary\Lms\Http\Controllers\LearningPathController;
 use Elibrary\Lms\Http\Controllers\LessonAttachmentController;
@@ -12,6 +13,7 @@ use Elibrary\Lms\Http\Controllers\Manage\CourseModuleController as ManageCourseM
 use Elibrary\Lms\Http\Controllers\Manage\CoursePaymentGatewayController as ManageCoursePaymentGatewayController;
 use Elibrary\Lms\Http\Controllers\Manage\CoursePurchaseQueueController as ManageCoursePurchaseQueueController;
 use Elibrary\Lms\Http\Controllers\Manage\CourseReportController as ManageCourseReportController;
+use Elibrary\Lms\Http\Controllers\Manage\DiscussionController as ManageDiscussionController;
 use Elibrary\Lms\Http\Controllers\Manage\LearningPathController as ManageLearningPathController;
 use Elibrary\Lms\Http\Controllers\Manage\LessonAttachmentController as ManageLessonAttachmentController;
 use Elibrary\Lms\Http\Controllers\Manage\LessonController as ManageLessonController;
@@ -27,6 +29,15 @@ Route::middleware(['web', 'auth', 'module:lms'])
     ->group(function () {
         Route::get('/', [CourseController::class, 'index'])->name('courses.index');
         Route::get('/courses/{course:slug}', [CourseController::class, 'show'])->name('courses.show');
+        Route::get('/courses/{course:slug}/discussions', [CourseDiscussionController::class, 'index'])->name('discussions.index');
+        Route::post('/courses/{course:slug}/discussions', [CourseDiscussionController::class, 'store'])->middleware('throttle:10,1')->name('discussions.store');
+        Route::get('/courses/{course:slug}/discussions/{discussion}', [CourseDiscussionController::class, 'show'])->whereNumber('discussion')->name('discussions.show');
+        Route::post('/courses/{course:slug}/discussions/{discussion}/replies', [CourseDiscussionController::class, 'reply'])->middleware('throttle:20,1')->name('discussions.reply');
+        Route::post('/courses/{course:slug}/discussions/{discussion}/answer/{reply}', [CourseDiscussionController::class, 'answer'])->name('discussions.answer');
+        Route::post('/courses/{course:slug}/discussions/{discussion}/moderate', [CourseDiscussionController::class, 'moderate'])->name('discussions.moderate');
+        Route::delete('/courses/{course:slug}/discussions/{discussion}', [CourseDiscussionController::class, 'destroy'])->name('discussions.destroy');
+        Route::delete('/courses/{course:slug}/discussions/{discussion}/replies/{reply}', [CourseDiscussionController::class, 'destroyReply'])->name('discussions.replies.destroy');
+
         Route::get('/paths', [LearningPathController::class, 'index'])->name('paths.index');
         Route::get('/paths/{path:slug}', [LearningPathController::class, 'show'])->name('paths.show');
         Route::post('/paths/{path:slug}/start', [LearningPathController::class, 'start'])->name('paths.start');
@@ -51,6 +62,7 @@ Route::middleware(['web', 'auth', 'module:lms'])
         // Course content, reports and marking: owners and the course's instructors.
         Route::middleware('teach')->prefix('manage')->name('manage.')->group(function () {
             Route::get('/courses', [ManageCourseController::class, 'index'])->name('courses.index');
+            Route::get('/discussions', [ManageDiscussionController::class, 'index'])->name('discussions.index');
             Route::get('/courses/{course:slug}/edit', [ManageCourseController::class, 'edit'])->name('courses.edit');
             Route::get('/courses/{course:slug}/report', [ManageCourseReportController::class, 'show'])->middleware('content:shared')->name('courses.report');
             Route::get('/courses/{course:slug}/report.csv', [ManageCourseReportController::class, 'export'])->middleware('content:shared')->name('courses.report.export');

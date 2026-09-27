@@ -102,6 +102,13 @@
                     </div>
                 @endif
 
+                @if ($course->isEnrolled(auth()->user()) || \Elibrary\Lms\Support\Teaching::canManage(auth()->user(), $course))
+                    <div class="flex items-center justify-between gap-3 border-t border-slate-100 px-6 py-4 text-sm sm:px-10">
+                        <span class="flex items-center gap-2 text-slate-600"><x-icon name="chat" class="h-4 w-4 text-slate-500" /> Questions about this lesson?</span>
+                        <a href="{{ route('lms.discussions.index', [$course, 'lesson' => $lesson->id]) }}" class="font-semibold text-brand-700 hover:underline">Discuss it</a>
+                    </div>
+                @endif
+
                 <div class="flex flex-col-reverse gap-3 border-t border-slate-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-10">
                     <div>
                         @if ($previous)

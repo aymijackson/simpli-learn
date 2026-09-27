@@ -16,6 +16,8 @@ use Elibrary\Library\Models\LibraryReadingProgress;
 use Elibrary\Library\Models\LibraryResourcePurchase;
 use Elibrary\Library\Models\LibraryResourceRating;
 use Elibrary\Lms\Models\CourseCertificate;
+use Elibrary\Lms\Models\CourseDiscussion;
+use Elibrary\Lms\Models\CourseDiscussionReply;
 use Elibrary\Lms\Models\CoursePurchase;
 use Elibrary\Lms\Models\Enrollment;
 use Elibrary\Lms\Models\LessonProgress;
@@ -51,6 +53,8 @@ class PersonalData
         'library_purchases' => LibraryResourcePurchase::class,
         'learning_days' => LearningDay::class,
         'badges' => UserBadge::class,
+        'course_discussions' => CourseDiscussion::class,
+        'course_discussion_replies' => CourseDiscussionReply::class,
     ];
 
     /** Purely personal records removed on erasure. */
@@ -61,6 +65,8 @@ class PersonalData
         LibraryHold::class,
         LearningDay::class,
         UserBadge::class,
+        CourseDiscussionReply::class,
+        CourseDiscussion::class,
     ];
 
     public static function export(User $user): array

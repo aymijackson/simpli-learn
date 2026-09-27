@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Support\Tenancy\Tenancy;
 use Elibrary\Cbt\Contracts\ExamPlacements;
 use Elibrary\Cbt\Models\ExamAttempt;
+use Elibrary\Lms\Http\Controllers\Manage\DiscussionController as ManageDiscussionController;
 use Illuminate\Support\Collection;
 use Illuminate\View\Component;
 
@@ -42,6 +43,13 @@ class AppLayout extends Component
             $this->reviews = $user?->isOwner() ? ManageDashboardController::pendingPaymentReviews(
                 $this->enabledModules->map(fn ($tenantModule) => $tenantModule->module)
             ) : [];
+
+            if ($this->hasModule(Module::Lms) && $user) {
+                $waiting = ManageDiscussionController::waitingFor($user);
+                if ($waiting > 0) {
+                    $this->reviews['discussions'] = $waiting;
+                }
+            }
 
             if ($this->hasModule(Module::Cbt) && $user) {
                 $examIds = app(ExamPlacements::class)->markableExamIds($user);

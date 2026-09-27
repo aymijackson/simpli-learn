@@ -152,6 +152,11 @@ class Course extends Model implements SharedAcrossTenants
             ->orderBy('title');
     }
 
+    public function discussions(): HasMany
+    {
+        return $this->hasMany(CourseDiscussion::class);
+    }
+
     /** Members who teach this course. */
     public function instructors(): BelongsToMany
     {

@@ -368,6 +368,13 @@
                             @endif
                         @endif
 
+                        @if ($isEnrolled || \Elibrary\Lms\Support\Teaching::canManage($user, $course))
+                            <a href="{{ route('lms.discussions.index', $course) }}" class="mt-4 flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-brand-700 ring-1 ring-inset ring-brand-200 hover:bg-brand-50">
+                                <x-icon name="chat" class="h-4 w-4" /> Discussions
+                                @if ($discussionCount)<span class="rounded-full bg-brand-100 px-2 text-xs">{{ $discussionCount }}</span>@endif
+                            </a>
+                        @endif
+
                         <div class="mt-6 border-t border-slate-100 pt-5">
                             <p class="text-sm font-semibold text-slate-900">This course includes</p>
                             <ul class="mt-3 space-y-2.5 text-sm text-slate-600">
