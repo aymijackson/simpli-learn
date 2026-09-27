@@ -16,7 +16,7 @@ class AppLayout extends Component
      * Routes that belong to the owner's back office. They render inside the
      * sidebar layout; everything else gets the learner-facing layout.
      */
-    public const MANAGE_ROUTES = ['*.manage.*', 'tenant.team.*'];
+    public const MANAGE_ROUTES = ['*.manage.*', 'tenant.team.*', 'tenant.settings.*'];
 
     public Tenant $tenant;
 

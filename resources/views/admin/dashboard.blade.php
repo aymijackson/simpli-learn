@@ -25,7 +25,7 @@
             @foreach ($pendingTenants as $tenant)
                 <x-card class="flex flex-col">
                     <div class="flex items-start gap-3">
-                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 font-display text-base font-bold text-brand-700">{{ mb_strtoupper(mb_substr($tenant->name, 0, 1)) }}</span>
+                        <x-workspace-mark :tenant="$tenant" class="h-10! w-10!" />
                         <div class="min-w-0">
                             <a href="{{ route('admin.tenants.show', $tenant) }}" class="block truncate text-sm font-semibold text-slate-900 hover:text-brand-700">{{ $tenant->name }}</a>
                             <p class="text-xs text-slate-500">/t/{{ $tenant->slug }} &middot; signed up {{ $tenant->created_at?->diffForHumans() }}</p>

@@ -38,6 +38,11 @@
         --color-ink-950: #0d0b1d;
     }
 </style>
+@php($brandTenant = app(\App\Support\Tenancy\Tenancy::class)->current())
+@if ($brandTenant?->brand_color && \App\Support\BrandColor::isValidHex($brandTenant->brand_color))
+    {{-- Workspace brand colour: overrides the palette above (doubled :root wins over Tailwind's own). --}}
+    <style>:root:root { {!! \App\Support\BrandColor::cssVariables($brandTenant->brand_color) !!} }</style>
+@endif
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/trix@2.1.19/dist/trix.css">
 <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
 {{-- app.js registers Trix hooks, so it must run before Trix upgrades the editors. --}}

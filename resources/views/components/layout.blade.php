@@ -25,9 +25,7 @@
     <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:gap-6 lg:px-8">
             <a href="{{ route('tenant.home') }}" class="flex shrink-0 items-center gap-2.5">
-                <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 font-display text-base font-bold text-white shadow-sm">
-                    {{ mb_strtoupper(mb_substr($tenant->name, 0, 1)) }}
-                </span>
+                <x-workspace-mark :tenant="$tenant" />
                 <span class="hidden max-w-[12rem] truncate text-[15px] font-bold tracking-tight text-slate-900 md:inline">{{ $tenant->name }}</span>
             </a>
 
@@ -178,7 +176,7 @@
         <div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
             <div class="lg:col-span-2">
                 <p class="flex items-center gap-2 text-sm font-bold text-slate-900">
-                    <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-600 font-display text-xs text-white">{{ mb_strtoupper(mb_substr($tenant->name, 0, 1)) }}</span>
+                    <x-workspace-mark :tenant="$tenant" size="sm" />
                     {{ $tenant->name }}
                 </p>
                 <p class="mt-3 max-w-sm text-sm text-slate-500">Learn at your own pace, test what you know, and keep your study resources in one place.</p>

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Storage;
 
 class Tenant extends Model
 {
@@ -18,6 +19,8 @@ class Tenant extends Model
         'slug',
         'domain',
         'status',
+        'logo_path',
+        'brand_color',
     ];
 
     protected function casts(): array
@@ -45,6 +48,16 @@ class Tenant extends Model
     public function revenueSplit(): HasOne
     {
         return $this->hasOne(TenantRevenueSplit::class);
+    }
+
+    public function logoUrl(): ?string
+    {
+        return $this->logo_path ? Storage::disk('public')->url($this->logo_path) : null;
+    }
+
+    public function initial(): string
+    {
+        return mb_strtoupper(mb_substr($this->name, 0, 1));
     }
 
     public function hasModule(Module|string $module): bool

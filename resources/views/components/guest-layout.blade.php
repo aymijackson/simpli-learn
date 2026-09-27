@@ -19,7 +19,11 @@
         {{-- Form column --}}
         <div class="flex flex-col px-4 py-8 sm:px-8">
             <a href="{{ $authTenant ? route('tenant.login', $authTenant->slug) : url('/') }}" class="flex items-center gap-2.5 self-start">
-                <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 font-display text-lg font-bold text-white shadow-sm">{{ $brandInitial }}</span>
+                @if ($authTenant)
+                    <x-workspace-mark :tenant="$authTenant" />
+                @else
+                    <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 font-display text-lg font-bold text-white shadow-sm">{{ $brandInitial }}</span>
+                @endif
                 <span class="text-lg font-bold tracking-tight text-slate-900">{{ $brandName }}</span>
             </a>
 

@@ -1,9 +1,7 @@
 {{-- Owner back-office navigation. Rendered twice by manage-layout (desktop
      sidebar and mobile drawer), so it must not contain element ids. --}}
 <div class="flex h-16 shrink-0 items-center gap-3 border-b border-white/5 px-5">
-    <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-700 font-display text-base font-bold text-white">
-        {{ mb_strtoupper(mb_substr($tenant->name, 0, 1)) }}
-    </span>
+    <x-workspace-mark :tenant="$tenant" dark />
     <div class="min-w-0">
         <p class="truncate text-sm font-semibold text-white">{{ $tenant->name }}</p>
         <p class="text-xs text-slate-500">Workspace admin</p>
@@ -47,6 +45,7 @@
 
     <x-sidebar-section title="Workspace">
         <x-sidebar-link :href="route('tenant.team.index')" icon="users" :active="request()->routeIs('tenant.team.*')">Team &amp; learners</x-sidebar-link>
+        <x-sidebar-link :href="route('tenant.settings.edit')" icon="adjustments" :active="request()->routeIs('tenant.settings.*')">Settings &amp; branding</x-sidebar-link>
         <x-sidebar-link :href="route('tenant.manage.activity')" icon="list" :active="request()->routeIs('tenant.manage.activity')">Activity log</x-sidebar-link>
         <x-sidebar-link :href="route('tenant.home')" icon="eye">View learner site</x-sidebar-link>
     </x-sidebar-section>

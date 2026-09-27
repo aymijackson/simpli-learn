@@ -26,6 +26,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamImportController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\WorkspaceSettingsController;
 use Illuminate\Support\Facades\Route;
 
 // Public marketing site
@@ -137,6 +138,11 @@ Route::prefix('t/{tenant}')->name('tenant.')->group(function () {
 
     Route::middleware(['auth', 'owner'])->get('/manage', ManageDashboardController::class)->name('manage.dashboard');
     Route::middleware(['auth', 'owner'])->get('/manage/activity', [ActivityLogController::class, 'tenantIndex'])->name('manage.activity');
+
+    Route::middleware(['auth', 'owner'])->group(function () {
+        Route::get('/settings', [WorkspaceSettingsController::class, 'edit'])->name('settings.edit');
+        Route::put('/settings', [WorkspaceSettingsController::class, 'update'])->name('settings.update');
+    });
 
     Route::middleware(['auth', 'owner'])->prefix('team')->name('team.')->group(function () {
         Route::get('/', [TeamController::class, 'index'])->name('index');
