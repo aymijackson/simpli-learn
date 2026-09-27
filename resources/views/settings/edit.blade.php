@@ -52,6 +52,28 @@
                     @error('brand_color')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </fieldset>
 
+                <fieldset class="space-y-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
+                    <legend class="px-1 text-sm font-semibold text-slate-900">Single sign-on</legend>
+                    @if ($ssoAvailable)
+                        <p class="text-xs text-slate-500">Let people sign in with their work Google or Microsoft account instead of a password. It only works for email addresses that already have an account here, unless you add your email domains below.</p>
+                        @foreach ($ssoAvailable as $key => $label)
+                            <label class="flex items-center gap-2 text-sm text-slate-700">
+                                <input type="checkbox" name="sso_providers[]" value="{{ $key }}" class="rounded border-slate-300 text-brand-600 focus:ring-brand-600" @checked(in_array($key, old('sso_providers', $workspace->sso_providers ?? []), true))>
+                                Show "Continue with {{ $label }}"
+                            </label>
+                        @endforeach
+                        <div>
+                            <label for="sso-domains" class="mb-1.5 block text-sm font-medium text-slate-700">Email domains that may join automatically <span class="font-normal text-slate-500">(optional)</span></label>
+                            <input id="sso-domains" type="text" name="sso_domains" value="{{ old('sso_domains', implode(', ', $workspace->sso_domains ?? [])) }}" placeholder="e.g. acme.com, acme.co.uk"
+                                   class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                            <p class="mt-1 text-xs text-slate-500">Anyone signing in with Google/Microsoft using one of these domains gets a member account on their first sign-in. Leave empty to allow invited people only.</p>
+                            @error('sso_domains')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                    @else
+                        <p class="text-xs text-slate-500">Sign-in with Google or Microsoft isn't set up on this platform yet. Ask the platform administrator.</p>
+                    @endif
+                </fieldset>
+
                 <x-button type="submit" icon="check">Save settings</x-button>
             </form>
         </x-card>

@@ -21,12 +21,16 @@ class Tenant extends Model
         'status',
         'logo_path',
         'brand_color',
+        'sso_providers',
+        'sso_domains',
     ];
 
     protected function casts(): array
     {
         return [
             'status' => TenantStatus::class,
+            'sso_providers' => 'array',
+            'sso_domains' => 'array',
         ];
     }
 

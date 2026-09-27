@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegistrationController;
+use App\Http\Controllers\Auth\SingleSignOnController;
 use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\CourseCertificateVerificationController;
@@ -76,6 +77,10 @@ Route::middleware('auth')->prefix('profile')->name('profile.')->group(function (
     Route::post('/two-factor/recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes'])->name('two-factor.recovery-codes');
 });
 
+// Google/Microsoft send everyone back here; the workspace is in the session.
+Route::middleware('guest')->get('/auth/{provider}/callback', [SingleSignOnController::class, 'callback'])
+    ->whereIn('provider', ['google', 'microsoft'])->middleware('throttle:20,1')->name('sso.callback');
+
 // Uptime monitors: 200 when healthy, 503 with the failing check otherwise.
 Route::get('/health', HealthController::class)->middleware('throttle:60,1')->name('health');
 
@@ -119,6 +124,8 @@ Route::prefix('t/{tenant}')->name('tenant.')->group(function () {
 
         Route::get('/two-factor-challenge', [TwoFactorChallengeController::class, 'create'])->name('two-factor.challenge');
         Route::post('/two-factor-challenge', [TwoFactorChallengeController::class, 'store']);
+
+        Route::get('/auth/{provider}', [SingleSignOnController::class, 'redirect'])->whereIn('provider', ['google', 'microsoft'])->middleware('throttle:20,1')->name('sso.redirect');
     });
 
     Route::middleware('auth')->group(function () {

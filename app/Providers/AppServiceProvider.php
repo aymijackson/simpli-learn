@@ -8,6 +8,8 @@ use App\Support\Tenancy\Tenancy;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use SocialiteProviders\Manager\SocialiteWasCalled;
+use SocialiteProviders\Microsoft\MicrosoftExtendSocialite;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::subscribe(RecordAuthActivity::class);
+
+        // Adds the "microsoft" driver to Socialite.
+        Event::listen(SocialiteWasCalled::class, [MicrosoftExtendSocialite::class, 'handle']);
 
         // The stock notification always links to the central `password.reset`
         // route. A tenant user's reset link needs the /t/{tenant} prefix, or
