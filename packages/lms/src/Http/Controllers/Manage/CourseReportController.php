@@ -124,7 +124,7 @@ class CourseReportController extends Controller
      *
      * @param  Collection<int, User>  $people
      */
-    public static function assignTo(Course $course, Collection $people, ?Carbon $dueAt, User $by): int
+    public static function assignTo(Course $course, Collection $people, ?Carbon $dueAt, User $by, bool $notify = true): int
     {
         $workspace = app(Tenancy::class)->current();
 
@@ -135,7 +135,7 @@ class CourseReportController extends Controller
             );
             $course->enrollments()->firstOrCreate(['user_id' => $person->id], ['tenant_id' => $workspace->id, 'enrolled_at' => now()]);
 
-            if ($assignment->wasRecentlyCreated || $assignment->wasChanged('due_at')) {
+            if ($notify && ($assignment->wasRecentlyCreated || $assignment->wasChanged('due_at'))) {
                 SafeNotifier::send($person, new CourseAssigned($assignment->setRelation('course', $course), $workspace, $by->name));
             }
         }

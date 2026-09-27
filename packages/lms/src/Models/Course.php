@@ -96,9 +96,15 @@ class Course extends Model
     public function prerequisites(): BelongsToMany
     {
         return $this->belongsToMany(self::class, 'course_prerequisites', 'course_id', 'prerequisite_course_id')
-            ->withPivot('tenant_id')
+            ->withPivot(['tenant_id', 'learning_path_id'])
             ->withTimestamps()
             ->orderBy('title');
+    }
+
+    /** Learning paths that include this course. */
+    public function paths(): BelongsToMany
+    {
+        return $this->belongsToMany(LearningPath::class, 'learning_path_courses')->withPivot('position');
     }
 
     /** Courses that list this one as a prerequisite. */

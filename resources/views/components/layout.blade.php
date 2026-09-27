@@ -135,12 +135,18 @@
                     </a>
                     @foreach ($enabledModules as $tenantModule)
                         @php($module = $tenantModule->module)
-                        @php($active = request()->routeIs($module->routeNamePrefix().'*'))
+                        @php($active = request()->routeIs($module->routeNamePrefix().'*') && ! request()->routeIs('lms.paths.*'))
                         <a href="{{ route($module->routeName()) }}"
                            class="flex shrink-0 items-center gap-2 border-b-2 py-3 text-sm font-medium transition {{ $active ? 'border-brand-600 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800' }}">
                             <x-icon :name="$moduleIcons[$module->value]" class="h-4 w-4" />
                             {{ match ($module->value) { 'lms' => 'Courses', 'cbt' => 'Exams', default => 'Library' } }}
                         </a>
+                        @if ($module->value === 'lms' && \Elibrary\Lms\Models\LearningPath::where('is_published', true)->exists())
+                            <a href="{{ route('lms.paths.index') }}"
+                               class="flex shrink-0 items-center gap-2 border-b-2 py-3 text-sm font-medium transition {{ request()->routeIs('lms.paths.*') ? 'border-brand-600 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800' }}">
+                                <x-icon name="map" class="h-4 w-4" /> Paths
+                            </a>
+                        @endif
                     @endforeach
                 </div>
             </nav>

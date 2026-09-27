@@ -355,6 +355,9 @@
                                 @if ($course->sequential_lessons)
                                     <li class="flex items-center gap-3"><x-icon name="flag" class="h-4 w-4 text-slate-400" /> Lessons unlock in order</li>
                                 @endif
+                                @foreach ($course->paths->where('is_published', true) as $path)
+                                    <li class="flex items-start gap-3"><x-icon name="map" class="mt-0.5 h-4 w-4 text-slate-400" /> <span>Part of the <a href="{{ route('lms.paths.show', $path) }}" class="font-medium text-brand-700 hover:underline">{{ $path->title }}</a> path</span></li>
+                                @endforeach
                                 @if ($course->prerequisites->isNotEmpty())
                                     <li class="flex items-start gap-3"><x-icon name="lock" class="mt-0.5 h-4 w-4 text-slate-400" /> <span>Requires {{ $course->prerequisites->pluck('title')->join(', ', ' and ') }}</span></li>
                                 @endif

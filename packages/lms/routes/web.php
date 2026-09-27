@@ -4,6 +4,7 @@ use Elibrary\Lms\Http\Controllers\CourseCertificateController;
 use Elibrary\Lms\Http\Controllers\CoursePurchaseController;
 use Elibrary\Lms\Http\Controllers\CourseController;
 use Elibrary\Lms\Http\Controllers\CourseReviewController;
+use Elibrary\Lms\Http\Controllers\LearningPathController;
 use Elibrary\Lms\Http\Controllers\LessonAttachmentController;
 use Elibrary\Lms\Http\Controllers\LessonController;
 use Elibrary\Lms\Http\Controllers\Manage\CourseController as ManageCourseController;
@@ -11,6 +12,7 @@ use Elibrary\Lms\Http\Controllers\Manage\CourseModuleController as ManageCourseM
 use Elibrary\Lms\Http\Controllers\Manage\CoursePaymentGatewayController as ManageCoursePaymentGatewayController;
 use Elibrary\Lms\Http\Controllers\Manage\CoursePurchaseQueueController as ManageCoursePurchaseQueueController;
 use Elibrary\Lms\Http\Controllers\Manage\CourseReportController as ManageCourseReportController;
+use Elibrary\Lms\Http\Controllers\Manage\LearningPathController as ManageLearningPathController;
 use Elibrary\Lms\Http\Controllers\Manage\LessonAttachmentController as ManageLessonAttachmentController;
 use Elibrary\Lms\Http\Controllers\Manage\LessonController as ManageLessonController;
 use Elibrary\Lms\Http\Controllers\WebhookController;
@@ -25,6 +27,9 @@ Route::middleware(['web', 'auth', 'module:lms'])
     ->group(function () {
         Route::get('/', [CourseController::class, 'index'])->name('courses.index');
         Route::get('/courses/{course:slug}', [CourseController::class, 'show'])->name('courses.show');
+        Route::get('/paths', [LearningPathController::class, 'index'])->name('paths.index');
+        Route::get('/paths/{path:slug}', [LearningPathController::class, 'show'])->name('paths.show');
+        Route::post('/paths/{path:slug}/start', [LearningPathController::class, 'start'])->name('paths.start');
         Route::post('/courses/{course:slug}/enroll', [CourseController::class, 'enroll'])->name('courses.enroll');
         Route::post('/courses/{course:slug}/reviews', [CourseReviewController::class, 'store'])->name('courses.reviews.store');
         Route::delete('/courses/{course:slug}/reviews/{review}', [CourseReviewController::class, 'destroy'])->name('courses.reviews.destroy');
@@ -66,6 +71,14 @@ Route::middleware(['web', 'auth', 'module:lms'])
             Route::post('/courses/{course:slug}/modules', [ManageCourseModuleController::class, 'store'])->name('modules.store');
             Route::put('/courses/{course:slug}/modules/{module}', [ManageCourseModuleController::class, 'update'])->name('modules.update');
             Route::delete('/courses/{course:slug}/modules/{module}', [ManageCourseModuleController::class, 'destroy'])->name('modules.destroy');
+
+            Route::get('/paths', [ManageLearningPathController::class, 'index'])->name('paths.index');
+            Route::get('/paths/create', [ManageLearningPathController::class, 'create'])->name('paths.create');
+            Route::post('/paths', [ManageLearningPathController::class, 'store'])->name('paths.store');
+            Route::get('/paths/{path:slug}/edit', [ManageLearningPathController::class, 'edit'])->name('paths.edit');
+            Route::put('/paths/{path:slug}', [ManageLearningPathController::class, 'update'])->name('paths.update');
+            Route::delete('/paths/{path:slug}', [ManageLearningPathController::class, 'destroy'])->name('paths.destroy');
+            Route::post('/paths/{path:slug}/assign', [ManageLearningPathController::class, 'assign'])->name('paths.assign');
 
             Route::get('/payment-gateways', [ManageCoursePaymentGatewayController::class, 'edit'])->name('payment-gateways.edit');
             Route::put('/payment-gateways/{gateway}', [ManageCoursePaymentGatewayController::class, 'update'])->name('payment-gateways.update');

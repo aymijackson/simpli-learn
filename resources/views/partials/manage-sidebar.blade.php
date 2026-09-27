@@ -19,6 +19,7 @@
     @if ($hasModule(\App\Enums\Module::Lms))
         <x-sidebar-section title="Learning">
             <x-sidebar-link :href="route('lms.manage.courses.index')" icon="academic-cap" :active="request()->routeIs('lms.manage.courses.*', 'lms.manage.lessons.*', 'lms.manage.modules.*')">Courses</x-sidebar-link>
+            <x-sidebar-link :href="route('lms.manage.paths.index')" icon="map" :active="request()->routeIs('lms.manage.paths.*')">Learning paths</x-sidebar-link>
             <x-sidebar-link :href="route('lms.manage.course-purchases.index')" icon="receipt" :badge="$reviews['lms'] ?? null" :active="request()->routeIs('lms.manage.course-purchases.*')">Course sales</x-sidebar-link>
             <x-sidebar-link :href="route('lms.manage.payment-gateways.edit')" icon="credit-card" :active="request()->routeIs('lms.manage.payment-gateways.*')">Payment gateways</x-sidebar-link>
         </x-sidebar-section>

@@ -106,7 +106,8 @@
     </label>
 
     @if ($otherCourses->isNotEmpty())
-        @php($chosenPrerequisites = collect(old('prerequisite_ids', isset($course) ? $course->prerequisites->pluck('id')->all() : []))->map(fn ($id) => (int) $id))
+        @php($chosenPrerequisites = collect(old('prerequisite_ids', isset($course) ? $course->prerequisites->whereNull('pivot.learning_path_id')->pluck('id')->all() : []))->map(fn ($id) => (int) $id))
+        @php($fromPaths = isset($course) ? $course->prerequisites->whereNotNull('pivot.learning_path_id') : collect())
         <div>
             <p class="text-sm font-medium text-slate-700">Courses to complete first (optional)</p>
             <p class="text-xs text-slate-500">Learners can't enrol in or open this course until they've passed every course ticked here.</p>
@@ -118,6 +119,9 @@
                     </label>
                 @endforeach
             </div>
+            @if ($fromPaths->isNotEmpty())
+                <p class="mt-2 text-xs text-slate-500">Also required by a learning path in order: {{ $fromPaths->pluck('title')->join(', ', ' and ') }}. Change that on the path.</p>
+            @endif
             @error('prerequisite_ids')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             @error('prerequisite_ids.*')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
         </div>

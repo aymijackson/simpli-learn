@@ -12,6 +12,7 @@ use Elibrary\Lms\Enums\CoursePricingPolicy;
 use Elibrary\Lms\Models\Course;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -166,12 +167,24 @@ class CourseController extends Controller
     {
         $tenantId = app(Tenancy::class)->id();
 
-        $course->prerequisites()->sync(
-            collect($request->input('prerequisite_ids', []))
-                ->map(fn ($id) => (int) $id)
-                ->reject(fn ($id) => $id === $course->id)
-                ->mapWithKeys(fn ($id) => [$id => ['tenant_id' => $tenantId]])
-                ->all()
-        );
+        $chosen = collect($request->input('prerequisite_ids', []))
+            ->map(fn ($id) => (int) $id)
+            ->reject(fn ($id) => $id === $course->id)
+            ->unique();
+
+        // Only the owner's own choices live here; a sequential learning path
+        // manages the links it created (learning_path_id set) by itself.
+        DB::table('course_prerequisites')
+            ->where('course_id', $course->id)
+            ->whereNull('learning_path_id')
+            ->whereNotIn('prerequisite_course_id', $chosen->all())
+            ->delete();
+
+        foreach ($chosen as $id) {
+            DB::table('course_prerequisites')->updateOrInsert(
+                ['course_id' => $course->id, 'prerequisite_course_id' => $id],
+                ['tenant_id' => $tenantId, 'learning_path_id' => null, 'updated_at' => now(), 'created_at' => now()],
+            );
+        }
     }
 }
