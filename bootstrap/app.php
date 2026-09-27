@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AuthenticateApiToken;
 use App\Http\Middleware\ContentSharing;
 use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\EnsureModuleEnabled;
@@ -18,6 +19,7 @@ use Illuminate\Http\Request;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -47,6 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         $middleware->alias([
+            'api.token' => AuthenticateApiToken::class,
             'content' => ContentSharing::class,
             'module' => EnsureModuleEnabled::class,
             'two-factor' => RequireTwoFactor::class,
@@ -97,5 +100,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // error is still logged as usual.
         $exceptions->report(function (Throwable $e) {
             ErrorAlerter::handle($e);
+        });
+
+        // The API always answers in JSON (errors included), whatever Accept says.
+        $exceptions->shouldRenderJsonWhen(fn (Request $request) => $request->is('api/*') || $request->expectsJson());
+
+        // Don't name internal classes ("No query results for model …") to API callers.
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
+            return $request->is('api/*') ? response()->json(['message' => 'Not found.'], 404) : null;
         });
     })->create();

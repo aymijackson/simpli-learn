@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\PaymentSettingsController;
 use App\Http\Controllers\Admin\SharedCourseController;
 use App\Http\Controllers\Admin\TenantApprovalController;
 use App\Http\Controllers\Admin\TenantController as AdminTenantController;
+use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -153,6 +154,9 @@ Route::prefix('t/{tenant}')->name('tenant.')->group(function () {
     Route::middleware(['auth', 'owner'])->group(function () {
         Route::get('/settings', [WorkspaceSettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [WorkspaceSettingsController::class, 'update'])->name('settings.update');
+        Route::get('/settings/api', [ApiTokenController::class, 'index'])->name('settings.api');
+        Route::post('/settings/api', [ApiTokenController::class, 'store'])->name('settings.api.store');
+        Route::delete('/settings/api/{token}', [ApiTokenController::class, 'destroy'])->whereNumber('token')->name('settings.api.destroy');
     });
 
     Route::middleware(['auth', 'owner'])->prefix('team')->name('team.')->group(function () {
