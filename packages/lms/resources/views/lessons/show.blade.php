@@ -64,6 +64,28 @@
                     @endif
                 @endif
 
+                @if ($lesson->hasScorm())
+                    <div class="border-b border-slate-100 bg-slate-100">
+                        <div data-scorm
+                             data-version="{{ $lesson->scorm_version }}"
+                             data-commit-url="{{ route('lms.lessons.scorm.commit', [$course, $lesson]) }}"
+                             data-token="{{ csrf_token() }}"
+                             data-learner-id="{{ auth()->id() }}"
+                             data-learner-name="{{ auth()->user()->name }}"
+                             data-state="{{ json_encode($scormProgress?->scorm_state ?? (object) []) }}">
+                            <iframe @if ($course->isEnrolled(auth()->user())) data-src @else src @endif="{{ route('lms.lessons.scorm.file', [$course, $lesson, 'path' => $lesson->scorm_launch]) }}" title="{{ $lesson->title }} — activity"
+                                    class="block h-[75vh] min-h-[480px] w-full bg-white" allow="fullscreen; autoplay" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                    @if ($scormProgress?->scorm_score !== null)
+                        <p class="border-b border-slate-100 px-6 py-3 text-sm text-slate-600 sm:px-10">Your score: <strong>{{ rtrim(rtrim(number_format($scormProgress->scorm_score, 1), '0'), '.') }}%</strong></p>
+                    @endif
+                    <div class="hidden items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-6 py-3 text-sm text-emerald-800 sm:px-10" data-scorm-complete-banner>
+                        <span class="flex items-center gap-2"><x-icon name="check-circle" class="h-5 w-5" /> Activity complete.</span>
+                        <a href="{{ route('lms.lessons.show', [$course, $lesson]) }}" class="font-semibold underline">Continue</a>
+                    </div>
+                @endif
+
                 @if (trim(strip_tags((string) $lesson->content)) !== '')
                     <div class="rich-text px-6 py-8 text-[15px] leading-relaxed text-slate-700 sm:px-10">{!! $lesson->content !!}</div>
                 @endif
@@ -117,8 +139,8 @@
                     </div>
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                         @unless ($isCompleted)
-                            @if ($mustWatch)
-                                <p class="flex items-center gap-2 text-sm text-slate-500" data-must-watch><x-icon name="play" class="h-4 w-4" /> Watch the video to complete this lesson</p>
+                            @if ($blocker)
+                                <p class="flex items-center gap-2 text-sm text-slate-500" data-must-watch><x-icon name="play" class="h-4 w-4" /> {{ $blocker }}</p>
                             @else
                                 <form method="POST" action="{{ route('lms.lessons.complete', [$course, $lesson]) }}">
                                     @csrf
@@ -175,6 +197,17 @@
             <script>
                 document.addEventListener('lesson-video:completed', () => {
                     document.querySelector('[data-video-complete-banner]')?.classList.replace('hidden', 'flex');
+                    document.querySelector('[data-must-watch]')?.remove();
+                });
+            </script>
+        @endpush
+    @endif
+    @if ($lesson->hasScorm() && $course->isEnrolled(auth()->user()))
+        @push('scripts')
+            <script src="{{ asset('js/scorm-runtime.js') }}?v={{ filemtime(public_path('js/scorm-runtime.js')) }}"></script>
+            <script>
+                document.addEventListener('scorm:completed', () => {
+                    document.querySelector('[data-scorm-complete-banner]')?.classList.replace('hidden', 'flex');
                     document.querySelector('[data-must-watch]')?.remove();
                 });
             </script>

@@ -24,13 +24,14 @@ class Lesson extends Model implements SharedAcrossTenants
     }
 
 
-    protected $fillable = ['tenant_id', 'course_id', 'course_module_id', 'exam_id', 'title', 'content', 'video_url', 'require_video_watch', 'position', 'is_preview'];
+    protected $fillable = ['tenant_id', 'course_id', 'course_module_id', 'exam_id', 'title', 'content', 'video_url', 'require_video_watch', 'scorm_path', 'scorm_launch', 'scorm_version', 'scorm_required', 'position', 'is_preview'];
 
     protected function casts(): array
     {
         return [
             'is_preview' => 'boolean',
             'require_video_watch' => 'boolean',
+            'scorm_required' => 'boolean',
         ];
     }
 
@@ -82,6 +83,21 @@ class Lesson extends Model implements SharedAcrossTenants
         return $this->video() !== null
             && $this->require_video_watch
             && $this->videoPercentFor($user) < VideoEmbed::WATCHED_TO_COMPLETE;
+    }
+
+    public function hasScorm(): bool
+    {
+        return (bool) $this->scorm_path;
+    }
+
+    /** Why "Mark as complete" isn't available yet, or null when it is. */
+    public function completionBlocker(User $user): ?string
+    {
+        return match (true) {
+            $this->hasScorm() && $this->scorm_required => 'Finish the activity above to complete this lesson.',
+            $this->mustWatchVideo($user) => 'Watch the video to complete this lesson.',
+            default => null,
+        };
     }
 
     public function isCompletedBy(User $user): bool

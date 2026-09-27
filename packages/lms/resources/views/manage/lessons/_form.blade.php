@@ -19,7 +19,31 @@
     </label>
 </fieldset>
 
-<x-editor name="content" label="Lesson notes (optional when there's a video)" :value="old('content', $lesson->content ?? '')" />
+<fieldset class="space-y-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
+    <legend class="px-1 text-sm font-semibold text-slate-900">SCORM package <span class="font-normal text-slate-500">(optional)</span></legend>
+    @if (($lesson ?? null)?->scorm_path)
+        <p class="text-sm text-emerald-800">A SCORM {{ $lesson->scorm_version }} package is attached (starts at <span class="font-mono">{{ $lesson->scorm_launch }}</span>). Upload a new zip to replace it.</p>
+        <label class="flex items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" name="remove_scorm" value="1" class="rounded border-slate-300 text-brand-600 focus:ring-brand-600"> Remove the package
+        </label>
+    @endif
+    <div>
+        <label for="scorm-package" class="mb-1.5 block text-sm font-medium text-slate-700">SCORM zip (1.2 or 2004)</label>
+        <input id="scorm-package" type="file" name="scorm_package" accept=".zip,application/zip"
+               class="block w-full text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 file:ring-1 file:ring-slate-300 hover:file:bg-slate-50">
+        <p class="mt-1 text-xs text-slate-500">Exported from Articulate Storyline/Rise, iSpring, Adobe Captivate and similar tools. It plays inside the lesson and reports progress, score and completion. Only upload packages from sources you trust — they run their own scripts.</p>
+        @error('scorm_package')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+    </div>
+    <label class="flex items-start gap-2 text-sm">
+        <input type="checkbox" name="scorm_required" value="1" class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-600" @checked(old('scorm_required', $lesson->scorm_required ?? true))>
+        <span>
+            <span class="font-medium text-slate-700">The lesson completes only when the package reports it finished</span>
+            <span class="block text-xs text-slate-500">Untick for packages that never report completion, so learners can mark the lesson complete themselves.</span>
+        </span>
+    </label>
+</fieldset>
+
+<x-editor name="content" label="Lesson notes (optional when there's a video or SCORM package)" :value="old('content', $lesson->content ?? '')" />
 
 <x-input type="number" name="position" label="Position" value="{{ old('position', $lesson->position ?? $nextPosition ?? 0) }}" min="0" required />
 <p class="-mt-3 text-xs text-slate-500">Lessons are shown to learners in ascending position order.</p>

@@ -7,6 +7,7 @@ use App\Support\Achievements;
 use Elibrary\Lms\Certificates\CourseCertificateService;
 use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Models\Lesson;
+use Elibrary\Lms\Support\LessonCompletion;
 use Elibrary\Lms\Support\VideoEmbed;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -45,6 +46,8 @@ class LessonController extends Controller
             'video' => $lesson->video(),
             'videoPercent' => $lesson->video() ? $lesson->videoPercentFor($user) : 0,
             'mustWatch' => $lesson->mustWatchVideo($user),
+            'blocker' => $lesson->completionBlocker($user),
+            'scormProgress' => $lesson->hasScorm() ? $lesson->progress()->where('user_id', $user->id)->first() : null,
             'previous' => $index > 0 ? $lessons[$index - 1] : null,
             'next' => $next,
             'nextIsOpen' => $next && $next->isAccessibleTo($user) && $next->isUnlockedFor($user),
@@ -59,12 +62,11 @@ class LessonController extends Controller
         abort_unless($lesson->isAccessibleTo($request->user()), 403);
         abort_unless($lesson->isUnlockedFor($request->user()), 403, 'Pass the required exam to unlock this lesson.');
 
-        if ($lesson->mustWatchVideo($request->user())) {
-            return redirect()->route('lms.lessons.show', [$course, $lesson])
-                ->with('error', 'Watch the video to complete this lesson.');
+        if ($blocker = $lesson->completionBlocker($request->user())) {
+            return redirect()->route('lms.lessons.show', [$course, $lesson])->with('error', $blocker);
         }
 
-        $this->markComplete($course, $lesson, $request->user());
+        LessonCompletion::complete($course, $lesson, $request->user());
 
         return redirect()
             ->route('lms.lessons.show', [$course, $lesson])
@@ -89,21 +91,11 @@ class LessonController extends Controller
 
         $completed = $progress->completed_at !== null;
         if (! $completed && $progress->video_percent >= VideoEmbed::WATCHED_TO_COMPLETE) {
-            $this->markComplete($course, $lesson, $request->user());
+            LessonCompletion::complete($course, $lesson, $request->user());
             $completed = true;
         }
 
         return response()->json(['percent' => $progress->video_percent, 'completed' => $completed]);
     }
 
-    private function markComplete(Course $course, Lesson $lesson, $user): void
-    {
-        $lesson->progress()->updateOrCreate(['user_id' => $user->id], ['completed_at' => now()]);
-
-        if ($course->isEnrolled($user)) {
-            app(CourseCertificateService::class)->issueIfPassedAndFree($course, $user);
-            Achievements::recordActivity($user);
-            Achievements::evaluate($user);
-        }
-    }
 }

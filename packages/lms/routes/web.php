@@ -17,6 +17,7 @@ use Elibrary\Lms\Http\Controllers\Manage\DiscussionController as ManageDiscussio
 use Elibrary\Lms\Http\Controllers\Manage\LearningPathController as ManageLearningPathController;
 use Elibrary\Lms\Http\Controllers\Manage\LessonAttachmentController as ManageLessonAttachmentController;
 use Elibrary\Lms\Http\Controllers\Manage\LessonController as ManageLessonController;
+use Elibrary\Lms\Http\Controllers\ScormController;
 use Elibrary\Lms\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,6 +47,8 @@ Route::middleware(['web', 'auth', 'module:lms'])
         Route::delete('/courses/{course:slug}/reviews/{review}', [CourseReviewController::class, 'destroy'])->name('courses.reviews.destroy');
         Route::get('/courses/{course:slug}/lessons/{lesson}', [LessonController::class, 'show'])->name('lessons.show');
         Route::post('/courses/{course:slug}/lessons/{lesson}/complete', [LessonController::class, 'complete'])->name('lessons.complete');
+        Route::get('/courses/{course:slug}/lessons/{lesson}/scorm/{path}', [ScormController::class, 'file'])->where('path', '.*')->name('lessons.scorm.file');
+        Route::post('/courses/{course:slug}/lessons/{lesson}/scorm-commit', [ScormController::class, 'commit'])->middleware('throttle:120,1')->name('lessons.scorm.commit');
         Route::post('/courses/{course:slug}/lessons/{lesson}/video-progress', [LessonController::class, 'videoProgress'])->middleware('throttle:60,1')->name('lessons.video-progress');
         Route::get('/courses/{course:slug}/lessons/{lesson}/attachments/{attachment}/download', [LessonAttachmentController::class, 'download'])->name('lessons.attachments.download');
         Route::get('/courses/{course:slug}/lessons/{lesson}/attachments/{attachment}/stream', [LessonAttachmentController::class, 'stream'])->name('lessons.attachments.stream');
