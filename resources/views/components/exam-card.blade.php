@@ -5,7 +5,7 @@
     <x-cover :seed="$exam->title" icon="clipboard-check" class="aspect-[16/7]" />
 
     <div class="flex flex-1 flex-col p-5">
-        <h3 class="line-clamp-2 text-[15px] leading-snug font-semibold text-slate-900 group-hover:text-brand-700">{{ $exam->title }}</h3>
+        <h2 class="line-clamp-2 text-[15px] leading-snug font-semibold text-slate-900 group-hover:text-brand-700">{{ $exam->title }}</h2>
         @if ($exam->description)
             <p class="mt-1.5 line-clamp-2 text-sm text-slate-500">{{ \Illuminate\Support\Str::limit(strip_tags($exam->description), 120) }}</p>
         @endif
@@ -21,7 +21,7 @@
         @if ($best !== null)
             <div class="mt-3 flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs">
                 <span class="text-slate-500">Your best</span>
-                <span class="font-bold {{ $best >= $exam->pass_percentage ? 'text-emerald-600' : 'text-rose-600' }}">{{ $best }}%</span>
+                <span class="font-bold {{ $best >= $exam->pass_percentage ? 'text-emerald-700' : 'text-rose-700' }}">{{ $best }}%</span>
             </div>
         @endif
     </div>

@@ -24,7 +24,7 @@
                 @endif
             </span>
             <span class="{{ $compact ? 'line-clamp-2' : '' }} mt-0.5 block text-xs text-slate-500">{{ $data['body'] ?? '' }}</span>
-            <span class="mt-1 block text-[11px] text-slate-400">{{ $notification->created_at->diffForHumans() }}</span>
+            <span class="mt-1 block text-[11px] text-slate-500">{{ $notification->created_at->diffForHumans() }}</span>
         </span>
     </button>
 </form>

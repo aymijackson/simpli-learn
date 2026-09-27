@@ -3,6 +3,8 @@
         &larr; {{ $placement['title'] ?? $exam->title }}
     </a>
 
+    <h1 class="sr-only">{{ $exam->title }} — your result</h1>
+
     <x-card class="mb-8 text-center">
         @if ($attempt->isAwaitingMarking())
             <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-amber-600"><x-icon name="clock" class="h-7 w-7" /></span>
@@ -70,7 +72,7 @@
             <x-card>
                 <div class="flex items-start justify-between gap-4">
                     <div class="flex-1">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
                             Question {{ $loop->iteration }} &middot; {{ $question->points }} {{ \Illuminate\Support\Str::plural('point', $question->points) }}
                         </p>
                         <div class="rich-text mt-1 text-sm font-semibold text-slate-900">{!! $question->question_text !!}</div>

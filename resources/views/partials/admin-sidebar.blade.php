@@ -24,7 +24,7 @@
     <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-700 font-display text-base font-bold text-white">e</span>
     <div>
         <p class="text-sm font-semibold text-white">e-Library Central</p>
-        <p class="text-xs text-slate-500">Platform admin</p>
+        <p class="text-xs text-slate-400">Platform admin</p>
     </div>
 </div>
 
@@ -44,11 +44,11 @@
         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-500/20 text-sm font-bold text-brand-200">{{ $initials ?: '?' }}</span>
         <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-medium text-white">{{ $user->name }}</p>
-            <p class="truncate text-xs text-slate-500">{{ $user->email }}</p>
+            <p class="truncate text-xs text-slate-400">{{ $user->email }}</p>
         </div>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="rounded-lg p-1.5 text-slate-500 hover:bg-white/10 hover:text-white" title="Log out" aria-label="Log out">
+            <button type="submit" class="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white" title="Log out" aria-label="Log out">
                 <x-icon name="logout" class="h-4 w-4" />
             </button>
         </form>

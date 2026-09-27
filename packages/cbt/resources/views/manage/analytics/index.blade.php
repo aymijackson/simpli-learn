@@ -15,7 +15,7 @@
                             <th class="px-4 py-3 text-right">Pass rate</th>
                             <th class="px-4 py-3 text-right">Score (min / avg / max)</th>
                             <th class="px-4 py-3 text-right">Time taken (min / avg / max)</th>
-                            <th class="px-6 py-3"></th>
+                            <th class="px-6 py-3"><span class="sr-only">Actions</span></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -28,21 +28,21 @@
                                     @if (! is_null($row->passRate))
                                         <x-badge :color="$row->passRate >= $row->exam->pass_percentage ? 'green' : 'amber'">{{ $row->passRate }}%</x-badge>
                                     @else
-                                        <span class="text-slate-400">&mdash;</span>
+                                        <span class="text-slate-500">&mdash;</span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-right text-slate-600">
                                     @if (! is_null($row->avgScore))
                                         {{ $row->minScore }}% / {{ $row->avgScore }}% / {{ $row->maxScore }}%
                                     @else
-                                        <span class="text-slate-400">&mdash;</span>
+                                        <span class="text-slate-500">&mdash;</span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-right text-slate-600">
                                     @if (! is_null($row->avgMinutes))
                                         {{ $row->minMinutes }} / {{ $row->avgMinutes }} / {{ $row->maxMinutes }}
                                     @else
-                                        <span class="text-slate-400">&mdash;</span>
+                                        <span class="text-slate-500">&mdash;</span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-3 text-right">

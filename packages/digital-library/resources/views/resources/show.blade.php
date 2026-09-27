@@ -109,7 +109,7 @@
                         <span class="inline-flex items-center gap-1 text-sm text-slate-600">
                             <span class="text-amber-400">★</span>
                             <span class="font-semibold text-slate-900">{{ $averageRating }}</span>
-                            <span class="text-slate-400">({{ $ratingsCount }} {{ \Illuminate\Support\Str::plural('rating', $ratingsCount) }})</span>
+                            <span class="text-slate-500">({{ $ratingsCount }} {{ \Illuminate\Support\Str::plural('rating', $ratingsCount) }})</span>
                         </span>
                     @endif
                 </div>
@@ -118,16 +118,16 @@
             @if ($resource->isbn || $resource->publisher || $resource->publication_year || $resource->language)
                 <dl class="grid grid-cols-2 gap-4 rounded-2xl bg-white p-5 ring-1 ring-slate-200/80 sm:grid-cols-4">
                     @if ($resource->publisher)
-                        <div><dt class="text-xs text-slate-400">Publisher</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->publisher }}</dd></div>
+                        <div><dt class="text-xs text-slate-500">Publisher</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->publisher }}</dd></div>
                     @endif
                     @if ($resource->publication_year)
-                        <div><dt class="text-xs text-slate-400">Year</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->publication_year }}</dd></div>
+                        <div><dt class="text-xs text-slate-500">Year</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->publication_year }}</dd></div>
                     @endif
                     @if ($resource->language)
-                        <div><dt class="text-xs text-slate-400">Language</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->language }}</dd></div>
+                        <div><dt class="text-xs text-slate-500">Language</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->language }}</dd></div>
                     @endif
                     @if ($resource->isbn)
-                        <div><dt class="text-xs text-slate-400">ISBN</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->isbn }}</dd></div>
+                        <div><dt class="text-xs text-slate-500">ISBN</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->isbn }}</dd></div>
                     @endif
                 </dl>
             @endif

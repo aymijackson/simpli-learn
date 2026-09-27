@@ -12,7 +12,7 @@
         <div class="bg-dots absolute inset-0 -z-10"></div>
         <div class="absolute -top-32 right-10 -z-10 h-80 w-80 rounded-full bg-indigo-500/25 blur-3xl"></div>
         <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-            <nav class="flex items-center gap-2 text-sm text-slate-400">
+            <nav class="flex items-center gap-2 text-sm text-slate-400" aria-label="Breadcrumb">
                 <a href="{{ route('lms.paths.index') }}" class="hover:text-white">Paths</a>
                 <x-icon name="chevron-right" class="h-4 w-4" />
                 <span class="truncate text-slate-300">{{ $path->title }}</span>
@@ -56,7 +56,7 @@
                 @php($course = $step['course'])
                 <li class="relative flex gap-4">
                     <span class="z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ring-4 ring-slate-50
-                        {{ $step['status'] === 'passed' ? 'bg-emerald-500 text-white' : ($step['status'] === 'locked' ? 'bg-slate-200 text-slate-400' : 'bg-brand-600 text-white') }}">
+                        {{ $step['status'] === 'passed' ? 'bg-emerald-500 text-white' : ($step['status'] === 'locked' ? 'bg-slate-200 text-slate-500' : 'bg-brand-600 text-white') }}">
                         @if ($step['status'] === 'passed')
                             <x-icon name="check" class="h-5 w-5" />
                         @elseif ($step['status'] === 'locked')

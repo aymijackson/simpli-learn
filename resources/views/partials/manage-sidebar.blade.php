@@ -4,7 +4,7 @@
     <x-workspace-mark :tenant="$tenant" dark />
     <div class="min-w-0">
         <p class="truncate text-sm font-semibold text-white">{{ $tenant->name }}</p>
-        <p class="text-xs text-slate-500">Workspace admin</p>
+        <p class="text-xs text-slate-400">Workspace admin</p>
     </div>
 </div>
 
@@ -58,11 +58,11 @@
         </span>
         <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-medium text-white">{{ auth()->user()->name }}</p>
-            <p class="truncate text-xs text-slate-500">Owner</p>
+            <p class="truncate text-xs text-slate-400">Owner</p>
         </div>
         <form method="POST" action="{{ route('tenant.logout') }}">
             @csrf
-            <button type="submit" class="rounded-lg p-1.5 text-slate-500 hover:bg-white/10 hover:text-white" title="Log out" aria-label="Log out">
+            <button type="submit" class="rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white" title="Log out" aria-label="Log out">
                 <x-icon name="logout" class="h-4 w-4" />
             </button>
         </form>

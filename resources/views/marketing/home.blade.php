@@ -121,7 +121,7 @@
             <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
                 @foreach ($audiences as $audience)
                     <div class="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-slate-600">
-                        <x-icon :name="$audience['icon']" class="h-5 w-5 text-slate-400" /> {{ $audience['label'] }}
+                        <x-icon :name="$audience['icon']" class="h-5 w-5 text-slate-500" /> {{ $audience['label'] }}
                     </div>
                 @endforeach
             </div>
@@ -241,7 +241,7 @@
                     <label for="workspace" class="text-sm font-medium text-slate-700">Workspace address</label>
                     <div class="mt-2 flex flex-col gap-3 sm:flex-row">
                         <div class="flex flex-1 items-center rounded-xl bg-white ring-1 ring-slate-300 focus-within:ring-2 focus-within:ring-brand-600">
-                            <span class="pl-4 text-sm text-slate-400 select-none">{{ parse_url(url('/'), PHP_URL_HOST) }}/t/</span>
+                            <span class="pl-4 text-sm text-slate-500 select-none">{{ parse_url(url('/'), PHP_URL_HOST) }}/t/</span>
                             <input id="workspace" name="workspace" value="{{ old('workspace') }}" placeholder="your-school" required
                                    class="block w-full border-0 bg-transparent py-3 pr-4 pl-0.5 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-0 focus:outline-none">
                         </div>

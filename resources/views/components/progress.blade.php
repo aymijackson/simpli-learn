@@ -1,4 +1,4 @@
-@props(['value' => 0, 'tone' => 'brand', 'label' => false])
+@props(['value' => 0, 'tone' => 'brand', 'label' => false, 'name' => 'Progress'])
 
 @php
     $value = max(0, min(100, (int) $value));
@@ -11,7 +11,7 @@
 @endphp
 
 <div {{ $attributes->merge(['class' => 'flex items-center gap-3']) }}>
-    <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow="{{ $value }}" aria-valuemin="0" aria-valuemax="100">
+    <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="{{ $name }}" aria-valuenow="{{ $value }}" aria-valuemin="0" aria-valuemax="100">
         <div class="h-full rounded-full {{ $value === 100 ? 'bg-emerald-500' : ($tones[$tone] ?? $tones['brand']) }}" style="width: {{ $value }}%"></div>
     </div>
     @if ($label)

@@ -162,7 +162,7 @@
                             <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full {{ $tones[$item['tone']] }}"><x-icon :name="$item['icon']" class="h-4 w-4" /></span>
                             <div class="min-w-0">
                                 <p class="text-sm text-slate-700">{{ $item['text'] }}</p>
-                                <p class="mt-0.5 text-xs text-slate-400">{{ $item['at']->diffForHumans() }}</p>
+                                <p class="mt-0.5 text-xs text-slate-500">{{ $item['at']->diffForHumans() }}</p>
                             </div>
                         </li>
                     @endforeach

@@ -47,7 +47,7 @@
 
         <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
             <div class="lg:max-w-[calc(100%-24rem)] lg:pr-10">
-                <nav class="flex items-center gap-2 text-sm text-slate-400">
+                <nav class="flex items-center gap-2 text-sm text-slate-400" aria-label="Breadcrumb">
                     <a href="{{ route('lms.courses.index') }}" class="hover:text-white">Courses</a>
                     <x-icon name="chevron-right" class="h-4 w-4" />
                     <span class="truncate text-slate-300">{{ $course->title }}</span>
@@ -226,7 +226,7 @@
                                                 <a href="{{ $canOpen ? route('lms.lessons.show', [$course, $lesson]) : '#' }}"
                                                    class="flex items-center justify-between gap-4 px-5 py-3.5 {{ $canOpen ? 'hover:bg-slate-50' : 'cursor-not-allowed' }}">
                                                     <span class="flex min-w-0 items-center gap-3">
-                                                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold {{ $state['completed'] ? 'bg-emerald-100 text-emerald-700' : ($canOpen ? 'bg-brand-50 text-brand-700' : 'bg-slate-100 text-slate-400') }}">
+                                                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold {{ $state['completed'] ? 'bg-emerald-100 text-emerald-700' : ($canOpen ? 'bg-brand-50 text-brand-700' : 'bg-slate-100 text-slate-500') }}">
                                                             @if ($state['completed'])
                                                                 <x-icon name="check" class="h-4 w-4" />
                                                             @elseif ($state['hasAccess'] && ! $state['unlocked'])
@@ -247,10 +247,10 @@
                                                             <span class="hidden text-xs text-slate-500 sm:inline">{{ $unmetPrerequisites->isNotEmpty() ? 'Complete the required course first' : 'Finish the step above to unlock' }}</span>
                                                         @endif
                                                         @if ($lesson->video_url)
-                                                            <x-icon name="play" class="h-4 w-4 text-slate-400" title="Video lesson" />
+                                                            <x-icon name="play" class="h-4 w-4 text-slate-500" title="Video lesson" />
                                                         @endif
                                                         @if ($lesson->attachments->isNotEmpty())
-                                                            <x-icon name="document" class="h-4 w-4 text-slate-400" title="Has attachments" />
+                                                            <x-icon name="document" class="h-4 w-4 text-slate-500" title="Has attachments" />
                                                         @endif
                                                     </span>
                                                 </a>
@@ -351,29 +351,29 @@
                         <div class="mt-6 border-t border-slate-100 pt-5">
                             <p class="text-sm font-semibold text-slate-900">This course includes</p>
                             <ul class="mt-3 space-y-2.5 text-sm text-slate-600">
-                                <li class="flex items-center gap-3"><x-icon name="play" class="h-4 w-4 text-slate-400" /> {{ $course->lessons->count() }} {{ \Illuminate\Support\Str::plural('lesson', $course->lessons->count()) }}</li>
+                                <li class="flex items-center gap-3"><x-icon name="play" class="h-4 w-4 text-slate-500" /> {{ $course->lessons->count() }} {{ \Illuminate\Support\Str::plural('lesson', $course->lessons->count()) }}</li>
                                 @if ($attachmentCount > 0)
-                                    <li class="flex items-center gap-3"><x-icon name="document" class="h-4 w-4 text-slate-400" /> {{ $attachmentCount }} downloadable {{ \Illuminate\Support\Str::plural('resource', $attachmentCount) }}</li>
+                                    <li class="flex items-center gap-3"><x-icon name="document" class="h-4 w-4 text-slate-500" /> {{ $attachmentCount }} downloadable {{ \Illuminate\Support\Str::plural('resource', $attachmentCount) }}</li>
                                 @endif
                                 @if ($course->isShared())
-                                    <li class="flex items-center gap-3"><x-icon name="globe" class="h-4 w-4 text-slate-400" /> Shared by {{ $course->tenant?->name ?? 'another workspace' }}</li>
+                                    <li class="flex items-center gap-3"><x-icon name="globe" class="h-4 w-4 text-slate-500" /> Shared by {{ $course->tenant?->name ?? 'another workspace' }}</li>
                                 @endif
                                 @if ($course->sequential_lessons)
-                                    <li class="flex items-center gap-3"><x-icon name="flag" class="h-4 w-4 text-slate-400" /> Lessons unlock in order</li>
+                                    <li class="flex items-center gap-3"><x-icon name="flag" class="h-4 w-4 text-slate-500" /> Lessons unlock in order</li>
                                 @endif
                                 @foreach ($course->paths->where('is_published', true) as $path)
-                                    <li class="flex items-start gap-3"><x-icon name="map" class="mt-0.5 h-4 w-4 text-slate-400" /> <span>Part of the <a href="{{ route('lms.paths.show', $path) }}" class="font-medium text-brand-700 hover:underline">{{ $path->title }}</a> path</span></li>
+                                    <li class="flex items-start gap-3"><x-icon name="map" class="mt-0.5 h-4 w-4 text-slate-500" /> <span>Part of the <a href="{{ route('lms.paths.show', $path) }}" class="font-medium text-brand-700 hover:underline">{{ $path->title }}</a> path</span></li>
                                 @endforeach
                                 @if ($course->prerequisites->isNotEmpty())
-                                    <li class="flex items-start gap-3"><x-icon name="lock" class="mt-0.5 h-4 w-4 text-slate-400" /> <span>Requires {{ $course->prerequisites->pluck('title')->join(', ', ' and ') }}</span></li>
+                                    <li class="flex items-start gap-3"><x-icon name="lock" class="mt-0.5 h-4 w-4 text-slate-500" /> <span>Requires {{ $course->prerequisites->pluck('title')->join(', ', ' and ') }}</span></li>
                                 @endif
                                 @if ($course->assessment_mode->value !== 'none')
-                                    <li class="flex items-center gap-3"><x-icon name="clipboard-check" class="h-4 w-4 text-slate-400" /> {{ $course->assessment_mode->value === 'course_final' ? 'Final exam' : 'Assessments along the way' }}</li>
+                                    <li class="flex items-center gap-3"><x-icon name="clipboard-check" class="h-4 w-4 text-slate-500" /> {{ $course->assessment_mode->value === 'course_final' ? 'Final exam' : 'Assessments along the way' }}</li>
                                 @endif
                                 @if ($course->certificate_policy->value !== 'none')
-                                    <li class="flex items-center gap-3"><x-icon name="trophy" class="h-4 w-4 text-slate-400" /> Certificate of completion{{ $course->certificateIsPaidHere() ? ' (paid)' : '' }}</li>
+                                    <li class="flex items-center gap-3"><x-icon name="trophy" class="h-4 w-4 text-slate-500" /> Certificate of completion{{ $course->certificateIsPaidHere() ? ' (paid)' : '' }}</li>
                                 @endif
-                                <li class="flex items-center gap-3"><x-icon name="device" class="h-4 w-4 text-slate-400" /> Learn on any device, at your own pace</li>
+                                <li class="flex items-center gap-3"><x-icon name="device" class="h-4 w-4 text-slate-500" /> Learn on any device, at your own pace</li>
                             </ul>
                         </div>
                     </div>

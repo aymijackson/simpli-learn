@@ -30,7 +30,7 @@
             <p class="text-sm font-medium text-slate-500">Completion rate</p>
             <p class="mt-1 text-3xl font-bold tracking-tight text-slate-900">{{ $completionRate }}%</p>
             <x-progress class="mt-3" :value="$completionRate" tone="emerald" />
-            <p class="mt-2 text-xs text-slate-400">{{ $counts[Report::COMPLETED] }} of {{ $counts['all'] }} people in the workspace</p>
+            <p class="mt-2 text-xs text-slate-500">{{ $counts[Report::COMPLETED] }} of {{ $counts['all'] }} people in the workspace</p>
         </x-card>
         <x-stat-card label="In progress" :value="$counts[Report::IN_PROGRESS] + $counts[Report::FINAL_PENDING]" icon="play" tone="sky"
                      :hint="$counts[Report::FINAL_PENDING] ? $counts[Report::FINAL_PENDING].' waiting on the final exam' : null" />
@@ -76,16 +76,16 @@
                                 <input type="checkbox" name="user_ids[]" value="{{ $row['user']->id }}" class="rounded text-brand-600 focus:ring-brand-600"
                                        @checked(in_array($row['user']->id, old('user_ids', [])))>
                                 <span class="truncate">{{ $row['user']->name }}</span>
-                                @if ($row['assignment'])<span class="shrink-0 text-xs text-slate-400">assigned</span>@endif
+                                @if ($row['assignment'])<span class="shrink-0 text-xs text-slate-500">assigned</span>@endif
                             </label>
                         @endforeach
                     </div>
-                    <p class="mt-1 text-xs text-slate-400">Ticking people only applies when "Selected people" is chosen. Re-assigning someone updates their due date.</p>
+                    <p class="mt-1 text-xs text-slate-500">Ticking people only applies when "Selected people" is chosen. Re-assigning someone updates their due date.</p>
                 </fieldset>
 
                 <div class="flex flex-wrap items-end gap-4">
                     <div>
-                        <label for="due_at" class="mb-1.5 block text-sm font-medium text-slate-700">Due date <span class="font-normal text-slate-400">(optional)</span></label>
+                        <label for="due_at" class="mb-1.5 block text-sm font-medium text-slate-700">Due date <span class="font-normal text-slate-500">(optional)</span></label>
                         <input id="due_at" type="date" name="due_at" value="{{ old('due_at') }}" min="{{ now()->toDateString() }}"
                                class="block rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
                     </div>
@@ -139,7 +139,7 @@
                                     @if ($row['status'] !== Report::NOT_ENROLLED)
                                         <x-progress :value="$row['progress']" label />
                                     @else
-                                        <span class="text-slate-400">—</span>
+                                        <span class="text-slate-500">—</span>
                                     @endif
                                 </td>
                                 <td class="px-5 py-3 whitespace-nowrap {{ $row['overdue'] ? 'font-medium text-rose-700' : 'text-slate-600' }}">

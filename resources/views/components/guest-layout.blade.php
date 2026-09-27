@@ -15,10 +15,12 @@
     @include('partials.assets')
 </head>
 <body class="min-h-full font-sans text-slate-900 antialiased">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-700 focus:shadow-lg focus:ring-2 focus:ring-brand-600">Skip to content</a>
     <div class="grid min-h-screen lg:grid-cols-[minmax(0,1fr)_minmax(0,34rem)] xl:grid-cols-[minmax(0,1fr)_minmax(0,40rem)]">
         {{-- Form column --}}
         <div class="flex flex-col px-4 py-8 sm:px-8">
-            <a href="{{ $authTenant ? route('tenant.login', $authTenant->slug) : url('/') }}" class="flex items-center gap-2.5 self-start">
+            <header class="self-start">
+            <a href="{{ $authTenant ? route('tenant.login', $authTenant->slug) : url('/') }}" class="flex items-center gap-2.5">
                 @if ($authTenant)
                     <x-workspace-mark :tenant="$authTenant" />
                 @else
@@ -26,20 +28,21 @@
                 @endif
                 <span class="text-lg font-bold tracking-tight text-slate-900">{{ $brandName }}</span>
             </a>
+            </header>
 
-            <div class="flex flex-1 items-center justify-center py-10">
+            <main id="main-content" tabindex="-1" class="flex flex-1 items-center justify-center py-10">
                 <div class="w-full {{ $maxWidth }}">
                     {{ $slot }}
                 </div>
-            </div>
+            </main>
 
-            <p class="text-center text-xs text-slate-400">
+            <footer class="text-center text-xs text-slate-500">
                 @if ($authTenant)
-                    Powered by <a href="{{ route('home') }}" class="font-medium hover:text-slate-600">e-Library</a>
+                    Powered by <a href="{{ route('home') }}" class="font-medium hover:text-slate-600">{{ config('app.powered_by') }}</a>
                 @else
                     &copy; {{ now()->year }} e-Library
                 @endif
-            </p>
+            </footer>
         </div>
 
         {{-- Brand panel --}}

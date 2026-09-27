@@ -20,7 +20,7 @@
                     @if ($activeSort !== 'title')<input type="hidden" name="sort" value="{{ $activeSort }}">@endif
                     <label class="relative flex-1">
                         <span class="sr-only">Search the library</span>
-                        <x-icon name="search" class="pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                        <x-icon name="search" class="pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-slate-500" />
                         <input type="search" name="q" value="{{ $search }}" placeholder="Search by title, author, publisher, ISBN&hellip;"
                                class="block w-full rounded-xl border-0 bg-white py-3 pr-4 pl-12 text-sm text-slate-900 shadow-sm ring-1 ring-slate-300 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-brand-600">
                     </label>
@@ -40,7 +40,7 @@
         <aside class="lg:w-60 lg:shrink-0">
             @if ($categories->isNotEmpty())
                 <div>
-                    <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Categories</p>
+                    <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Categories</p>
                     <div class="scrollbar-none -mx-1 flex gap-2 overflow-x-auto px-1 lg:flex-col lg:gap-0.5 lg:overflow-visible">
                         <a href="{{ $filterUrl(['category' => null]) }}"
                            class="shrink-0 rounded-lg px-3 py-2 text-sm font-medium {{ $activeCategory === '' ? 'bg-amber-100 text-amber-900' : 'text-slate-600 hover:bg-slate-100' }}">
@@ -58,7 +58,7 @@
 
             @if ($tags->isNotEmpty())
                 <div class="mt-8">
-                    <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Topics</p>
+                    <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Topics</p>
                     <div class="flex flex-wrap gap-2">
                         @foreach ($tags as $tag)
                             <a href="{{ $filterUrl(['tag' => $activeTag === $tag->slug ? null : $tag->slug]) }}"

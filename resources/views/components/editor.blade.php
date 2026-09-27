@@ -6,10 +6,11 @@
 
 <div>
     @if ($label)
-        <label for="{{ $fieldId }}" class="mb-1.5 block text-sm font-medium text-slate-700">{{ $label }}</label>
+        <label id="{{ $fieldId }}-label" for="{{ $fieldId }}" class="mb-1.5 block text-sm font-medium text-slate-700">{{ $label }}</label>
     @endif
     <input id="{{ $fieldId }}" type="hidden" name="{{ $name }}" value="{{ $value }}">
-    <trix-editor input="{{ $fieldId }}" class="trix-content" data-upload-url="{{ $uploadUrl }}" {{ $attributes }}></trix-editor>
+    <trix-editor input="{{ $fieldId }}" class="trix-content" data-upload-url="{{ $uploadUrl }}"
+                 @if ($label) aria-labelledby="{{ $fieldId }}-label" @else aria-label="{{ \Illuminate\Support\Str::headline($name) }}" @endif {{ $attributes }}></trix-editor>
     @error($name)
         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
     @enderror

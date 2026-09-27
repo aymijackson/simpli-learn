@@ -70,7 +70,7 @@
 
                 @if ($lesson->attachments->isNotEmpty())
                     <div class="space-y-3 border-t border-slate-100 px-6 py-8 sm:px-10">
-                        <h2 class="flex items-center gap-2 text-sm font-semibold text-slate-900"><x-icon name="document" class="h-4 w-4 text-slate-400" /> Attachments</h2>
+                        <h2 class="flex items-center gap-2 text-sm font-semibold text-slate-900"><x-icon name="document" class="h-4 w-4 text-slate-500" /> Attachments</h2>
                         @foreach ($lesson->attachments as $attachment)
                             <div class="rounded-xl border border-slate-200 p-4">
                                 <p class="mb-3 text-sm font-medium text-slate-900">{{ $attachment->title }}</p>
@@ -147,7 +147,7 @@
                         @php($open = $current || ($item->isAccessibleTo($user) && $item->isUnlockedFor($user)))
                         <li>
                             <a @if ($open) href="{{ route('lms.lessons.show', [$course, $item]) }}" @else aria-disabled="true" @endif
-                               class="flex items-center gap-3 px-5 py-3 text-sm {{ $current ? 'bg-brand-50 font-semibold text-brand-800' : ($open ? 'text-slate-700 hover:bg-slate-50' : 'cursor-not-allowed text-slate-400') }}">
+                               class="flex items-center gap-3 px-5 py-3 text-sm {{ $current ? 'bg-brand-50 font-semibold text-brand-800' : ($open ? 'text-slate-700 hover:bg-slate-50' : 'cursor-not-allowed text-slate-500') }}">
                                 <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold {{ $done ? 'bg-emerald-100 text-emerald-700' : ($current ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-500') }}">
                                     @if ($done)<x-icon name="check" class="h-3.5 w-3.5" />@elseif (! $open)<x-icon name="lock" class="h-3 w-3" />@else{{ $loop->iteration }}@endif
                                 </span>

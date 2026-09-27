@@ -15,6 +15,9 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    // Shown as "Powered by …" on workspace pages and sign-in screens.
+    'powered_by' => env('APP_POWERED_BY', 'Hitmoh'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

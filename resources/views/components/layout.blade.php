@@ -12,6 +12,7 @@
     @include('partials.assets')
 </head>
 <body class="flex min-h-full flex-col font-sans text-slate-900 antialiased">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-700 focus:shadow-lg focus:ring-2 focus:ring-brand-600">Skip to content</a>
     @if (session('impersonator_id'))
         <div class="flex items-center justify-center gap-3 bg-amber-500 px-4 py-2 text-center text-sm font-medium text-white">
             <span>You're viewing {{ $tenant->name }} as {{ $user->name }}.</span>
@@ -54,7 +55,7 @@
                 <form method="GET" action="{{ route('tenant.search') }}" class="hidden flex-1 md:block">
                     <label class="relative block max-w-xl">
                         <span class="sr-only">Search</span>
-                        <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                        <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2 text-slate-500" />
                         <input type="search" name="q" value="{{ request()->routeIs('tenant.search') ? request('q') : '' }}"
                                placeholder="What do you want to learn?"
                                class="block w-full rounded-full border-0 bg-slate-100 py-2.5 pr-4 pl-11 text-sm text-slate-900 ring-1 ring-transparent ring-inset placeholder:text-slate-500 focus:bg-white focus:ring-2 focus:ring-brand-600">
@@ -93,29 +94,29 @@
                             </div>
                             <div class="p-1.5 text-sm">
                                 <a href="{{ route('tenant.profile.edit') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50">
-                                    <x-icon name="user-circle" class="h-4 w-4 text-slate-400" /> Profile &amp; security
+                                    <x-icon name="user-circle" class="h-4 w-4 text-slate-500" /> Profile &amp; security
                                 </a>
                                 <a href="{{ route('tenant.home') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50">
-                                    <x-icon name="home" class="h-4 w-4 text-slate-400" /> My learning
+                                    <x-icon name="home" class="h-4 w-4 text-slate-500" /> My learning
                                 </a>
                                 @if ($hasModule(\App\Enums\Module::Library))
                                     <a href="{{ route('library.checkouts.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50">
-                                        <x-icon name="bookmark" class="h-4 w-4 text-slate-400" /> My checkouts
+                                        <x-icon name="bookmark" class="h-4 w-4 text-slate-500" /> My checkouts
                                     </a>
                                     <a href="{{ route('library.favorites.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50">
-                                        <x-icon name="heart" class="h-4 w-4 text-slate-400" /> Favorites
+                                        <x-icon name="heart" class="h-4 w-4 text-slate-500" /> Favorites
                                     </a>
                                 @endif
                                 @if ($user->isOwner())
                                     <a href="{{ route('tenant.manage.dashboard') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50">
-                                        <x-icon name="dashboard" class="h-4 w-4 text-slate-400" /> Manage workspace
+                                        <x-icon name="dashboard" class="h-4 w-4 text-slate-500" /> Manage workspace
                                     </a>
                                 @endif
                             </div>
                             <form method="POST" action="{{ route('tenant.logout') }}" class="border-t border-slate-100 p-1.5">
                                 @csrf
                                 <button type="submit" class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">
-                                    <x-icon name="logout" class="h-4 w-4 text-slate-400" /> Log out
+                                    <x-icon name="logout" class="h-4 w-4 text-slate-500" /> Log out
                                 </button>
                             </form>
                         </div>
@@ -125,7 +126,7 @@
         </div>
 
         @if ($enabledModules->isNotEmpty())
-            <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Sections">
                 <div class="scrollbar-none -mb-px flex gap-6 overflow-x-auto">
                     <a href="{{ route('tenant.home') }}"
                        class="flex shrink-0 items-center gap-2 border-b-2 py-3 text-sm font-medium transition {{ request()->routeIs('tenant.home') ? 'border-brand-600 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800' }}">
@@ -168,7 +169,7 @@
         </div>
     @endif
 
-    <main class="flex-1 {{ $flush ? '' : 'mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8' }}">
+    <main id="main-content" tabindex="-1" class="flex-1 {{ $flush ? '' : 'mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8' }}">
         {{ $slot }}
     </main>
 
@@ -183,7 +184,7 @@
             </div>
             @if ($enabledModules->isNotEmpty())
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Explore</p>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Explore</p>
                     <ul class="mt-3 space-y-2 text-sm">
                         @foreach ($enabledModules as $tenantModule)
                             <li><a href="{{ route($tenantModule->module->routeName()) }}" class="text-slate-600 hover:text-brand-700">{{ $tenantModule->module->label() }}</a></li>
@@ -192,7 +193,7 @@
                 </div>
             @endif
             <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Account</p>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Account</p>
                 <ul class="mt-3 space-y-2 text-sm">
                     <li><a href="{{ route('tenant.home') }}" class="text-slate-600 hover:text-brand-700">My learning</a></li>
                     @if ($user?->isOwner())
@@ -202,7 +203,7 @@
             </div>
         </div>
         <div class="border-t border-slate-100">
-            <p class="mx-auto max-w-7xl px-4 py-5 text-xs text-slate-400 sm:px-6 lg:px-8">&copy; {{ now()->year }} {{ $tenant->name }} &middot; Powered by e-Library</p>
+            <p class="mx-auto max-w-7xl px-4 py-5 text-xs text-slate-500 sm:px-6 lg:px-8">&copy; {{ now()->year }} {{ $tenant->name }} &middot; Powered by {{ config('app.powered_by') }}</p>
         </div>
     </footer>
 

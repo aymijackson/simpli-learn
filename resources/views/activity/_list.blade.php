@@ -14,7 +14,7 @@
         @if ($activeCategory)<input type="hidden" name="category" value="{{ $activeCategory }}">@endif
         <label class="relative">
             <span class="sr-only">Search the log</span>
-            <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <input type="search" name="q" value="{{ $search }}" placeholder="Search person or action"
                    class="block w-64 rounded-lg border-0 py-2 pr-3 pl-9 text-sm text-slate-900 ring-1 ring-slate-300 ring-inset focus:ring-2 focus:ring-brand-600">
         </label>
@@ -64,5 +64,5 @@
         </div>
     </x-card>
     <div class="mt-6">{{ $entries->links() }}</div>
-    <p class="mt-4 text-xs text-slate-400">Entries are kept for {{ \App\Models\ActivityLog::RETENTION_DAYS / 365 }} years.</p>
+    <p class="mt-4 text-xs text-slate-500">Entries are kept for {{ \App\Models\ActivityLog::RETENTION_DAYS / 365 }} years.</p>
 @endif

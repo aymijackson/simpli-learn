@@ -3,7 +3,7 @@
     $initials = collect(explode(' ', (string) $user->name))->filter()->take(2)->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->implode('');
 @endphp
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-100">
+<html lang="en" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,6 +11,7 @@
     @include('partials.assets')
 </head>
 <body class="h-full font-sans text-slate-900 antialiased">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-700 focus:shadow-lg focus:ring-2 focus:ring-brand-600">Skip to content</a>
     {{-- Mobile drawer --}}
     <div id="admin-sidebar" data-drawer class="fixed inset-0 z-50 hidden lg:hidden">
         <div data-drawer-close class="absolute inset-0 bg-slate-950/60"></div>
@@ -59,7 +60,7 @@
             </div>
         @endif
 
-        <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+        <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
             {{ $slot }}
         </main>
     </div>

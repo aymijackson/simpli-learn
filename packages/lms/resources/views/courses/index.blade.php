@@ -20,7 +20,7 @@
                 @if ($activeSort !== 'newest')<input type="hidden" name="sort" value="{{ $activeSort }}">@endif
                 <label class="relative flex-1">
                     <span class="sr-only">Search courses</span>
-                    <x-icon name="search" class="pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                    <x-icon name="search" class="pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-slate-500" />
                     <input type="search" name="q" value="{{ $search }}" placeholder="Search courses"
                            class="block w-full rounded-xl border-0 bg-white py-3 pr-4 pl-12 text-sm text-slate-900 shadow-sm ring-1 ring-slate-300 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-brand-600">
                 </label>

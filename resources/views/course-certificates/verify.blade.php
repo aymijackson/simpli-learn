@@ -9,7 +9,7 @@
             <p class="mt-1 text-base text-slate-600">completed {{ $certificate->course->title }}</p>
             <p class="mt-4 text-sm text-slate-500">Issued {{ $certificate->issued_at->format('F j, Y') }}</p>
 
-            <p class="mt-6 text-xs text-slate-400">Certificate #{{ $certificate->id }} &middot; {{ $certificate->verification_token }}</p>
+            <p class="mt-6 text-xs text-slate-500">Certificate #{{ $certificate->id }} &middot; {{ $certificate->verification_token }}</p>
         </div>
     </section>
 </x-marketing-layout>

@@ -7,7 +7,7 @@
         'passed' => 'bg-emerald-100 text-emerald-700',
         'marking' => 'bg-amber-100 text-amber-700',
         'open' => 'bg-brand-600 text-white',
-        default => 'bg-slate-100 text-slate-400',
+        default => 'bg-slate-100 text-slate-500',
     };
 @endphp
 <li class="bg-brand-50/40">
@@ -31,7 +31,7 @@
         @unless ($compact ?? false)
             <span class="shrink-0 text-xs">
                 @if (! $exam->is_published)
-                    <span class="text-slate-400">Not available yet</span>
+                    <span class="text-slate-500">Not available yet</span>
                 @elseif ($status === 'passed')
                     <x-badge color="green">Passed</x-badge>
                 @elseif ($status === 'marking')
@@ -39,7 +39,7 @@
                 @elseif ($status === 'open')
                     <span class="font-semibold text-brand-700">Take it &rarr;</span>
                 @else
-                    <span class="text-slate-400">Unlocks as you progress</span>
+                    <span class="text-slate-500">Unlocks as you progress</span>
                 @endif
             </span>
         @endunless

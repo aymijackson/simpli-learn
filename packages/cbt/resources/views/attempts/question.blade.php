@@ -4,14 +4,15 @@
             <h1 class="text-xl font-bold text-slate-900">{{ $exam->title }}</h1>
             <p class="text-sm text-slate-500">Question {{ $page }} of {{ $totalPages }}</p>
         </div>
-        <div id="countdown" class="rounded-lg bg-slate-900 px-3 py-1.5 font-mono text-sm font-semibold text-white">
+        <p id="countdown-announcer" class="sr-only" aria-live="polite"></p>
+        <div id="countdown" role="timer" aria-label="Time remaining" class="rounded-lg bg-slate-900 px-3 py-1.5 font-mono text-sm font-semibold text-white">
             {{ $exam->duration_minutes }}:00
         </div>
     </div>
 
     @if ($exam->instructions && $page === 1)
         <x-card class="mb-6 bg-slate-50">
-            <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">Instructions</p>
+            <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Instructions</p>
             <div class="rich-text text-sm text-slate-700">{!! $exam->instructions !!}</div>
         </x-card>
     @endif
@@ -33,16 +34,16 @@
         <x-card>
             <div class="flex items-start justify-between gap-4">
                 <div class="flex-1">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Question {{ $page }}</p>
-                    <div class="rich-text mt-1 text-sm font-semibold text-slate-900">{!! $question->question_text !!}</div>
+                    <p id="q-{{ $question->id }}-number" class="text-xs font-semibold uppercase tracking-wide text-slate-500">Question {{ $page }}</p>
+                    <div id="q-{{ $question->id }}-text" class="rich-text mt-1 text-sm font-semibold text-slate-900">{!! $question->question_text !!}</div>
                 </div>
-                <label class="flex shrink-0 items-center gap-1.5 text-xs font-medium text-amber-600">
+                <label class="flex shrink-0 items-center gap-1.5 text-xs font-medium text-amber-700">
                     <input type="checkbox" name="flagged" value="1" class="rounded border-amber-300 text-amber-600 focus:ring-amber-600" @checked($isFlagged)>
-                    Flag
+                    Flag<span class="sr-only"> question {{ $page }} for review</span>
                 </label>
             </div>
-            <div class="mt-4 space-y-2">
-                @include('cbt::attempts._answer_input', [
+            <div class="mt-4 space-y-2" role="group" aria-labelledby="q-{{ $question->id }}-number q-{{ $question->id }}-text">
+                @include('cbt::attempts._answer_input', ['labelledBy' => "q-{$question->id}-number q-{$question->id}-text", 
                     'question' => $question,
                     'name' => 'answers',
                     'selected' => $selectedOptionIds,
@@ -69,6 +70,8 @@
             (function () {
                 const deadline = new Date(@js($attempt->started_at->copy()->addMinutes($exam->duration_minutes)->toIso8601String())).getTime();
                 const el = document.getElementById('countdown');
+                const live = document.getElementById('countdown-announcer');
+                const announced = new Set();
 
                 const tick = () => {
                     const remaining = deadline - Date.now();
@@ -80,6 +83,13 @@
                     }
 
                     const minutes = Math.floor(remaining / 60000);
+                    // Tell screen-reader users as time runs low, without reading every second.
+                    [10, 5, 1].forEach((mark) => {
+                        if (minutes < mark && !announced.has(mark) && remaining > (mark - 1) * 60000) {
+                            announced.add(mark);
+                            live.textContent = mark === 1 ? 'Less than 1 minute left.' : `Less than ${mark} minutes left.`;
+                        }
+                    });
                     const seconds = Math.floor((remaining % 60000) / 1000);
                     el.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
                     setTimeout(tick, 1000);

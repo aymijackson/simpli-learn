@@ -23,7 +23,7 @@
         <p class="text-sm font-medium text-slate-500">{{ $label }}</p>
         <p class="mt-0.5 text-2xl font-bold tracking-tight text-slate-900">{{ $value }}</p>
         @if ($hint)
-            <p class="mt-0.5 text-xs text-slate-400">{{ $hint }}</p>
+            <p class="mt-0.5 text-xs text-slate-500">{{ $hint }}</p>
         @endif
     </div>
 </{{ $tag }}>

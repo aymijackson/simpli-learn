@@ -13,7 +13,7 @@
 
             <div>
                 <label class="mb-1.5 block text-sm font-medium text-slate-700">Default certificate policy</label>
-                <select name="default_policy" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                <select aria-label="Default certificate policy" name="default_policy" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
                     @foreach (['none' => 'No certificate for any exam by default', 'free' => 'Free — issued automatically on passing', 'freemium' => 'Freemium — free certificate, paid verified upgrade', 'paid' => 'Paid — no certificate until payment'] as $value => $label)
                         <option value="{{ $value }}" @selected(old('default_policy', $settings->default_policy) === $value)>{{ $label }}</option>
                     @endforeach
@@ -27,7 +27,7 @@
 
             <div>
                 <label class="mb-1.5 block text-sm font-medium text-slate-700">Bank transfer instructions</label>
-                <textarea name="bank_transfer_instructions" rows="4" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm" placeholder="Bank name, account name, account number, routing/sort code...">{{ old('bank_transfer_instructions', $settings->bank_transfer_instructions) }}</textarea>
+                <textarea aria-label="Bank transfer instructions" name="bank_transfer_instructions" rows="4" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm" placeholder="Bank name, account name, account number, routing/sort code...">{{ old('bank_transfer_instructions', $settings->bank_transfer_instructions) }}</textarea>
                 <p class="mt-1 text-xs text-slate-500">Shown to learners who choose to pay by bank transfer.</p>
             </div>
 

@@ -46,7 +46,7 @@
             <x-input type="text" name="title" label="Title" required />
             <div>
                 <label class="mb-1.5 block text-sm font-medium text-slate-700">Type</label>
-                <select name="type" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                <select aria-label="Type" name="type" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
                     @foreach (\Elibrary\Lms\Enums\LessonAttachmentType::cases() as $type)
                         <option value="{{ $type->value }}">{{ $type->label() }}</option>
                     @endforeach
@@ -54,13 +54,13 @@
             </div>
             <div>
                 <label class="mb-1.5 block text-sm font-medium text-slate-700">Access</label>
-                <select name="access_level" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                <select aria-label="Access" name="access_level" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
                     @foreach (\Elibrary\Lms\Enums\LessonAttachmentAccessLevel::cases() as $level)
                         <option value="{{ $level->value }}" @selected($level->value === 'secure')>{{ $level->label() }}</option>
                     @endforeach
                 </select>
             </div>
-            <input type="file" name="file" required class="block w-full text-sm text-slate-900 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-100">
+            <input type="file" name="file" required aria-label="File to attach" class="block w-full text-sm text-slate-900 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-100">
             <x-button type="submit" variant="secondary">Upload</x-button>
         </form>
         <p class="mt-2 text-xs text-slate-500">Video: mp4/webm/mov &middot; Audio: mp3/wav/ogg &middot; File: pdf/doc/docx/ppt/pptx/xls/xlsx/zip/txt. Max 500MB.</p>

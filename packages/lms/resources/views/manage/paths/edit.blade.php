@@ -53,7 +53,7 @@
                         </div>
                         @error('user_ids')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
                         <div>
-                            <label for="due_at" class="mb-1.5 block text-sm font-medium text-slate-700">Due date <span class="font-normal text-slate-400">(optional)</span></label>
+                            <label for="due_at" class="mb-1.5 block text-sm font-medium text-slate-700">Due date <span class="font-normal text-slate-500">(optional)</span></label>
                             <input id="due_at" type="date" name="due_at" value="{{ old('due_at') }}" min="{{ now()->toDateString() }}"
                                    class="block rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
                             @error('due_at')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror

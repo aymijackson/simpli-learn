@@ -2,7 +2,7 @@
     <form method="GET" action="{{ route('tenant.search') }}" class="mx-auto mb-10 max-w-2xl">
         <label class="relative block">
             <span class="sr-only">Search</span>
-            <x-icon name="search" class="pointer-events-none absolute top-1/2 left-5 h-5 w-5 -translate-y-1/2 text-slate-400" />
+            <x-icon name="search" class="pointer-events-none absolute top-1/2 left-5 h-5 w-5 -translate-y-1/2 text-slate-500" />
             <input type="search" name="q" value="{{ $term }}" autofocus
                    placeholder="Search courses, exams, books and more"
                    class="block w-full rounded-full border-0 bg-white py-4 pr-32 pl-13 text-base text-slate-900 shadow-sm ring-1 ring-slate-300 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-brand-600">
@@ -20,7 +20,8 @@
         <div class="space-y-12">
             @if ($courses->isNotEmpty())
                 <section>
-                    <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900"><x-icon name="academic-cap" class="text-indigo-600" /> Courses <span class="text-sm font-medium text-slate-400">{{ $courses->count() }}</span></h2>
+                    <h1 class="sr-only">Search results</h1>
+                    <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900"><x-icon name="academic-cap" class="text-indigo-600" /> Courses <span class="text-sm font-medium text-slate-500">{{ $courses->count() }}</span></h2>
                     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                         @foreach ($courses as $course)
                             <x-course-card :course="$course" />
@@ -31,7 +32,7 @@
 
             @if ($exams->isNotEmpty())
                 <section>
-                    <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900"><x-icon name="clipboard-check" class="text-emerald-600" /> Exams <span class="text-sm font-medium text-slate-400">{{ $exams->count() }}</span></h2>
+                    <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900"><x-icon name="clipboard-check" class="text-emerald-600" /> Exams <span class="text-sm font-medium text-slate-500">{{ $exams->count() }}</span></h2>
                     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($exams as $exam)
                             <x-exam-card :exam="$exam" />
@@ -42,7 +43,7 @@
 
             @if ($resources->isNotEmpty())
                 <section>
-                    <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900"><x-icon name="book-open" class="text-amber-600" /> Library <span class="text-sm font-medium text-slate-400">{{ $resources->count() }}</span></h2>
+                    <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900"><x-icon name="book-open" class="text-amber-600" /> Library <span class="text-sm font-medium text-slate-500">{{ $resources->count() }}</span></h2>
                     <div class="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
                         @foreach ($resources as $resource)
                             <x-resource-card :resource="$resource" />

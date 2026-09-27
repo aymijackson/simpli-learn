@@ -7,23 +7,24 @@
     $type = $question->answer_type;
     $selected = $selected ?? collect();
     $text = $text ?? null;
+    $labelledBy = $labelledBy ?? null;
 @endphp
 
 @if ($type === \Elibrary\Cbt\Enums\AnswerType::ShortAnswer)
     <label class="block">
         <span class="sr-only">Your answer</span>
-        <input type="text" name="{{ $name }}" value="{{ $text }}" maxlength="500" autocomplete="off" data-answer-input
+        <input type="text" name="{{ $name }}" value="{{ $text }}" @if ($labelledBy) aria-labelledby="{{ $labelledBy }}" @endif maxlength="500" autocomplete="off" data-answer-input
                placeholder="Type your answer"
                class="block w-full rounded-lg border-0 px-4 py-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600">
     </label>
 @elseif ($type === \Elibrary\Cbt\Enums\AnswerType::Essay)
     <label class="block">
         <span class="sr-only">Your answer</span>
-        <textarea name="{{ $name }}" rows="9" maxlength="20000" data-answer-input data-word-count
+        <textarea name="{{ $name }}" rows="9" @if ($labelledBy) aria-labelledby="{{ $labelledBy }}" @endif maxlength="20000" data-answer-input data-word-count
                   placeholder="Write your answer here"
                   class="block w-full rounded-lg border-0 px-4 py-3 text-sm leading-relaxed text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600">{{ $text }}</textarea>
     </label>
-    <p class="text-right text-xs text-slate-400" data-word-count-for="{{ $name }}">0 words</p>
+    <p class="text-right text-xs text-slate-500" data-word-count-for="{{ $name }}">0 words</p>
     @once
         @push('scripts')
             <script>

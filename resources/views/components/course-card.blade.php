@@ -17,7 +17,7 @@
         @if ($course->category)
             <p class="mb-1 text-[11px] font-semibold uppercase tracking-wide text-brand-600">{{ $course->category }}</p>
         @endif
-        <h3 class="line-clamp-2 text-[15px] leading-snug font-semibold text-slate-900 group-hover:text-brand-700">{{ $course->title }}</h3>
+        <h2 class="line-clamp-2 text-[15px] leading-snug font-semibold text-slate-900 group-hover:text-brand-700">{{ $course->title }}</h2>
         @if ($course->subtitle)
             <p class="mt-1.5 line-clamp-2 text-sm text-slate-500">{{ $course->subtitle }}</p>
         @elseif ($course->description)
@@ -30,7 +30,7 @@
             <p class="mt-2 flex items-center gap-1.5 text-xs">
                 <span class="font-bold text-amber-700">{{ number_format($course->reviews_avg_stars, 1) }}</span>
                 <x-stars :value="$course->reviews_avg_stars" size="h-3.5 w-3.5" />
-                <span class="text-slate-400">({{ number_format($course->reviews_count) }})</span>
+                <span class="text-slate-500">({{ number_format($course->reviews_count) }})</span>
             </p>
         @endif
 
@@ -61,7 +61,7 @@
             @elseif ($course->isPaidHere())
                 <p class="text-base font-bold text-slate-900">{{ $course->currency }} {{ number_format($course->price, 2) }}</p>
             @else
-                <p class="text-base font-bold text-emerald-600">Free</p>
+                <p class="text-base font-bold text-emerald-700">Free</p>
             @endif
         </div>
     </div>

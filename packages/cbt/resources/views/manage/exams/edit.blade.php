@@ -84,7 +84,7 @@
                             <div>
                                 <p class="text-sm font-medium text-slate-900">{{ \Illuminate\Support\Str::limit(strip_tags($question->question_text), 80) }}</p>
                                 @if ($question->options_count < 2)
-                                    <p class="text-xs text-amber-600">Needs at least two answer options</p>
+                                    <p class="text-xs text-amber-700">Needs at least two answer options</p>
                                 @else
                                     <p class="text-xs text-slate-500">
                                         {{ $question->options_count }} options

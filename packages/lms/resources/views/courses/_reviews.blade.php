@@ -61,7 +61,7 @@
                             <form method="POST" action="{{ route('lms.courses.reviews.destroy', [$course, $review]) }}" onsubmit="return confirm('Remove this review?')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-xs font-medium text-slate-400 hover:text-red-600">Remove</button>
+                                <button type="submit" class="text-xs font-medium text-slate-500 hover:text-red-600">Remove</button>
                             </form>
                         @endif
                     </div>

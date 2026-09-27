@@ -107,7 +107,7 @@
                                     </div>
                                     <x-progress class="mt-2" :value="$course->progress" label />
                                     @if ($course->enrolled_at)
-                                        <p class="mt-1 text-xs text-slate-400">Enrolled {{ \Illuminate\Support\Carbon::parse($course->enrolled_at)->format('M j, Y') }}</p>
+                                        <p class="mt-1 text-xs text-slate-500">Enrolled {{ \Illuminate\Support\Carbon::parse($course->enrolled_at)->format('M j, Y') }}</p>
                                     @endif
                                 </li>
                             @endforeach
@@ -183,7 +183,7 @@
                         @foreach ($activity as $entry)
                             <li class="rounded-lg px-3 py-2">
                                 <p class="text-sm text-slate-700">{{ $entry->user_id === $member->id ? $entry->description : $entry->actor_name.': '.$entry->description }}</p>
-                                <p class="text-xs text-slate-400">{{ $entry->created_at->diffForHumans() }}</p>
+                                <p class="text-xs text-slate-500">{{ $entry->created_at->diffForHumans() }}</p>
                             </li>
                         @endforeach
                     </ul>

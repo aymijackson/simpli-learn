@@ -76,7 +76,7 @@
 @php($currentMode = old('assessment_mode', $course->assessment_mode?->value ?? 'none'))
 
 <div>
-    <label class="mb-1.5 block text-sm font-medium text-slate-700">Exam requirements</label>
+    <label for="assessment-mode" class="mb-1.5 block text-sm font-medium text-slate-700">Exam requirements</label>
     <select id="assessment-mode" name="assessment_mode" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
         @foreach (\Elibrary\Lms\Enums\AssessmentMode::cases() as $mode)
             <option value="{{ $mode->value }}" @selected($currentMode === $mode->value)>{{ $mode->label() }}</option>
@@ -91,7 +91,7 @@
 
 <div id="final-exam-field" class="{{ $currentMode === 'course_final' ? '' : 'hidden' }}">
     <label class="mb-1.5 block text-sm font-medium text-slate-700">Final exam</label>
-    <select name="final_exam_id" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+    <select aria-label="Final exam" name="final_exam_id" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
         <option value="">Select an exam&hellip;</option>
         @foreach ($exams as $exam)
             <option value="{{ $exam->id }}" @selected((string) old('final_exam_id', $course->final_exam_id ?? '') === (string) $exam->id)>{{ $exam->title }}</option>
@@ -139,7 +139,7 @@
 @php($currentPricingPolicy = old('pricing_policy', $course->pricing_policy?->value ?? 'free'))
 
 <div>
-    <label class="mb-1.5 block text-sm font-medium text-slate-700">Pricing</label>
+    <label for="pricing-policy" class="mb-1.5 block text-sm font-medium text-slate-700">Pricing</label>
     <select id="pricing-policy" name="pricing_policy" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
         @foreach (\Elibrary\Lms\Enums\CoursePricingPolicy::cases() as $policy)
             <option value="{{ $policy->value }}" @selected($currentPricingPolicy === $policy->value)>{{ $policy->label() }}</option>
@@ -153,7 +153,7 @@
 </div>
 
 <div>
-    <label class="mb-1.5 block text-sm font-medium text-slate-700">Completion certificate</label>
+    <label for="course-certificate-policy" class="mb-1.5 block text-sm font-medium text-slate-700">Completion certificate</label>
     <select id="course-certificate-policy" name="certificate_policy" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
         @foreach (\Elibrary\Lms\Enums\CourseCertificatePolicy::cases() as $policy)
             <option value="{{ $policy->value }}" @selected(old('certificate_policy', $course->certificate_policy?->value ?? 'none') === $policy->value)>{{ $policy->label() }}</option>

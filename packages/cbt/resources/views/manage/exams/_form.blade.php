@@ -35,7 +35,7 @@
 @php($currentNavMode = old('navigation_mode', $exam->navigation_mode?->value ?? 'all_at_once'))
 
 <div>
-    <label class="mb-1.5 block text-sm font-medium text-slate-700">Question navigation</label>
+    <label for="navigation-mode" class="mb-1.5 block text-sm font-medium text-slate-700">Question navigation</label>
     <select id="navigation-mode" name="navigation_mode" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
         @foreach (\Elibrary\Cbt\Enums\NavigationMode::cases() as $mode)
             <option value="{{ $mode->value }}" @selected($currentNavMode === $mode->value)>{{ $mode->label() }}</option>
@@ -59,12 +59,12 @@
 <div class="grid gap-5 sm:grid-cols-2">
     <div>
         <label class="mb-1.5 block text-sm font-medium text-slate-700">Opens (optional)</label>
-        <input type="datetime-local" name="available_from" value="{{ old('available_from', $exam?->available_from?->format('Y-m-d\TH:i') ?? '') }}" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+        <input aria-label="Opens (optional)" type="datetime-local" name="available_from" value="{{ old('available_from', $exam?->available_from?->format('Y-m-d\TH:i') ?? '') }}" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
         @error('available_from')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
     </div>
     <div>
         <label class="mb-1.5 block text-sm font-medium text-slate-700">Closes (optional)</label>
-        <input type="datetime-local" name="available_until" value="{{ old('available_until', $exam?->available_until?->format('Y-m-d\TH:i') ?? '') }}" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+        <input aria-label="Closes (optional)" type="datetime-local" name="available_until" value="{{ old('available_until', $exam?->available_until?->format('Y-m-d\TH:i') ?? '') }}" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
         @error('available_until')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
     </div>
 </div>
@@ -97,7 +97,7 @@
 @php($currentCertPolicy = old('certificate_policy', $exam?->certificate_policy ?? 'inherit'))
 
 <div>
-    <label class="mb-1.5 block text-sm font-medium text-slate-700">Certificate policy</label>
+    <label for="certificate-policy" class="mb-1.5 block text-sm font-medium text-slate-700">Certificate policy</label>
     <select id="certificate-policy" name="certificate_policy" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
         @foreach (\Elibrary\Cbt\Enums\CertificatePolicy::cases() as $policy)
             <option value="{{ $policy->value }}" @selected($currentCertPolicy === $policy->value)>{{ $policy->label() }}</option>

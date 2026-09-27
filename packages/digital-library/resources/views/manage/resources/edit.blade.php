@@ -59,7 +59,7 @@
             <x-input type="text" name="title" label="Title" required />
             <div>
                 <label class="mb-1.5 block text-sm font-medium text-slate-700">Format</label>
-                <select name="format" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                <select aria-label="Format" name="format" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
                     @foreach (\Elibrary\Library\Enums\LibraryFileFormat::cases() as $format)
                         <option value="{{ $format->value }}">{{ $format->label() }}</option>
                     @endforeach
@@ -67,7 +67,7 @@
             </div>
             <div>
                 <label class="mb-1.5 block text-sm font-medium text-slate-700">Access</label>
-                <select name="access_level" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                <select aria-label="Access" name="access_level" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
                     @foreach (\Elibrary\Library\Enums\LibraryFileAccessLevel::cases() as $level)
                         <option value="{{ $level->value }}" @selected($level->value === 'secure')>{{ $level->label() }}</option>
                     @endforeach

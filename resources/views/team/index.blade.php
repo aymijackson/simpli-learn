@@ -20,7 +20,7 @@
                         <p class="text-sm font-semibold text-slate-900">
                             <a href="{{ route('tenant.team.show', $member) }}" class="hover:text-brand-700 hover:underline">{{ $member->name }}</a>
                             @if ($member->id === auth()->id())
-                                <span class="text-slate-400">(you)</span>
+                                <span class="text-slate-500">(you)</span>
                             @endif
                         </p>
                         <p class="text-sm text-slate-500">{{ $member->email }}</p>
@@ -36,7 +36,7 @@
                             <form method="POST" action="{{ route('tenant.team.update', $member) }}">
                                 @csrf
                                 @method('PUT')
-                                <select name="role" onchange="this.form.requestSubmit()" class="rounded-lg border-0 py-1.5 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600">
+                                <select name="role" aria-label="Role" onchange="this.form.requestSubmit()" class="rounded-lg border-0 py-1.5 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600">
                                     @foreach (\App\Enums\UserRole::cases() as $role)
                                         <option value="{{ $role->value }}" @selected($member->role === $role)>{{ $role->label() }}</option>
                                     @endforeach
@@ -51,27 +51,27 @@
                                 <summary class="cursor-pointer rounded-lg px-2 py-1 text-slate-500 hover:bg-slate-100" aria-label="More actions for {{ $member->name }}">&middot;&middot;&middot;</summary>
                                 <div class="absolute right-0 z-10 mt-2 w-64 rounded-xl bg-white p-1.5 text-sm shadow-xl ring-1 ring-slate-200">
                                     <a href="{{ route('tenant.team.show', $member) }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50">
-                                        <x-icon name="user-circle" class="h-4 w-4 text-slate-400" /> View profile
+                                        <x-icon name="user-circle" class="h-4 w-4 text-slate-500" /> View profile
                                     </a>
                                     <form method="POST" action="{{ route('tenant.team.invite', $member) }}">
                                         @csrf
                                         <button type="submit" class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-slate-700 hover:bg-slate-50">
-                                            <x-icon name="arrow-right" class="h-4 w-4 text-slate-400" /> Resend invitation
+                                            <x-icon name="arrow-right" class="h-4 w-4 text-slate-500" /> Resend invitation
                                         </button>
                                     </form>
                                     @if ($member->hasTwoFactorEnabled())
-                                        <p class="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Security</p>
+                                        <p class="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Security</p>
                                         <form method="POST" action="{{ route('tenant.team.two-factor.reset', $member) }}"
                                               onsubmit="return confirm('Reset two-step login for {{ addslashes($member->name) }}? Only do this if you have confirmed who is asking — they will be able to sign in with just their password.')">
                                             @csrf
                                             <button type="submit" class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-slate-700 hover:bg-slate-50">
-                                                <x-icon name="shield-check" class="h-4 w-4 text-slate-400" /> Reset two-step login
+                                                <x-icon name="shield-check" class="h-4 w-4 text-slate-500" /> Reset two-step login
                                             </button>
                                         </form>
                                     @endif
-                                    <p class="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Data requests</p>
+                                    <p class="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Data requests</p>
                                     <a href="{{ route('tenant.team.data.export', $member) }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50">
-                                        <x-icon name="download" class="h-4 w-4 text-slate-400" /> Download their data
+                                        <x-icon name="download" class="h-4 w-4 text-slate-500" /> Download their data
                                     </a>
                                     <form method="POST" action="{{ route('tenant.team.data.erase', $member) }}"
                                           onsubmit="return confirm('Erase {{ addslashes($member->name) }}\'s personal data?\n\nTheir name and email are replaced, favourites, ratings and reading progress are deleted, and they can no longer sign in. Payment and exam records are kept anonymously. This cannot be undone.')">
@@ -90,7 +90,7 @@
     </x-card>
 
     @if ($deactivated->isNotEmpty())
-        <h2 class="mt-10 mb-3 text-sm font-semibold text-slate-900">Deactivated <span class="font-normal text-slate-400">&middot; can't sign in, records kept</span></h2>
+        <h2 class="mt-10 mb-3 text-sm font-semibold text-slate-900">Deactivated <span class="font-normal text-slate-500">&middot; can't sign in, records kept</span></h2>
         <x-card :padded="false">
             <ul class="divide-y divide-slate-200">
                 @foreach ($deactivated as $member)

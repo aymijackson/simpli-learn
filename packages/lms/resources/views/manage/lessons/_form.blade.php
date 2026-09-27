@@ -27,7 +27,7 @@
 @if ($modules->isNotEmpty())
     <div>
         <label class="mb-1.5 block text-sm font-medium text-slate-700">Module (optional)</label>
-        <select name="course_module_id" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+        <select aria-label="Module (optional)" name="course_module_id" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
             <option value="">None</option>
             @foreach ($modules as $module)
                 <option value="{{ $module->id }}" @selected((string) old('course_module_id', $lesson->course_module_id ?? '') === (string) $module->id)>{{ $module->title }}</option>
@@ -38,7 +38,7 @@
 
 <div>
     <label class="mb-1.5 block text-sm font-medium text-slate-700">Exam required to unlock the next lesson (optional)</label>
-    <select name="exam_id" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+    <select aria-label="Exam required to unlock the next lesson (optional)" name="exam_id" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
         <option value="">None</option>
         @foreach ($exams as $exam)
             <option value="{{ $exam->id }}" @selected((string) old('exam_id', $lesson->exam_id ?? '') === (string) $exam->id)>{{ $exam->title }}</option>

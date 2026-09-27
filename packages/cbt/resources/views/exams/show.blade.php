@@ -13,7 +13,7 @@
         <div class="absolute -top-32 right-10 -z-10 h-80 w-80 rounded-full bg-emerald-500/20 blur-3xl"></div>
 
         <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-            <nav class="flex items-center gap-2 text-sm text-slate-400">
+            <nav class="flex items-center gap-2 text-sm text-slate-400" aria-label="Breadcrumb">
                 @if ($placement)
                     <a href="{{ $placement['url'] }}" class="truncate hover:text-white">{{ $placement['title'] }}</a>
                 @else
@@ -132,7 +132,7 @@
                                                     {{ $attempt->score }}% &middot; {{ $attempt->passed() ? 'Passed' : 'Failed' }}
                                                 </x-badge>
                                             @endif
-                                            <x-icon name="chevron-right" class="h-4 w-4 text-slate-400" />
+                                            <x-icon name="chevron-right" class="h-4 w-4 text-slate-500" />
                                         </a>
                                     @else
                                         <x-button :href="route('cbt.attempts.take', $attempt)" size="sm">Resume</x-button>
@@ -148,19 +148,19 @@
                 <x-card>
                     <h2 class="text-base font-semibold text-slate-900">Before you begin</h2>
                     <ul class="mt-4 space-y-3 text-sm text-slate-600">
-                        <li class="flex gap-3"><x-icon name="clock" class="mt-0.5 h-4 w-4 text-slate-400" />
+                        <li class="flex gap-3"><x-icon name="clock" class="mt-0.5 h-4 w-4 text-slate-500" />
                             {{ $exam->enforce_time_limit ? 'You have '.$exam->duration_minutes.' minutes once you start; the exam submits itself when time runs out.' : 'Aim to finish in about '.$exam->duration_minutes.' minutes.' }}
                         </li>
-                        <li class="flex gap-3"><x-icon name="list" class="mt-0.5 h-4 w-4 text-slate-400" />
+                        <li class="flex gap-3"><x-icon name="list" class="mt-0.5 h-4 w-4 text-slate-500" />
                             {{ $exam->allow_backward_navigation ? 'You can move back and forth between questions and flag ones to revisit.' : 'Questions are answered in order; you can\'t go back to earlier questions.' }}
                         </li>
                         @if ($exam->randomize_questions || $exam->questions_per_attempt)
-                            <li class="flex gap-3"><x-icon name="sparkles" class="mt-0.5 h-4 w-4 text-slate-400" /> Questions are shuffled for every attempt.</li>
+                            <li class="flex gap-3"><x-icon name="sparkles" class="mt-0.5 h-4 w-4 text-slate-500" /> Questions are shuffled for every attempt.</li>
                         @endif
                         @if ($exam->integrity_monitoring_enabled)
-                            <li class="flex gap-3"><x-icon name="shield-check" class="mt-0.5 h-4 w-4 text-slate-400" /> This exam is monitored: leaving the exam window or copying text is recorded.</li>
+                            <li class="flex gap-3"><x-icon name="shield-check" class="mt-0.5 h-4 w-4 text-slate-500" /> This exam is monitored: leaving the exam window or copying text is recorded.</li>
                         @endif
-                        <li class="flex gap-3"><x-icon name="bolt" class="mt-0.5 h-4 w-4 text-slate-400" /> Results are graded instantly when you submit.</li>
+                        <li class="flex gap-3"><x-icon name="bolt" class="mt-0.5 h-4 w-4 text-slate-500" /> Results are graded instantly when you submit.</li>
                     </ul>
                 </x-card>
             </aside>

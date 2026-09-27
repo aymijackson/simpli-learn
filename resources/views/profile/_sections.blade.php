@@ -11,10 +11,10 @@
             </div>
         </div>
         <nav class="mt-6 hidden space-y-1 text-sm lg:block">
-            <a href="#details" class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-white"><x-icon name="user-circle" class="h-4 w-4 text-slate-400" /> Your details</a>
-            <a href="#password" class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-white"><x-icon name="lock" class="h-4 w-4 text-slate-400" /> Password</a>
-            <a href="#two-factor" class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-white"><x-icon name="shield-check" class="h-4 w-4 text-slate-400" /> Two-step login</a>
-            <a href="#data" class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-white"><x-icon name="document" class="h-4 w-4 text-slate-400" /> Your data</a>
+            <a href="#details" class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-white"><x-icon name="user-circle" class="h-4 w-4 text-slate-500" /> Your details</a>
+            <a href="#password" class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-white"><x-icon name="lock" class="h-4 w-4 text-slate-500" /> Password</a>
+            <a href="#two-factor" class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-white"><x-icon name="shield-check" class="h-4 w-4 text-slate-500" /> Two-step login</a>
+            <a href="#data" class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-white"><x-icon name="document" class="h-4 w-4 text-slate-500" /> Your data</a>
         </nav>
     </div>
 

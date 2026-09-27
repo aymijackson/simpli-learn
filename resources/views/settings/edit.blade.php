@@ -19,7 +19,7 @@
                     <div class="flex items-center gap-4">
                         <x-workspace-mark :tenant="$workspace" class="h-16! w-16!" />
                         <div class="min-w-0 flex-1 space-y-2">
-                            <input type="file" name="logo" accept="image/png,image/jpeg,image/webp"
+                            <input type="file" name="logo" aria-label="Upload a logo" accept="image/png,image/jpeg,image/webp"
                                    class="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200">
                             <p class="text-xs text-slate-500">PNG, JPG or WebP, up to 2 MB. A square or wide logo on a transparent background works best.</p>
                             @if ($workspace->logo_path)
@@ -45,7 +45,7 @@
                     </div>
                     <div class="mt-3 flex items-center gap-3">
                         <input type="color" id="brand-color-picker" value="{{ $current }}" aria-label="Pick any colour" class="h-10 w-14 cursor-pointer rounded-lg border-0 bg-transparent p-0">
-                        <input type="text" name="brand_color" id="brand-color" value="{{ $current }}" maxlength="7" pattern="#[0-9a-fA-F]{6}"
+                        <input type="text" name="brand_color" id="brand-color" aria-label="Brand colour (hex)" value="{{ $current }}" maxlength="7" pattern="#[0-9a-fA-F]{6}"
                                class="block w-32 rounded-lg border-0 px-3 py-2 font-mono text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600">
                         <span class="text-xs text-slate-500">Used for buttons, links and highlights. It must be dark enough for white text.</span>
                     </div>

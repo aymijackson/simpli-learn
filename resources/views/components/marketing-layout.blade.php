@@ -21,6 +21,7 @@
     @include('partials.assets')
 </head>
 <body class="flex min-h-full flex-col font-sans text-slate-900 antialiased">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-700 focus:shadow-lg focus:ring-2 focus:ring-brand-600">Skip to content</a>
     <header class="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur">
         <div class="mx-auto flex h-16 max-w-7xl items-center gap-8 px-4 sm:px-6 lg:px-8">
             <a href="{{ route('home') }}" class="flex shrink-0 items-center gap-2.5">
@@ -82,7 +83,7 @@
         </div>
     @endif
 
-    <main class="flex-1">
+    <main id="main-content" tabindex="-1" class="flex-1">
         {{ $slot }}
     </main>
 

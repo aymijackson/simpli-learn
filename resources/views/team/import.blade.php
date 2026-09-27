@@ -29,7 +29,7 @@
                             <ul class="mt-2 max-h-64 divide-y divide-slate-100 overflow-y-auto rounded-lg text-sm ring-1 ring-slate-200">
                                 @foreach ($result['skipped'] as $skip)
                                     <li class="flex gap-3 px-3 py-2">
-                                        <span class="w-16 shrink-0 text-slate-400">Row {{ $skip['line'] }}</span>
+                                        <span class="w-16 shrink-0 text-slate-500">Row {{ $skip['line'] }}</span>
                                         <span class="min-w-0 flex-1 truncate font-medium text-slate-800">{{ $skip['email'] }}</span>
                                         <span class="shrink-0 text-slate-500">{{ $skip['reason'] }}</span>
                                     </li>

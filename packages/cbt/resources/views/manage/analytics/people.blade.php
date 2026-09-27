@@ -20,7 +20,7 @@
             <p class="text-sm font-medium text-slate-500">Pass rate</p>
             <p class="mt-1 text-3xl font-bold tracking-tight text-slate-900">{{ $passRate }}%</p>
             <x-progress class="mt-3" :value="$passRate" tone="emerald" />
-            <p class="mt-2 text-xs text-slate-400">{{ $counts['passed'] }} of {{ $counts['all'] }} people</p>
+            <p class="mt-2 text-xs text-slate-500">{{ $counts['passed'] }} of {{ $counts['all'] }} people</p>
         </x-card>
         <x-stat-card label="Not passed yet" :value="$counts['failed']" icon="x-mark" tone="rose" hint="Attempted, below the pass mark" />
         <x-stat-card label="In progress" :value="$counts['in_progress']" icon="clock" tone="amber" />
@@ -61,7 +61,7 @@
                                     <p class="text-xs text-slate-500">{{ $row['user']->email }}</p>
                                 </td>
                                 <td class="px-5 py-3 whitespace-nowrap"><x-badge :color="$colors[$row['status']]">{{ Report::LABELS[$row['status']] }}</x-badge></td>
-                                <td class="px-5 py-3 whitespace-nowrap font-semibold {{ $row['best'] === null ? 'text-slate-400' : ($row['best'] >= $exam->pass_percentage ? 'text-emerald-600' : 'text-rose-600') }}">
+                                <td class="px-5 py-3 whitespace-nowrap font-semibold {{ $row['best'] === null ? 'text-slate-500' : ($row['best'] >= $exam->pass_percentage ? 'text-emerald-600' : 'text-rose-600') }}">
                                     {{ $row['best'] === null ? '—' : $row['best'].'%' }}
                                 </td>
                                 <td class="px-5 py-3 text-slate-600">{{ $row['attempts'] ?: '—' }}</td>

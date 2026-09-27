@@ -3,7 +3,7 @@
     $initials = collect(explode(' ', (string) $user->name))->filter()->take(2)->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->implode('');
 @endphp
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-100">
+<html lang="en" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,6 +11,7 @@
     @include('partials.assets')
 </head>
 <body class="h-full font-sans text-slate-900 antialiased">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-700 focus:shadow-lg focus:ring-2 focus:ring-brand-600">Skip to content</a>
     @if (session('impersonator_id'))
         <div class="flex items-center justify-center gap-3 bg-amber-500 px-4 py-2 text-center text-sm font-medium text-white lg:pl-72">
             <span>You're managing {{ $tenant->name }} as {{ $user->name }}.</span>
@@ -66,16 +67,16 @@
                         </div>
                         <div class="p-1.5 text-sm">
                             <a href="{{ route('tenant.profile.edit') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50">
-                                <x-icon name="user-circle" class="h-4 w-4 text-slate-400" /> Profile &amp; security
+                                <x-icon name="user-circle" class="h-4 w-4 text-slate-500" /> Profile &amp; security
                             </a>
                             <a href="{{ route('tenant.home') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-50">
-                                <x-icon name="eye" class="h-4 w-4 text-slate-400" /> View learner site
+                                <x-icon name="eye" class="h-4 w-4 text-slate-500" /> View learner site
                             </a>
                         </div>
                         <form method="POST" action="{{ route('tenant.logout') }}" class="border-t border-slate-100 p-1.5">
                             @csrf
                             <button type="submit" class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">
-                                <x-icon name="logout" class="h-4 w-4 text-slate-400" /> Log out
+                                <x-icon name="logout" class="h-4 w-4 text-slate-500" /> Log out
                             </button>
                         </form>
                     </div>
@@ -100,7 +101,7 @@
             </div>
         @endif
 
-        <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+        <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
             {{ $slot }}
         </main>
     </div>

@@ -15,7 +15,7 @@
             <span class="absolute top-2 right-2 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-bold text-slate-900 shadow-sm">{{ $resource->currency }} {{ number_format($resource->price, 2) }}</span>
         @endif
     </div>
-    <h3 class="mt-3 line-clamp-2 text-sm leading-snug font-semibold text-slate-900 group-hover:text-brand-700">{{ $resource->title }}</h3>
+    <h2 class="mt-3 line-clamp-2 text-sm leading-snug font-semibold text-slate-900 group-hover:text-brand-700">{{ $resource->title }}</h2>
     @if ($resource->author)
         <p class="mt-0.5 truncate text-xs text-slate-500">{{ $resource->author }}</p>
     @endif

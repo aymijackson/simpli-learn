@@ -40,7 +40,7 @@
                                     @else
                                         <x-badge color="slate">Private</x-badge>
                                     @endif
-                                    <x-icon name="chevron-down" class="details-chevron h-4 w-4 text-slate-400 transition" />
+                                    <x-icon name="chevron-down" class="details-chevron h-4 w-4 text-slate-500 transition" />
                                 </div>
                             </summary>
 
