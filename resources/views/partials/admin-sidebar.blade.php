@@ -6,6 +6,7 @@
         ],
         'Workspaces' => [
             ['route' => 'admin.tenants.index', 'match' => 'admin.tenants.*', 'icon' => 'building', 'label' => 'Tenants', 'badge' => $pendingTenants ?: null],
+            ['route' => 'admin.shared-courses.index', 'match' => 'admin.shared-courses.*', 'icon' => 'globe', 'label' => 'Shared courses'],
         ],
         'Website' => [
             ['route' => 'admin.pages.index', 'match' => 'admin.pages.*', 'icon' => 'document', 'label' => 'Pages'],

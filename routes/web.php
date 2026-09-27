@@ -5,25 +5,26 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\MarketingPageController;
 use App\Http\Controllers\Admin\PaymentSettingsController;
+use App\Http\Controllers\Admin\SharedCourseController;
 use App\Http\Controllers\Admin\TenantApprovalController;
 use App\Http\Controllers\Admin\TenantController as AdminTenantController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegistrationController;
+use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\CourseCertificateVerificationController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ManageDashboardController;
 use App\Http\Controllers\MarketingController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
-use App\Http\Controllers\TwoFactorController;
-use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamImportController;
+use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
@@ -87,6 +88,9 @@ Route::middleware(['auth', 'two-factor'])->prefix('admin')->name('admin.')->grou
     Route::post('/tenants/{workspace}/reactivate', [TenantApprovalController::class, 'reactivate'])->name('tenants.reactivate');
     Route::post('/tenants/{workspace}/impersonate', [ImpersonationController::class, 'start'])->name('tenants.impersonate');
 
+    Route::get('/shared-courses', [SharedCourseController::class, 'index'])->name('shared-courses.index');
+    Route::put('/shared-courses/{course}', [SharedCourseController::class, 'update'])->whereNumber('course')->name('shared-courses.update');
+
     Route::resource('pages', MarketingPageController::class)->except(['show']);
 
     Route::post('/uploads', [UploadController::class, 'store'])->name('uploads.store');
@@ -141,7 +145,7 @@ Route::prefix('t/{tenant}')->name('tenant.')->group(function () {
         Route::get('/import/template.csv', [TeamImportController::class, 'template'])->name('import.template');
         Route::post('/import', [TeamImportController::class, 'store'])->name('import.store');
         Route::post('/', [TeamController::class, 'store'])->name('store');
-        Route::get('/{member}', [TeamController::class, 'show'])->name('show');
+        Route::get('/{member}', [TeamController::class, 'show'])->middleware('content:shared')->name('show');
         Route::put('/{member}', [TeamController::class, 'update'])->name('update');
         Route::delete('/{member}', [TeamController::class, 'destroy'])->name('destroy');
         Route::post('/{member}/reactivate', [TeamController::class, 'reactivate'])->name('reactivate');

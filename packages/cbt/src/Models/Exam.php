@@ -3,18 +3,38 @@
 namespace Elibrary\Cbt\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Contracts\SharedAcrossTenants;
 use App\Models\Scopes\TenantScope;
 use App\Models\User;
+use App\Support\Tenancy\Tenancy;
 use Elibrary\Cbt\Contracts\ExamPlacements;
 use Elibrary\Cbt\Enums\CertificatePolicy;
 use Elibrary\Cbt\Enums\NavigationMode;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Exam extends Model
+class Exam extends Model implements SharedAcrossTenants
 {
     use BelongsToTenant;
+
+    /** Exams used as checkpoints in courses shared with this workspace. */
+    public function sharedWithTenant(Builder $query, int $tenantId): void
+    {
+        $ids = app(ExamPlacements::class)->sharedExamIds($tenantId);
+        $ids ? $query->whereIn($this->qualifyColumn('id'), $ids) : $query->whereRaw('1 = 0');
+    }
+
+    /** Resolve {exam:slug} to this workspace's own exam first. */
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        $tenantId = app(Tenancy::class)->id();
+
+        return parent::resolveRouteBindingQuery($query, $value, $field)
+            ->when($tenantId, fn ($query) => $query->orderByRaw('CASE WHEN '.$this->qualifyColumn('tenant_id').' = ? THEN 0 ELSE 1 END', [$tenantId]));
+    }
+
 
     protected $fillable = [
         'tenant_id', 'title', 'slug', 'description', 'instructions',

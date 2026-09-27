@@ -3,6 +3,7 @@
 namespace Elibrary\Lms\Http\Controllers\Manage;
 
 use App\Http\Controllers\Controller;
+use App\Models\Scopes\TenantScope;
 use App\Support\Tenancy\Tenancy;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Lms\Enums\AssessmentMode;
@@ -10,6 +11,7 @@ use Elibrary\Lms\Enums\CourseCertificatePolicy;
 use Elibrary\Lms\Enums\CourseLevel;
 use Elibrary\Lms\Enums\CoursePricingPolicy;
 use Elibrary\Lms\Models\Course;
+use Elibrary\Lms\Support\SharedCourses;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,8 +25,17 @@ class CourseController extends Controller
 {
     public function index(): View
     {
+        $tenantId = app(Tenancy::class)->id();
+
         return view('lms::manage.courses.index', [
             'courses' => Course::withCount('lessons')->latest()->get(),
+            // Read directly (the back office is strict): published courses
+            // other workspaces open to all or share with this one.
+            'sharedCourses' => Course::withoutGlobalScope(TenantScope::class)
+                ->whereIn('id', SharedCourses::ids($tenantId))
+                ->with('tenant')
+                ->orderBy('title')
+                ->get(),
         ]);
     }
 
@@ -142,6 +153,7 @@ class CourseController extends Controller
         $validated['sequential_lessons'] = $request->boolean('sequential_lessons');
 
         $validated['is_published'] = $request->boolean('is_published');
+        $validated['is_public'] = $request->boolean('is_public');
         $validated['assessment_mode'] = $validated['assessment_mode'] ?? AssessmentMode::None->value;
 
         if ($validated['assessment_mode'] !== AssessmentMode::CourseFinal->value) {

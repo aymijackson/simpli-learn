@@ -3,12 +3,17 @@
 namespace Elibrary\Lms\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Contracts\SharedAcrossTenants;
+use App\Models\Tenant;
 use App\Models\User;
+use App\Support\Tenancy\Tenancy;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Lms\Enums\AssessmentMode;
 use Elibrary\Lms\Enums\CourseCertificatePolicy;
 use Elibrary\Lms\Enums\CourseLevel;
 use Elibrary\Lms\Enums\CoursePricingPolicy;
+use Elibrary\Lms\Support\SharedCourses;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -17,12 +22,57 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-class Course extends Model
+class Course extends Model implements SharedAcrossTenants
 {
     use BelongsToTenant;
 
+    /** Published courses other workspaces open to everyone or share with this one. */
+    public function sharedWithTenant(Builder $query, int $tenantId): void
+    {
+        $query->whereIn($this->qualifyColumn('id'), SharedCourses::ids($tenantId));
+    }
+
+    /**
+     * Resolve {course:slug} to this workspace's own course first, so a shared
+     * course with the same slug never shadows it.
+     */
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        $tenantId = app(Tenancy::class)->id();
+
+        return parent::resolveRouteBindingQuery($query, $value, $field)
+            ->when($tenantId, fn ($query) => $query->orderByRaw('CASE WHEN '.$this->qualifyColumn('tenant_id').' = ? THEN 0 ELSE 1 END', [$tenantId]));
+    }
+
+    /** True when this course belongs to a workspace other than the current one. */
+    public function isShared(): bool
+    {
+        $tenantId = app(Tenancy::class)->id();
+
+        return $tenantId !== null && $this->tenant_id !== $tenantId;
+    }
+
+    /** Paid enrolment applies only to the owning workspace; shared learners join free. */
+    public function isPaidHere(): bool
+    {
+        return $this->pricing_policy === CoursePricingPolicy::Paid && ! $this->isShared();
+    }
+
+    /** Likewise a paid certificate: other workspaces' learners get it free. */
+    public function certificateIsPaidHere(): bool
+    {
+        return $this->certificate_policy === CourseCertificatePolicy::Paid && ! $this->isShared();
+    }
+
+    /** Workspaces a platform admin has shared this course with. */
+    public function sharedWorkspaces(): BelongsToMany
+    {
+        return $this->belongsToMany(Tenant::class, 'course_shares')->withTimestamps();
+    }
+
+
     protected $fillable = [
-        'tenant_id', 'title', 'slug', 'description', 'is_published', 'assessment_mode', 'sequential_lessons', 'final_exam_id',
+        'tenant_id', 'title', 'slug', 'description', 'is_published', 'is_public', 'assessment_mode', 'sequential_lessons', 'final_exam_id',
         'pricing_policy', 'price', 'currency', 'certificate_policy', 'certificate_price', 'certificate_currency',
         'subtitle', 'cover_image_path', 'category', 'level', 'duration_minutes', 'instructor_name', 'instructor_bio', 'outcomes',
     ];
@@ -31,6 +81,7 @@ class Course extends Model
     {
         return [
             'is_published' => 'boolean',
+            'is_public' => 'boolean',
             'assessment_mode' => AssessmentMode::class,
             'sequential_lessons' => 'boolean',
             'pricing_policy' => CoursePricingPolicy::class,

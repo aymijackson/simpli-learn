@@ -3,17 +3,27 @@
 namespace Elibrary\Cbt\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Contracts\SharedAcrossTenants;
 use App\Support\Tenancy\Tenancy;
+use Elibrary\Cbt\Contracts\ExamPlacements;
 use Elibrary\Cbt\Enums\AnswerType;
 use Elibrary\Cbt\Enums\ScoringMethod;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
-class Question extends Model
+class Question extends Model implements SharedAcrossTenants
 {
     use BelongsToTenant;
+
+    public function sharedWithTenant(Builder $query, int $tenantId): void
+    {
+        $ids = app(ExamPlacements::class)->sharedExamIds($tenantId);
+        $ids ? $query->whereIn($this->qualifyColumn('exam_id'), $ids) : $query->whereRaw('1 = 0');
+    }
+
 
     protected $fillable = ['tenant_id', 'exam_id', 'exam_section_id', 'question_text', 'marking_guide', 'answer_type', 'scoring_method', 'position', 'points'];
 

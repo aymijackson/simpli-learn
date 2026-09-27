@@ -20,7 +20,11 @@ class CourseCertificateService
      */
     public function issueIfPassedAndFree(Course $course, User $user): void
     {
-        if ($course->certificate_policy !== CourseCertificatePolicy::Free) {
+        // A paid certificate on a course shared from another workspace is free here.
+        $free = $course->certificate_policy === CourseCertificatePolicy::Free
+            || ($course->certificate_policy === CourseCertificatePolicy::Paid && $course->isShared());
+
+        if (! $free) {
             return;
         }
 

@@ -3,16 +3,25 @@
 namespace Elibrary\Lms\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use App\Models\Contracts\SharedAcrossTenants;
 use App\Models\User;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Lms\Enums\AssessmentMode;
+use Elibrary\Lms\Support\SharedCourses;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Lesson extends Model
+class Lesson extends Model implements SharedAcrossTenants
 {
     use BelongsToTenant;
+
+    public function sharedWithTenant(Builder $query, int $tenantId): void
+    {
+        $query->whereIn($this->qualifyColumn('course_id'), SharedCourses::ids($tenantId));
+    }
+
 
     protected $fillable = ['tenant_id', 'course_id', 'course_module_id', 'exam_id', 'title', 'content', 'position', 'is_preview'];
 

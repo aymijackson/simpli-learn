@@ -4,6 +4,7 @@ namespace Elibrary\Cbt\Contracts;
 
 use App\Models\User;
 use Elibrary\Cbt\Models\Exam;
+use Illuminate\Database\Query\Builder;
 
 /**
  * Lets another module (the LMS) place exams inside its own content — a
@@ -15,6 +16,12 @@ interface ExamPlacements
 {
     /** @return array<int, int> Ids of exams that live inside other content. */
     public function embeddedExamIds(): array;
+
+    /**
+     * Subquery of exam ids other workspaces share with this one (as part of a
+     * shared course), or null when nothing can be shared.
+     */
+    public function sharedExamIds(int $tenantId): ?Builder;
 
     /** Why this person can't take the exam yet because of where it sits, or null. */
     public function accessBlockReason(Exam $exam, User $user): ?string;

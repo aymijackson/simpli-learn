@@ -5,7 +5,6 @@ namespace Elibrary\Lms\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Elibrary\Lms\Certificates\CourseCertificateService;
 use Elibrary\Lms\Enums\CourseLevel;
-use Elibrary\Lms\Enums\CoursePricingPolicy;
 use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Models\Enrollment;
 use Illuminate\Http\RedirectResponse;
@@ -102,7 +101,7 @@ class CourseController extends Controller
             return $blocked;
         }
 
-        if ($course->pricing_policy === CoursePricingPolicy::Paid && ! $course->isEnrolled($request->user())) {
+        if ($course->isPaidHere() && ! $course->isEnrolled($request->user())) {
             return redirect()->route('lms.courses.purchase.create', $course);
         }
 

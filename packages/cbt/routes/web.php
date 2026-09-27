@@ -80,9 +80,9 @@ Route::middleware(['web', 'auth', 'module:cbt'])
             Route::get('/analytics/{exam:slug}/export.pdf', [ManageAnalyticsController::class, 'exportPdf'])->name('analytics.export.pdf');
             Route::get('/analytics/{exam:slug}/attempts/{attempt}/integrity', [ManageAnalyticsController::class, 'integrityEvents'])->name('analytics.attempts.integrity');
 
-            Route::get('/marking', [ManageMarkingController::class, 'index'])->name('marking.index');
-            Route::get('/marking/{attempt}', [ManageMarkingController::class, 'show'])->name('marking.show');
-            Route::put('/marking/{attempt}', [ManageMarkingController::class, 'update'])->name('marking.update');
+            Route::get('/marking', [ManageMarkingController::class, 'index'])->middleware('content:shared')->name('marking.index');
+            Route::get('/marking/{attempt}', [ManageMarkingController::class, 'show'])->middleware('content:shared')->name('marking.show');
+            Route::put('/marking/{attempt}', [ManageMarkingController::class, 'update'])->middleware('content:shared')->name('marking.update');
 
             Route::get('/certificates/settings', [ManageCertificateSettingsController::class, 'edit'])->name('certificates.settings.edit');
             Route::put('/certificates/settings', [ManageCertificateSettingsController::class, 'update'])->name('certificates.settings.update');

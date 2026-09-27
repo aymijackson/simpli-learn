@@ -3,7 +3,6 @@
 namespace Elibrary\Lms\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Elibrary\Lms\Enums\CoursePricingPolicy;
 use Elibrary\Lms\Models\LearningPath;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -60,7 +59,7 @@ class LearningPathController extends Controller
         $course = $step['course'];
 
         if ($step['status'] === 'not_started') {
-            if ($course->pricing_policy === CoursePricingPolicy::Paid) {
+            if ($course->isPaidHere()) {
                 return redirect()->route('lms.courses.purchase.create', $course);
             }
 

@@ -65,6 +65,14 @@
     Published (visible to learners)
 </label>
 
+<label class="flex items-start gap-2 text-sm">
+    <input type="checkbox" name="is_public" value="1" class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-600" @checked(old('is_public', $course->is_public ?? false))>
+    <span>
+        <span class="font-medium text-slate-700">Open to every workspace</span>
+        <span class="block text-xs text-slate-500">Once published, learners in all workspaces on the platform can find and take this course, free of charge. Their progress stays in their own workspace; you keep sole control of the content.</span>
+    </span>
+</label>
+
 @php($currentMode = old('assessment_mode', $course->assessment_mode?->value ?? 'none'))
 
 <div>

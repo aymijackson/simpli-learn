@@ -130,7 +130,7 @@
                         </div>
                         @if ($certificate)
                             <x-button :href="route('lms.courses.certificate.download', $course)" variant="dark" icon="download">Download certificate</x-button>
-                        @elseif ($course->certificate_policy->value === 'paid')
+                        @elseif ($course->certificateIsPaidHere())
                             <x-button :href="route('lms.courses.certificate-purchase.create', $course)">
                                 Get certificate for {{ number_format($course->certificate_price, 2) }} {{ $course->certificate_currency }}
                             </x-button>
@@ -321,8 +321,8 @@
                                 <p class="mt-5 flex items-center justify-center gap-2 rounded-lg bg-emerald-50 py-3 text-sm font-semibold text-emerald-700"><x-icon name="check-circle" /> All lessons complete</p>
                             @endif
                         @elseif ($unmetPrerequisites->isNotEmpty())
-                            <p class="text-3xl font-bold {{ $course->pricing_policy->value === 'paid' ? 'text-slate-900' : 'text-emerald-600' }}">
-                                {{ $course->pricing_policy->value === 'paid' ? $course->currency.' '.number_format($course->price, 2) : 'Free' }}
+                            <p class="text-3xl font-bold {{ $course->isPaidHere() ? 'text-slate-900' : 'text-emerald-600' }}">
+                                {{ $course->isPaidHere() ? $course->currency.' '.number_format($course->price, 2) : 'Free' }}
                             </p>
                             <p class="mt-4 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-sm text-amber-900 ring-1 ring-amber-200">
                                 <x-icon name="lock" class="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
@@ -330,7 +330,7 @@
                             </p>
                             <x-button :href="route('lms.courses.show', $unmetPrerequisites->first())" class="mt-4 w-full" size="lg" icon-right="arrow-right">Go to {{ \Illuminate\Support\Str::limit($unmetPrerequisites->first()->title, 30) }}</x-button>
                         @else
-                            @if ($course->pricing_policy->value === 'paid')
+                            @if ($course->isPaidHere())
                                 <p class="text-3xl font-bold text-slate-900">{{ $course->currency }} {{ number_format($course->price, 2) }}</p>
                                 <x-button :href="route('lms.courses.purchase.create', $course)" class="mt-5 w-full" size="lg">Buy for {{ number_format($course->price, 2) }} {{ $course->currency }}</x-button>
                             @else
@@ -352,6 +352,9 @@
                                 @if ($attachmentCount > 0)
                                     <li class="flex items-center gap-3"><x-icon name="document" class="h-4 w-4 text-slate-400" /> {{ $attachmentCount }} downloadable {{ \Illuminate\Support\Str::plural('resource', $attachmentCount) }}</li>
                                 @endif
+                                @if ($course->isShared())
+                                    <li class="flex items-center gap-3"><x-icon name="globe" class="h-4 w-4 text-slate-400" /> Shared by {{ $course->tenant?->name ?? 'another workspace' }}</li>
+                                @endif
                                 @if ($course->sequential_lessons)
                                     <li class="flex items-center gap-3"><x-icon name="flag" class="h-4 w-4 text-slate-400" /> Lessons unlock in order</li>
                                 @endif
@@ -365,7 +368,7 @@
                                     <li class="flex items-center gap-3"><x-icon name="clipboard-check" class="h-4 w-4 text-slate-400" /> {{ $course->assessment_mode->value === 'course_final' ? 'Final exam' : 'Assessments along the way' }}</li>
                                 @endif
                                 @if ($course->certificate_policy->value !== 'none')
-                                    <li class="flex items-center gap-3"><x-icon name="trophy" class="h-4 w-4 text-slate-400" /> Certificate of completion{{ $course->certificate_policy->value === 'paid' ? ' (paid)' : '' }}</li>
+                                    <li class="flex items-center gap-3"><x-icon name="trophy" class="h-4 w-4 text-slate-400" /> Certificate of completion{{ $course->certificateIsPaidHere() ? ' (paid)' : '' }}</li>
                                 @endif
                                 <li class="flex items-center gap-3"><x-icon name="device" class="h-4 w-4 text-slate-400" /> Learn on any device, at your own pace</li>
                             </ul>

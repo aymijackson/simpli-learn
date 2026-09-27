@@ -11,6 +11,7 @@ use Elibrary\Lms\Enums\AssessmentMode;
 use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Models\CourseModule;
 use Elibrary\Lms\Models\Lesson;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 
 /**
@@ -39,6 +40,11 @@ class CourseExamPlacements implements ExamPlacements
             ->unique()
             ->values()
             ->all();
+    }
+
+    public function sharedExamIds(int $tenantId): ?Builder
+    {
+        return SharedCourses::examIds($tenantId);
     }
 
     public function accessBlockReason(Exam $exam, User $user): ?string

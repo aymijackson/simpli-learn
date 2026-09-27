@@ -52,10 +52,10 @@ Route::middleware(['web', 'auth', 'module:lms'])
             Route::get('/courses/create', [ManageCourseController::class, 'create'])->name('courses.create');
             Route::post('/courses', [ManageCourseController::class, 'store'])->name('courses.store');
             Route::get('/courses/{course:slug}/edit', [ManageCourseController::class, 'edit'])->name('courses.edit');
-            Route::get('/courses/{course:slug}/report', [ManageCourseReportController::class, 'show'])->name('courses.report');
-            Route::get('/courses/{course:slug}/report.csv', [ManageCourseReportController::class, 'export'])->name('courses.report.export');
-            Route::post('/courses/{course:slug}/assignments', [ManageCourseReportController::class, 'assign'])->name('courses.assign');
-            Route::delete('/courses/{course:slug}/assignments/{assignment}', [ManageCourseReportController::class, 'unassign'])->name('courses.unassign');
+            Route::get('/courses/{course:slug}/report', [ManageCourseReportController::class, 'show'])->middleware('content:shared')->name('courses.report');
+            Route::get('/courses/{course:slug}/report.csv', [ManageCourseReportController::class, 'export'])->middleware('content:shared')->name('courses.report.export');
+            Route::post('/courses/{course:slug}/assignments', [ManageCourseReportController::class, 'assign'])->middleware('content:shared')->name('courses.assign');
+            Route::delete('/courses/{course:slug}/assignments/{assignment}', [ManageCourseReportController::class, 'unassign'])->middleware('content:shared')->name('courses.unassign');
             Route::put('/courses/{course:slug}', [ManageCourseController::class, 'update'])->name('courses.update');
             Route::delete('/courses/{course:slug}', [ManageCourseController::class, 'destroy'])->name('courses.destroy');
 

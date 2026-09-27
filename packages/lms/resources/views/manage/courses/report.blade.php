@@ -18,7 +18,9 @@
     <x-page-header :title="$course->title" subtitle="Who has completed this course, who is part-way through, and who hasn't started." eyebrow="Completion report">
         <x-slot:actions>
             <x-button :href="route('lms.manage.courses.report.export', $course)" variant="secondary" icon="download">Export CSV</x-button>
-            <x-button :href="route('lms.manage.courses.edit', $course)" variant="secondary" icon="pencil">Edit course</x-button>
+            @unless ($course->isShared())
+                <x-button :href="route('lms.manage.courses.edit', $course)" variant="secondary" icon="pencil">Edit course</x-button>
+            @endunless
         </x-slot:actions>
     </x-page-header>
 

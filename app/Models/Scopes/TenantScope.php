@@ -2,6 +2,7 @@
 
 namespace App\Models\Scopes;
 
+use App\Models\Contracts\SharedAcrossTenants;
 use App\Support\Tenancy\Tenancy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,20 @@ class TenantScope implements Scope
         $tenancy = app(Tenancy::class);
 
         if ($tenancy->check()) {
-            $builder->where($model->qualifyColumn('tenant_id'), $tenancy->id());
+            $column = $model->qualifyColumn('tenant_id');
+            $tenantId = $tenancy->id();
+
+            // Learner-facing pages may also see content shared from other
+            // workspaces; the back office never does (see Tenancy::sharesContent).
+            if ($model instanceof SharedAcrossTenants && $tenancy->sharesContent()) {
+                $builder->where(fn (Builder $query) => $query
+                    ->where($column, $tenantId)
+                    ->orWhere(fn (Builder $shared) => $model->sharedWithTenant($shared, $tenantId)));
+
+                return;
+            }
+
+            $builder->where($column, $tenantId);
 
             return;
         }

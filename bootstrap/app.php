@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ContentSharing;
 use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsureTenantOwner;
@@ -35,7 +36,16 @@ return Application::configure(basePath: dirname(__DIR__))
             prepend: IdentifyTenant::class,
         );
 
+        // Content sharing must be settled before route model binding looks up
+        // {course}/{exam}, or a shared course would 404 (or an owner could bind
+        // another workspace's course in the back office).
+        $middleware->prependToPriorityList(
+            before: \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            prepend: ContentSharing::class,
+        );
+
         $middleware->alias([
+            'content' => ContentSharing::class,
             'module' => EnsureModuleEnabled::class,
             'two-factor' => RequireTwoFactor::class,
         ]);
@@ -45,6 +55,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->group('owner', [
             EnsureTenantOwner::class,
             RequireTwoFactor::class,
+            // The back office only ever sees the workspace's own content.
+            ContentSharing::class.':strict',
         ]);
 
         // Payment gateway webhooks are unauthenticated server-to-server calls

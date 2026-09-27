@@ -5,12 +5,12 @@
     @if ($course->cover_image_path)
         <div class="relative aspect-[16/9] overflow-hidden bg-slate-100">
             <img src="{{ $course->coverUrl() }}" alt="" loading="lazy" class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]">
-            @if ($progress === null && $course->pricing_policy->value !== 'paid')
+            @if ($progress === null && ! $course->isPaidHere())
                 <span class="absolute bottom-3 left-4 rounded-full bg-black/40 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">Free</span>
             @endif
         </div>
     @else
-        <x-cover :seed="$course->title" icon="academic-cap" class="aspect-[16/9]" :label="$progress === null ? ($course->pricing_policy->value === 'paid' ? null : 'Free') : null" />
+        <x-cover :seed="$course->title" icon="academic-cap" class="aspect-[16/9]" :label="$progress === null ? ($course->isPaidHere() ? null : 'Free') : null" />
     @endif
 
     <div class="flex flex-1 flex-col p-5">
@@ -58,7 +58,7 @@
                 <p class="mt-2 text-xs font-semibold {{ $progress === 100 ? 'text-emerald-600' : 'text-brand-700' }}">
                     {{ $progress === 100 ? 'Completed' : ($progress === 0 ? 'Start course' : 'Continue learning') }} &rarr;
                 </p>
-            @elseif ($course->pricing_policy->value === 'paid')
+            @elseif ($course->isPaidHere())
                 <p class="text-base font-bold text-slate-900">{{ $course->currency }} {{ number_format($course->price, 2) }}</p>
             @else
                 <p class="text-base font-bold text-emerald-600">Free</p>

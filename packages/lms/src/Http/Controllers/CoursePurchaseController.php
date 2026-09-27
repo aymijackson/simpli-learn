@@ -21,7 +21,7 @@ class CoursePurchaseController extends Controller
 {
     public function create(Request $request, string $tenant, Course $course): View|RedirectResponse
     {
-        abort_if($course->isEnrolled($request->user()), 404);
+        abort_if($course->isEnrolled($request->user()) || ! $course->isPaidHere(), 404);
 
         if ($blocked = CourseController::prerequisiteBlock($request, $course)) {
             return $blocked;
@@ -38,7 +38,7 @@ class CoursePurchaseController extends Controller
 
     public function store(Request $request, string $tenant, Course $course): RedirectResponse
     {
-        abort_if($course->isEnrolled($request->user()), 404);
+        abort_if($course->isEnrolled($request->user()) || ! $course->isPaidHere(), 404);
 
         if ($blocked = CourseController::prerequisiteBlock($request, $course)) {
             return $blocked;
@@ -104,7 +104,7 @@ class CoursePurchaseController extends Controller
 
     private function assertCertificatePurchasable(Course $course, $user): void
     {
-        abort_unless($course->certificate_policy->value === 'paid', 404);
+        abort_unless($course->certificateIsPaidHere(), 404);
         abort_unless($course->isPassedBy($user) || $course->isEnrolled($user), 404);
         abort_if($course->certificateFor($user), 404);
     }
