@@ -16,6 +16,7 @@ use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\CourseCertificateVerificationController;
 use App\Http\Controllers\CspReportController;
+use App\Http\Controllers\HealthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ManageDashboardController;
 use App\Http\Controllers\MarketingController;
@@ -74,6 +75,9 @@ Route::middleware('auth')->prefix('profile')->name('profile.')->group(function (
     Route::delete('/two-factor', [TwoFactorController::class, 'disable'])->name('two-factor.disable');
     Route::post('/two-factor/recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes'])->name('two-factor.recovery-codes');
 });
+
+// Uptime monitors: 200 when healthy, 503 with the failing check otherwise.
+Route::get('/health', HealthController::class)->middleware('throttle:60,1')->name('health');
 
 // Central admin
 Route::middleware(['auth', 'two-factor'])->prefix('admin')->name('admin.')->group(function () {

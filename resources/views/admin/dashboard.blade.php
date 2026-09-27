@@ -8,6 +8,37 @@
         <x-stat-card label="Rejected" :value="$counts['rejected']" icon="x-mark" tone="rose" :href="route('admin.tenants.index')" />
     </div>
 
+    {{-- System health: the same checks /health reports to uptime monitors. --}}
+    @php($allHealthy = collect($health)->every(fn ($check) => $check['ok']))
+    <x-card class="mb-10">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="flex items-center gap-2 text-base font-semibold text-slate-900">
+                <x-icon :name="$allHealthy ? 'check-circle' : 'flag'" class="h-5 w-5 {{ $allHealthy ? 'text-emerald-600' : 'text-red-600' }}" />
+                System health
+            </h2>
+            <p class="text-xs text-slate-500">Uptime monitors can watch <a href="{{ route('health') }}" class="font-mono text-brand-700 hover:underline">{{ route('health') }}</a></p>
+        </div>
+        <ul class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            @foreach ($health as $name => $check)
+                <li class="rounded-xl px-4 py-3 ring-1 {{ $check['ok'] ? 'bg-emerald-50/60 ring-emerald-200' : 'bg-red-50 ring-red-200' }}">
+                    <p class="flex items-center gap-2 text-sm font-semibold {{ $check['ok'] ? 'text-emerald-800' : 'text-red-800' }}">
+                        <x-icon :name="$check['ok'] ? 'check' : 'x-mark'" class="h-4 w-4" /> {{ ucfirst($name) }}
+                    </p>
+                    <p class="mt-0.5 text-xs {{ $check['ok'] ? 'text-emerald-800' : 'text-red-800' }}">{{ $check['note'] }}</p>
+                </li>
+            @endforeach
+        </ul>
+        <p class="mt-4 text-xs text-slate-500">
+            Error alerts are <strong>{{ config('monitoring.alerts_enabled') ? 'on' : 'off' }}</strong>
+            @if (config('monitoring.alerts_enabled'))
+                and go to {{ implode(', ', \App\Support\Monitoring\ErrorAlerter::recipients()) ?: 'nobody yet' }}.
+            @else
+                — set MONITORING_ALERTS=true in .env to turn them on.
+            @endif
+            Test with <code class="font-mono">php artisan monitoring:test-alert</code>.
+        </p>
+    </x-card>
+
     <div class="mb-4 flex items-center justify-between">
         <h2 class="flex items-center gap-2 text-base font-semibold text-slate-900">
             Needs your review

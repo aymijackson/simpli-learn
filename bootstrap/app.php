@@ -7,6 +7,7 @@ use App\Http\Middleware\EnsureTenantOwner;
 use App\Http\Middleware\IdentifyTenant;
 use App\Http\Middleware\RequireTwoFactor;
 use App\Http\Middleware\SecurityHeaders;
+use App\Support\Monitoring\ErrorAlerter;
 use App\Support\Tenancy\Tenancy;
 use Elibrary\Lms\Http\Middleware\EnsureCanTeach;
 use Illuminate\Foundation\Application;
@@ -92,5 +93,9 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Email platform admins about errors in production (throttled). The
+        // error is still logged as usual.
+        $exceptions->report(function (Throwable $e) {
+            ErrorAlerter::handle($e);
+        });
     })->create();

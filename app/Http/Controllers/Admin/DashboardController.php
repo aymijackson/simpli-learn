@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\TenantStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
+use App\Support\Monitoring\HealthCheck;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -12,6 +13,7 @@ class DashboardController extends Controller
     public function index(): View
     {
         return view('admin.dashboard', [
+            'health' => HealthCheck::run(),
             'counts' => [
                 'pending' => Tenant::where('status', TenantStatus::Pending)->count(),
                 'active' => Tenant::where('status', TenantStatus::Active)->count(),
