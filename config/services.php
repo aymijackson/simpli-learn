@@ -57,4 +57,10 @@ return [
         'path' => env('LIBREOFFICE_PATH'),
     ],
 
+    // Optional Cloudflare Turnstile on the public contact form.
+    'turnstile' => [
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
 ];

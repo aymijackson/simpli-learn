@@ -9,6 +9,7 @@
         ['href' => route('home').'#features', 'label' => 'Platform'],
         ['href' => route('home').'#solutions', 'label' => 'Solutions'],
         ['href' => route('home').'#how-it-works', 'label' => 'How it works'],
+        ['href' => route('contact'), 'label' => 'Contact'],
     ];
 @endphp
 <!DOCTYPE html>
@@ -121,6 +122,7 @@
                     <li><a href="{{ route('signup') }}" class="hover:text-white">Create a workspace</a></li>
                     <li><a href="{{ route('home') }}#find-workspace" class="hover:text-white">Find your workspace</a></li>
                     <li><a href="{{ route('login') }}" class="hover:text-white">Log in</a></li>
+                    <li><a href="{{ route('contact') }}" class="hover:text-white">Contact us</a></li>
                 </ul>
             </div>
         </div>
@@ -131,5 +133,6 @@
             </div>
         </div>
     </footer>
+    @stack('scripts')
 </body>
 </html>

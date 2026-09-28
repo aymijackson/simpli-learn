@@ -211,6 +211,8 @@
         </div>
     </footer>
 
+    @include('partials.support-bubble')
+
     @stack('scripts')
 </body>
 </html>

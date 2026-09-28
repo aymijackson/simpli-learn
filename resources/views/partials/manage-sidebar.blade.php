@@ -58,6 +58,7 @@
 
     <x-sidebar-section title="Workspace">
         <x-sidebar-link :href="route('tenant.team.index')" icon="users" :active="request()->routeIs('tenant.team.*')">Team &amp; learners</x-sidebar-link>
+        <x-sidebar-link :href="route('tenant.manage.support.index')" icon="chat" :badge="$reviews['support'] ?? null" :active="request()->routeIs('tenant.manage.support.*')">Support inbox</x-sidebar-link>
         <x-sidebar-link :href="route('tenant.settings.edit')" icon="adjustments" :active="request()->routeIs('tenant.settings.edit', 'tenant.settings.update')">Settings &amp; branding</x-sidebar-link>
         <x-sidebar-link :href="route('tenant.settings.api')" icon="bolt" :active="request()->routeIs('tenant.settings.api*')">API keys</x-sidebar-link>
         <x-sidebar-link :href="route('tenant.manage.activity')" icon="list" :active="request()->routeIs('tenant.manage.activity')">Activity log</x-sidebar-link>

@@ -2,6 +2,7 @@
 
 namespace App\View\Components;
 
+use App\Models\SupportConversation;
 use App\Enums\Module;
 use App\Http\Controllers\ManageDashboardController;
 use App\Models\Tenant;
@@ -43,6 +44,15 @@ class AppLayout extends Component
             $this->reviews = $user?->isOwner() ? ManageDashboardController::pendingPaymentReviews(
                 $this->enabledModules->map(fn ($tenantModule) => $tenantModule->module)
             ) : [];
+
+            if ($user?->isOwner()) {
+                $chats = SupportConversation::withoutGlobalScopes()
+                    ->where('desk', SupportConversation::WORKSPACE)->where('tenant_id', $this->tenant->id)
+                    ->awaitingStaff()->count();
+                if ($chats > 0) {
+                    $this->reviews['support'] = $chats;
+                }
+            }
 
             if ($this->hasModule(Module::Lms) && $user) {
                 $waiting = ManageDiscussionController::waitingFor($user);

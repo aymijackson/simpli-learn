@@ -106,6 +106,8 @@
         </main>
     </div>
 
+    @include('partials.support-bubble')
+
     @stack('scripts')
 </body>
 </html>

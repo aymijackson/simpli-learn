@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\SupportChatController;
+use App\Http\Controllers\SupportInboxController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\JobTitleController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -38,6 +42,8 @@ Route::get('/', [MarketingController::class, 'home'])->name('home');
 Route::get('/pages/{page:slug}', [MarketingController::class, 'show'])->name('pages.show');
 Route::post('/csp-report', CspReportController::class)->name('csp.report')->middleware('throttle:60,1');
 Route::get('/find-workspace', [MarketingController::class, 'findWorkspace'])->name('workspace.find');
+Route::get('/contact', [ContactController::class, 'create'])->name('contact');
+Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:contact')->name('contact.store');
 
 // Public certificate verification (no auth, no tenant context)
 Route::get('/certificates/verify/{token}', [CertificateVerificationController::class, 'show'])->name('certificates.verify');
@@ -100,6 +106,18 @@ Route::middleware(['auth', 'two-factor'])->prefix('admin')->name('admin.')->grou
     Route::post('/tenants/{workspace}/reactivate', [TenantApprovalController::class, 'reactivate'])->name('tenants.reactivate');
     Route::post('/tenants/{workspace}/impersonate', [ImpersonationController::class, 'start'])->name('tenants.impersonate');
 
+    Route::prefix('support')->name('support.')->group(function () {
+        Route::get('/', [SupportInboxController::class, 'index'])->name('index');
+        Route::get('/{conversation}', [SupportInboxController::class, 'show'])->whereNumber('conversation')->name('show');
+        Route::get('/{conversation}/messages', [SupportInboxController::class, 'messages'])->whereNumber('conversation')->middleware('throttle:120,1')->name('messages');
+        Route::post('/{conversation}/reply', [SupportInboxController::class, 'reply'])->whereNumber('conversation')->middleware('throttle:30,1')->name('reply');
+        Route::post('/{conversation}/resolve', [SupportInboxController::class, 'resolve'])->whereNumber('conversation')->name('resolve');
+    });
+
+    Route::get('/contact-messages', [ContactMessageController::class, 'index'])->name('contact-messages.index');
+    Route::get('/contact-messages/{contactMessage}', [ContactMessageController::class, 'show'])->name('contact-messages.show');
+    Route::delete('/contact-messages/{contactMessage}', [ContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
+
     Route::get('/shared-courses', [SharedCourseController::class, 'index'])->name('shared-courses.index');
     Route::put('/shared-courses/{course}', [SharedCourseController::class, 'update'])->whereNumber('course')->name('shared-courses.update');
 
@@ -137,6 +155,10 @@ Route::prefix('t/{tenant}')->name('tenant.')->group(function () {
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('/notifications/{notification}/open', [NotificationController::class, 'open'])->name('notifications.open');
+
+        // Support chat bubble (learners → workspace owners, owners → platform).
+        Route::get('/support/chat', [SupportChatController::class, 'index'])->middleware('throttle:120,1')->name('support.chat');
+        Route::post('/support/chat', [SupportChatController::class, 'store'])->middleware('throttle:20,1')->name('support.chat.store');
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
@@ -151,6 +173,14 @@ Route::prefix('t/{tenant}')->name('tenant.')->group(function () {
 
     Route::middleware(['auth', 'owner'])->get('/manage', ManageDashboardController::class)->name('manage.dashboard');
     Route::middleware(['auth', 'owner'])->get('/manage/activity', [ActivityLogController::class, 'tenantIndex'])->name('manage.activity');
+
+    Route::middleware(['auth', 'owner'])->prefix('manage/support')->name('manage.support.')->group(function () {
+        Route::get('/', [SupportInboxController::class, 'index'])->name('index');
+        Route::get('/{conversation}', [SupportInboxController::class, 'show'])->whereNumber('conversation')->name('show');
+        Route::get('/{conversation}/messages', [SupportInboxController::class, 'messages'])->whereNumber('conversation')->middleware('throttle:120,1')->name('messages');
+        Route::post('/{conversation}/reply', [SupportInboxController::class, 'reply'])->whereNumber('conversation')->middleware('throttle:30,1')->name('reply');
+        Route::post('/{conversation}/resolve', [SupportInboxController::class, 'resolve'])->whereNumber('conversation')->name('resolve');
+    });
 
     Route::middleware(['auth', 'owner'])->group(function () {
         Route::get('/settings', [WorkspaceSettingsController::class, 'edit'])->name('settings.edit');

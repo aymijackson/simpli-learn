@@ -4,6 +4,10 @@
             ['route' => 'admin.dashboard', 'match' => 'admin.dashboard', 'icon' => 'dashboard', 'label' => 'Dashboard'],
             ['route' => 'admin.activity', 'match' => 'admin.activity', 'icon' => 'list', 'label' => 'Activity log'],
         ],
+        'Support' => [
+            ['route' => 'admin.support.index', 'match' => 'admin.support.*', 'icon' => 'chat', 'label' => 'Support chats', 'badge' => $supportWaiting ?: null],
+            ['route' => 'admin.contact-messages.index', 'match' => 'admin.contact-messages.*', 'icon' => 'mail', 'label' => 'Contact messages', 'badge' => $contactUnread ?: null],
+        ],
         'Workspaces' => [
             ['route' => 'admin.tenants.index', 'match' => 'admin.tenants.*', 'icon' => 'building', 'label' => 'Tenants', 'badge' => $pendingTenants ?: null],
             ['route' => 'admin.shared-courses.index', 'match' => 'admin.shared-courses.*', 'icon' => 'globe', 'label' => 'Shared courses'],

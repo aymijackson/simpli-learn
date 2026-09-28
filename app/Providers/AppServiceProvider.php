@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Http\Request;
+use Illuminate\Cache\RateLimiting\Limit;
 use App\Listeners\RecordAuthActivity;
 use App\Models\User;
 use App\Support\Tenancy\Tenancy;
@@ -27,6 +30,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::subscribe(RecordAuthActivity::class);
+
+        // The public contact form: a few messages per visitor, then a pause.
+        RateLimiter::for('contact', fn (Request $request) => [
+            Limit::perMinutes(10, 3)->by('contact:'.$request->ip()),
+            Limit::perDay(10)->by('contact-day:'.$request->ip()),
+        ]);
 
         // Adds the "microsoft" driver to Socialite.
         Event::listen(SocialiteWasCalled::class, [MicrosoftExtendSocialite::class, 'handle']);

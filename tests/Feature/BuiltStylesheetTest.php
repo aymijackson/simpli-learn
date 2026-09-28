@@ -31,6 +31,10 @@ class BuiltStylesheetTest extends TestCase
             foreach ($matches[1] as $list) {
                 $list = preg_replace('/\{\{.*?\}\}|\{!!.*?!!\}|@\w+(\(.*?\))?/', ' ', $list);
                 foreach (preg_split('/\s+/', trim($list)) as $class) {
+                    // Hooks for third-party scripts, not styles (Cloudflare Turnstile finds .cf-turnstile).
+                    if (in_array($class, ['cf-turnstile'], true)) {
+                        continue;
+                    }
                     if ($class === '' || str_contains($class, '$') || str_contains($class, "'")) {
                         continue;
                     }
