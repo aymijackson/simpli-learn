@@ -1,8 +1,9 @@
 // Loaded as <script type="module">; pdf.js wraps the cross-origin worker in
 // a same-origin blob itself, so it can come straight from the CDN.
-import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.1.200/build/pdf.min.mjs';
+// pdf.js 6.1.200, served from our own public/vendor copy (no third-party CDN).
+import * as pdfjsLib from '../vendor/pdfjs-6.1.200/pdf.min.js';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.1.200/build/pdf.worker.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('../vendor/pdfjs-6.1.200/pdf.worker.min.js', import.meta.url).href;
 
 function debounce(fn, delayMs) {
     let timeout;
@@ -50,7 +51,7 @@ async function initPdfReader(container) {
 
         await page.render({ canvasContext: context, viewport }).promise;
 
-        pageIndicator.textContent = `Page ${pageNumber} of ${pdf.numPages}`;
+        pageIndicator.textContent = (container.dataset.pageLabel || 'Page :page of :total').replace(':page', pageNumber).replace(':total', pdf.numPages);
         prevButton.disabled = pageNumber <= 1;
         nextButton.disabled = pageNumber >= pdf.numPages;
     }
@@ -77,6 +78,6 @@ async function initPdfReader(container) {
 document.querySelectorAll('[data-pdf-reader]').forEach((container) => {
     initPdfReader(container).catch((error) => {
         console.error('Failed to load PDF', error);
-        container.textContent = 'This PDF could not be loaded.';
+        container.textContent = container.dataset.loadError || 'This PDF could not be loaded.';
     });
 });

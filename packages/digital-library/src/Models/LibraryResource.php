@@ -88,6 +88,13 @@ class LibraryResource extends Model
         return $this->ratings()->where('user_id', $user->id)->first();
     }
 
+    /** People rate what they could actually use: current access, or a past loan. */
+    public function canBeRatedBy(User $user): bool
+    {
+        return $this->is_published
+            && ($this->isAccessibleTo($user) || $this->checkouts()->where('user_id', $user->id)->exists());
+    }
+
     public function isFavoritedBy(User $user): bool
     {
         return $this->favorites()->where('user_id', $user->id)->exists();

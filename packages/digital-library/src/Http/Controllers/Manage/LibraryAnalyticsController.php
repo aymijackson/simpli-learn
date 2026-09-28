@@ -23,7 +23,10 @@ class LibraryAnalyticsController extends Controller
             1
         );
 
-        $totalRevenue = LibraryResourcePurchase::query()->where('status', 'paid')->sum('amount');
+        // Per currency — adding NGN to USD would be meaningless.
+        $revenueByCurrency = LibraryResourcePurchase::query()->where('status', 'paid')
+            ->selectRaw('currency, SUM(amount) as total')->groupBy('currency')->orderBy('currency')
+            ->pluck('total', 'currency');
 
         $mostBorrowed = LibraryResource::withCount('checkouts')
             ->orderByDesc('checkouts_count')
@@ -35,14 +38,15 @@ class LibraryAnalyticsController extends Controller
             'activeCount' => $activeCount,
             'overdueCount' => $overdueCount,
             'avgDurationDays' => $avgDurationDays,
-            'totalRevenue' => $totalRevenue,
+            'revenueByCurrency' => $revenueByCurrency,
             'mostBorrowed' => $mostBorrowed,
         ]);
     }
 
     public function exportCsv(): StreamedResponse
     {
-        $resources = LibraryResource::withCount('checkouts')->orderByDesc('checkouts_count')->get();
+        $resources = LibraryResource::withCount(['checkouts', 'checkouts as active_checkouts_count' => fn ($query) => $query->whereNull('returned_at')])
+            ->orderByDesc('checkouts_count')->get();
 
         return response()->streamDownload(function () use ($resources) {
             $handle = fopen('php://output', 'w');
@@ -53,7 +57,7 @@ class LibraryAnalyticsController extends Controller
                     $resource->title,
                     $resource->category,
                     $resource->checkouts_count,
-                    $resource->activeCheckoutsCount(),
+                    $resource->active_checkouts_count,
                     $resource->total_copies ?? 'unlimited',
                 ]);
             }

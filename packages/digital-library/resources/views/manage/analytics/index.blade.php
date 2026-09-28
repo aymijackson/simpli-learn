@@ -25,7 +25,15 @@
     </div>
 
     <x-card class="mb-8 text-center">
-        <p class="text-2xl font-bold text-slate-900">{{ number_format($totalRevenue, 2) }}</p>
+        @if ($revenueByCurrency->isEmpty())
+            <p class="text-2xl font-bold text-slate-900">0.00</p>
+        @else
+            <div class="flex flex-wrap items-baseline justify-center gap-x-6 gap-y-1">
+                @foreach ($revenueByCurrency as $currency => $total)
+                    <p class="text-2xl font-bold text-slate-900">{{ $currency }} {{ number_format((float) $total, 2) }}</p>
+                @endforeach
+            </div>
+        @endif
         <p class="text-xs text-slate-500">Total resource purchase revenue</p>
     </x-card>
 

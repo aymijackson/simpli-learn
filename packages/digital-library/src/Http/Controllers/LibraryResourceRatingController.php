@@ -11,6 +11,8 @@ class LibraryResourceRatingController extends Controller
 {
     public function store(Request $request, string $tenant, LibraryResource $resource): RedirectResponse
     {
+        abort_unless($resource->canBeRatedBy($request->user()), 403);
+
         $validated = $request->validate([
             'stars' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['nullable', 'string', 'max:2000'],

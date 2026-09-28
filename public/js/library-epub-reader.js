@@ -50,6 +50,6 @@ async function initEpubReader(container) {
 document.querySelectorAll('[data-epub-reader]').forEach((container) => {
     initEpubReader(container).catch((error) => {
         console.error('Failed to load EPUB', error);
-        container.textContent = 'This EPUB could not be loaded.';
+        container.textContent = container.dataset.loadError || 'This EPUB could not be loaded.';
     });
 });

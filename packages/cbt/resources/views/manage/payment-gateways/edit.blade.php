@@ -25,8 +25,11 @@
                     @if ($gateway->value !== 'bank_transfer')
                         <div class="grid gap-4 sm:grid-cols-3">
                             <x-input type="text" name="public_key" label="Public key" value="{{ $credential?->credentials['public_key'] ?? '' }}" />
-                            <x-input type="password" name="secret_key" label="Secret key" value="{{ $credential?->credentials['secret_key'] ?? '' }}" />
-                            <x-input type="password" name="webhook_secret" label="Webhook secret" value="{{ $credential?->credentials['webhook_secret'] ?? '' }}" />
+                            <x-input type="password" name="secret_key" label="Secret key" autocomplete="new-password" :placeholder="\App\Support\GatewayCredentials::hasSecret($credential?->credentials, 'secret_key') ? 'Saved — leave blank to keep it' : 'Not set'" />
+                            <x-input type="password" name="webhook_secret" label="Webhook secret" autocomplete="new-password" :placeholder="\App\Support\GatewayCredentials::hasSecret($credential?->credentials, 'webhook_secret') ? 'Saved — leave blank to keep it' : 'Not set'" />
+                            @if (\App\Support\GatewayCredentials::hasSecret($credential?->credentials, 'secret_key') || \App\Support\GatewayCredentials::hasSecret($credential?->credentials, 'webhook_secret'))
+                                <label class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="clear_secrets" value="1" class="rounded border-slate-300 text-brand-600 focus:ring-brand-600"> Remove the saved secret keys</label>
+                            @endif
                         </div>
                     @else
                         <p class="text-xs text-slate-500">Bank account details are configured on the <a href="{{ route('cbt.manage.certificates.settings.edit') }}" class="underline">certificate settings</a> page.</p>

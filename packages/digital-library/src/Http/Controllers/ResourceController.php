@@ -17,12 +17,14 @@ class ResourceController extends Controller
     {
         $query = LibraryResource::query()->where('is_published', true);
 
-        if ($search = $request->string('q')->trim()->value()) {
-            $query->where(function ($inner) use ($search) {
-                $inner->where('title', 'like', "%{$search}%")
-                    ->orWhere('author', 'like', "%{$search}%")
-                    ->orWhere('publisher', 'like', "%{$search}%")
-                    ->orWhere('isbn', 'like', "%{$search}%");
+        if ($search = $request->string('q')->trim()->limit(100, '')->value()) {
+            // % and _ are matched literally, not as wildcards.
+            // The explicit ESCAPE makes this work the same on MariaDB and SQLite.
+            $like = '%'.addcslashes($search, '%_\\').'%';
+            $query->where(function ($inner) use ($like) {
+                foreach (['title', 'author', 'publisher', 'isbn'] as $column) {
+                    $inner->orWhereRaw("{$column} like ? escape ?", [$like, '\\']);
+                }
             });
         }
 
@@ -42,7 +44,7 @@ class ResourceController extends Controller
         };
 
         return view('library::resources.index', [
-            'resources' => $query->with('tags')->get(),
+            'resources' => $query->with('tags')->paginate(24)->withQueryString(),
             'categories' => LibraryResource::query()->where('is_published', true)->distinct()->orderBy('category')->pluck('category'),
             'tags' => ResourceTag::query()->whereHas('resources', fn ($q) => $q->where('is_published', true))->orderBy('name')->get(),
             'search' => $search ?? '',

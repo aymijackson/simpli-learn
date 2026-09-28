@@ -5,7 +5,7 @@
 
 <x-app-layout :title="$resource->title">
     <nav class="mb-8 flex items-center gap-2 text-sm text-slate-500">
-        <a href="{{ route('library.resources.index') }}" class="hover:text-slate-800">Library</a>
+        <a href="{{ route('library.resources.index') }}" class="hover:text-slate-800">{{ __('Library') }}</a>
         <x-icon name="chevron-right" class="h-4 w-4 text-slate-300" />
         @if ($resource->category)
             <a href="{{ route('library.resources.index', ['category' => $resource->category]) }}" class="hover:text-slate-800">{{ $resource->category }}</a>
@@ -33,63 +33,63 @@
                         {{-- A paid resource is bought first, whether or not it is also lent out. --}}
                         <p class="text-2xl font-bold text-slate-900">{{ $resource->currency }} {{ number_format($resource->price, 2) }}</p>
                         @if ($pendingPurchase?->gateway?->value === 'bank_transfer' && ! empty($pendingPurchase->metadata['reported_paid_at']))
-                            <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">Your bank transfer is awaiting confirmation by the organization.</p>
+                            <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">{{ __('Your bank transfer is awaiting confirmation by the organization.') }}</p>
                         @else
                             <x-button :href="route('library.resources.purchase.create', $resource)" class="w-full">
-                                Buy for {{ number_format($resource->price, 2) }} {{ $resource->currency }}
+                                {{ __('Buy for :price :currency', ['price' => number_format($resource->price, 2), 'currency' => $resource->currency]) }}
                             </x-button>
                         @endif
                     @else
                         @if ($resource->external_url && $hasAccess)
                             <x-button :href="$resource->external_url" target="_blank" rel="noopener noreferrer" class="w-full" icon-right="external">
-                                Open resource
+                                {{ __('Open resource') }}
                             </x-button>
                         @endif
 
                         @if ($resource->requires_checkout)
                             @if ($myCheckout)
                                 @if ($myCheckout->isOverdue())
-                                    <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">Your loan ended on {{ $myCheckout->due_at->format('M j, Y') }}. It will be returned automatically.</p>
+                                    <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">{{ __('Your loan ended on :due_at. It will be returned automatically.', ['due_at' => $myCheckout->due_at->translatedFormat('M j, Y')]) }}</p>
                                 @else
-                                    <p class="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">You have this checked out &mdash; due {{ $myCheckout->due_at->format('M j, Y') }}.</p>
+                                    <p class="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">{{ __('You have this checked out — due :due_at.', ['due_at' => $myCheckout->due_at->translatedFormat('M j, Y')]) }}</p>
                                 @endif
                                 <form method="POST" action="{{ route('library.checkouts.return', $myCheckout) }}">
                                     @csrf
-                                    <x-button type="submit" variant="secondary" class="w-full">Return</x-button>
+                                    <x-button type="submit" variant="secondary" class="w-full">{{ __('Return') }}</x-button>
                                 </form>
                             @elseif ($myHold && $myHold->hasLiveOffer())
-                                <p class="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">A copy is ready for you &mdash; claim by {{ $myHold->expires_at->format('M j, Y') }}.</p>
+                                <p class="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{{ __('A copy is ready for you — claim by :expires_at.', ['expires_at' => $myHold->expires_at->translatedFormat('M j, Y')]) }}</p>
                                 <form method="POST" action="{{ route('library.holds.claim', $myHold) }}">
                                     @csrf
-                                    <x-button type="submit" class="w-full">Claim your copy</x-button>
+                                    <x-button type="submit" class="w-full">{{ __('Claim your copy') }}</x-button>
                                 </form>
                                 <form method="POST" action="{{ route('library.holds.destroy', $myHold) }}">
                                     @csrf
                                     @method('DELETE')
-                                    <x-button type="submit" variant="ghost" size="sm" class="w-full">No thanks, pass it on</x-button>
+                                    <x-button type="submit" variant="ghost" size="sm" class="w-full">{{ __('No thanks, pass it on') }}</x-button>
                                 </form>
                             @elseif ($myHold)
-                                <p class="rounded-lg bg-slate-50 p-3 text-center text-sm text-slate-600">You're #{{ $myHold->position() }} on the waitlist. We'll let you know when a copy is ready.</p>
+                                <p class="rounded-lg bg-slate-50 p-3 text-center text-sm text-slate-600">{{ __('You\'re #:position on the waitlist. We\'ll let you know when a copy is ready.', ['position' => $myHold->position()]) }}</p>
                                 <form method="POST" action="{{ route('library.holds.destroy', $myHold) }}">
                                     @csrf
                                     @method('DELETE')
-                                    <x-button type="submit" variant="ghost" size="sm" class="w-full">Leave the waitlist</x-button>
+                                    <x-button type="submit" variant="ghost" size="sm" class="w-full">{{ __('Leave the waitlist') }}</x-button>
                                 </form>
                             @elseif (! $hasAccess)
                                 <form method="POST" action="{{ route('library.resources.borrow', $resource) }}">
                                     @csrf
                                     <x-button type="submit" class="w-full" icon="bookmark">
-                                        {{ $resource->hasCopyAvailable() ? 'Borrow' : 'Join waitlist' }}
+                                        {{ $resource->hasCopyAvailable() ? __('Borrow') : __('Join waitlist') }}
                                     </x-button>
                                 </form>
                                 @if (! $resource->hasCopyAvailable())
-                                    <p class="text-center text-xs text-slate-500">No copies available right now.</p>
+                                    <p class="text-center text-xs text-slate-500">{{ __('No copies available right now.') }}</p>
                                 @endif
                             @endif
                         @endif
 
                         @if ($resource->isPaid() && ! $resource->requires_checkout && $resource->isPurchasedBy(auth()->user()))
-                            <p class="flex items-center gap-2 text-sm text-emerald-700"><x-icon name="check" class="h-4 w-4" /> You own this resource.</p>
+                            <p class="flex items-center gap-2 text-sm text-emerald-700"><x-icon name="check" class="h-4 w-4" /> {{ __('You own this resource.') }}</p>
                         @endif
                     @endif
                 </x-card>
@@ -103,7 +103,7 @@
                     <div>
                         <h1 class="font-display text-3xl leading-tight font-bold tracking-tight text-slate-900 sm:text-4xl">{{ $resource->title }}</h1>
                         @if ($resource->author)
-                            <p class="mt-2 text-base text-slate-600">by <span class="font-medium text-slate-800">{{ $resource->author }}</span></p>
+                            <p class="mt-2 text-base text-slate-600">{!! __('by :author', ['author' => '<span class="font-medium text-slate-800">'.e($resource->author).'</span>']) !!}</p>
                         @endif
                     </div>
                     <form method="POST" action="{{ $isFavorited ? route('library.favorites.destroy', $resource) : route('library.favorites.store', $resource) }}">
@@ -113,7 +113,7 @@
                         @endif
                         <button type="submit" class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium {{ $isFavorited ? 'bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200' : 'bg-white text-slate-600 ring-1 ring-inset ring-slate-300 hover:bg-slate-50' }}">
                             <x-icon name="heart" class="h-4 w-4 {{ $isFavorited ? 'fill-rose-500 text-rose-500' : '' }}" />
-                            {{ $isFavorited ? 'Favorited' : 'Favorite' }}
+                            {{ $isFavorited ? __('Favorited') : __('Favorite') }}
                         </button>
                     </form>
                 </div>
@@ -129,7 +129,7 @@
                         <span class="inline-flex items-center gap-1 text-sm text-slate-600">
                             <span class="text-amber-400">★</span>
                             <span class="font-semibold text-slate-900">{{ $averageRating }}</span>
-                            <span class="text-slate-500">({{ $ratingsCount }} {{ \Illuminate\Support\Str::plural('rating', $ratingsCount) }})</span>
+                            <span class="text-slate-500">({{ $ratingsCount }} {{ trans_choice('rating|ratings', $ratingsCount) }})</span>
                         </span>
                     @endif
                 </div>
@@ -138,33 +138,33 @@
             @if ($resource->isbn || $resource->publisher || $resource->publication_year || $resource->language)
                 <dl class="grid grid-cols-2 gap-4 rounded-2xl bg-white p-5 ring-1 ring-slate-200/80 sm:grid-cols-4">
                     @if ($resource->publisher)
-                        <div><dt class="text-xs text-slate-500">Publisher</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->publisher }}</dd></div>
+                        <div><dt class="text-xs text-slate-500">{{ __('Publisher') }}</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->publisher }}</dd></div>
                     @endif
                     @if ($resource->publication_year)
-                        <div><dt class="text-xs text-slate-500">Year</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->publication_year }}</dd></div>
+                        <div><dt class="text-xs text-slate-500">{{ __('Year') }}</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->publication_year }}</dd></div>
                     @endif
                     @if ($resource->language)
-                        <div><dt class="text-xs text-slate-500">Language</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->language }}</dd></div>
+                        <div><dt class="text-xs text-slate-500">{{ __('Language') }}</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->language }}</dd></div>
                     @endif
                     @if ($resource->isbn)
-                        <div><dt class="text-xs text-slate-500">ISBN</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->isbn }}</dd></div>
+                        <div><dt class="text-xs text-slate-500">{{ __('ISBN') }}</dt><dd class="mt-0.5 text-sm font-medium text-slate-800">{{ $resource->isbn }}</dd></div>
                     @endif
                 </dl>
             @endif
 
             @if ($resource->description)
                 <section>
-                    <h2 class="text-lg font-bold text-slate-900">Description</h2>
+                    <h2 class="text-lg font-bold text-slate-900">{{ __('Description') }}</h2>
                     <div class="rich-text mt-3 text-[15px] text-slate-700">{!! $resource->description !!}</div>
                 </section>
             @endif
 
             @if ($resource->files->isNotEmpty())
                 <section>
-                    <h2 class="text-lg font-bold text-slate-900">Files</h2>
+                    <h2 class="text-lg font-bold text-slate-900">{{ __('Files') }}</h2>
                     @if (! $hasAccess)
                         <p class="mt-3 flex items-center gap-2 rounded-xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-200">
-                            <x-icon name="lock" class="h-4 w-4" /> {{ $needsPurchase ? 'Buy this resource to access its files.' : 'Borrow this resource to access its files.' }}
+                            <x-icon name="lock" class="h-4 w-4" /> {{ $needsPurchase ? __('Buy this resource to access its files.') : __('Borrow this resource to access its files.') }}
                         </p>
                     @else
                         <div class="mt-3 divide-y divide-slate-100 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/80">
@@ -176,16 +176,16 @@
                                     </div>
                                     <div class="flex flex-wrap items-center gap-2">
                                         @if (in_array($file->format->value, ['pdf', 'epub']))
-                                            <x-button :href="route('library.resources.files.read', [$resource, $file])" size="sm" icon="book-open">Read</x-button>
+                                            <x-button :href="route('library.resources.files.read', [$resource, $file])" size="sm" icon="book-open">{{ __('Read') }}</x-button>
                                             @if ($file->access_level->value === 'open')
-                                                <x-button :href="route('library.resources.files.download', [$resource, $file])" variant="secondary" size="sm" icon="download">Download</x-button>
+                                                <x-button :href="route('library.resources.files.download', [$resource, $file])" variant="secondary" size="sm" icon="download">{{ __('Download') }}</x-button>
                                             @endif
                                         @elseif ($file->access_level->value === 'open')
-                                            <x-button :href="route('library.resources.files.download', [$resource, $file])" variant="secondary" size="sm" icon="download">Download</x-button>
+                                            <x-button :href="route('library.resources.files.download', [$resource, $file])" variant="secondary" size="sm" icon="download">{{ __('Download') }}</x-button>
                                         @elseif ($file->format->value === 'audio')
                                             <audio controls preload="none" class="w-full max-w-sm" src="{{ route('library.resources.files.stream', [$resource, $file]) }}"></audio>
                                         @else
-                                            <x-button :href="route('library.resources.files.stream', [$resource, $file])" target="_blank" variant="secondary" size="sm" icon="eye">View</x-button>
+                                            <x-button :href="route('library.resources.files.stream', [$resource, $file])" target="_blank" variant="secondary" size="sm" icon="eye">{{ __('View') }}</x-button>
                                         @endif
                                     </div>
                                 </div>
@@ -195,23 +195,26 @@
                 </section>
             @endif
 
-            <section class="rounded-2xl bg-white p-6 ring-1 ring-slate-200/80">
-                <h2 class="mb-3 text-base font-semibold text-slate-900">{{ $myRating ? 'Update your rating' : 'Rate this resource' }}</h2>
-                <form method="POST" action="{{ route('library.resources.ratings.store', $resource) }}" class="space-y-3">
-                    @csrf
-                    <div class="flex gap-1">
-                        @for ($i = 1; $i <= 5; $i++)
-                            <label class="cursor-pointer text-3xl text-amber-400">
-                                <input type="radio" name="stars" value="{{ $i }}" class="sr-only peer" @checked(old('stars', $myRating?->stars) == $i) required>
-                                <span class="peer-checked:inline hidden">★</span>
-                                <span class="peer-checked:hidden">☆</span>
-                            </label>
-                        @endfor
-                    </div>
-                    <textarea name="comment" rows="3" placeholder="Optional comment" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">{{ old('comment', $myRating?->comment) }}</textarea>
-                    <x-button type="submit" variant="secondary">{{ $myRating ? 'Update rating' : 'Submit rating' }}</x-button>
-                </form>
-            </section>
+            @if ($resource->canBeRatedBy(auth()->user()))
+                <section class="rounded-2xl bg-white p-6 ring-1 ring-slate-200/80">
+                    <h2 id="rate-heading" class="mb-3 text-base font-semibold text-slate-900">{{ $myRating ? __('Update your rating') : __('Rate this resource') }}</h2>
+                    <form method="POST" action="{{ route('library.resources.ratings.store', $resource) }}" class="space-y-3">
+                        @csrf
+                        <fieldset class="flex gap-1" aria-labelledby="rate-heading">
+                            @for ($i = 1; $i <= 5; $i++)
+                                <label class="cursor-pointer text-3xl text-amber-400">
+                                    <input type="radio" name="stars" value="{{ $i }}" class="sr-only peer" @checked(old('stars', $myRating?->stars) == $i) required>
+                                    <span class="sr-only">{{ trans_choice(':count star|:count stars', $i) }}</span>
+                                    <span class="peer-checked:inline hidden" aria-hidden="true">★</span>
+                                    <span class="peer-checked:hidden" aria-hidden="true">☆</span>
+                                </label>
+                            @endfor
+                        </fieldset>
+                        <textarea name="comment" rows="3" aria-label="{{ __('Optional comment') }}" placeholder="{{ __('Optional comment') }}" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">{{ old('comment', $myRating?->comment) }}</textarea>
+                        <x-button type="submit" variant="secondary">{{ $myRating ? __('Update rating') : __('Submit rating') }}</x-button>
+                    </form>
+                </section>
+            @endif
         </div>
     </div>
 </x-app-layout>

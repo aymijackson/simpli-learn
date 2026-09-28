@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class LibraryResourceFileController extends Controller
 {
@@ -28,11 +29,11 @@ class LibraryResourceFileController extends Controller
         $accessLevel = LibraryFileAccessLevel::from($validated['access_level']);
         $file = $request->file('file');
 
-        abort_unless(
-            in_array(strtolower($file->getClientOriginalExtension()), $format->allowedExtensions(), true),
-            422,
-            "That file type isn't allowed for {$format->label()} files."
-        );
+        if (! in_array(strtolower($file->getClientOriginalExtension()), $format->allowedExtensions(), true)) {
+            throw ValidationException::withMessages([
+                'file' => "That file type isn't allowed for {$format->label()} files. Allowed: ".implode(', ', $format->allowedExtensions()).'.',
+            ]);
+        }
 
         // Private storage for every access level: files are only ever served
         // through the app, which re-checks access on each request.

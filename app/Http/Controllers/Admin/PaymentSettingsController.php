@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Support\GatewayCredentials;
 use App\Enums\PlatformPaymentMode;
 use App\Http\Controllers\Controller;
 use App\Models\PlatformPaymentSettings;
@@ -58,19 +59,15 @@ class PaymentSettingsController extends Controller
             'public_key' => ['nullable', 'string'],
             'secret_key' => ['nullable', 'string'],
             'webhook_secret' => ['nullable', 'string'],
+            'clear_secrets' => ['nullable', 'boolean'],
         ]);
 
-        PaymentGatewayCredential::updateOrCreate(
-            ['tenant_id' => null, 'gateway' => $gatewayEnum->value],
-            [
-                'is_enabled' => $request->boolean('is_enabled'),
-                'credentials' => array_filter([
-                    'public_key' => $validated['public_key'] ?? null,
-                    'secret_key' => $validated['secret_key'] ?? null,
-                    'webhook_secret' => $validated['webhook_secret'] ?? null,
-                ]),
-            ]
-        );
+        // Secrets are never sent back to the form; a blank one keeps what's saved.
+        $credential = PaymentGatewayCredential::firstOrNew(['tenant_id' => null, 'gateway' => $gatewayEnum->value]);
+        $credential->fill([
+            'is_enabled' => $request->boolean('is_enabled'),
+            'credentials' => GatewayCredentials::merge($credential->credentials, $request),
+        ])->save();
 
         ActivityLog::record('settings.platform_gateway', 'Updated the platform '.$gatewayEnum->label().' settings');
 

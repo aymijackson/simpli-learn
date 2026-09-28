@@ -14,12 +14,15 @@ class LibraryFavoriteController extends Controller
     public function index(Request $request): View
     {
         return view('library::favorites.index', [
-            'favorites' => LibraryFavorite::with('resource')->where('user_id', $request->user()->id)->latest()->get(),
+            'favorites' => LibraryFavorite::with('resource')->where('user_id', $request->user()->id)
+                ->whereHas('resource', fn ($query) => $query->where('is_published', true))->latest()->get(),
         ]);
     }
 
     public function store(Request $request, string $tenant, LibraryResource $resource): RedirectResponse
     {
+        abort_unless($resource->is_published, 404);
+
         $resource->favorites()->firstOrCreate(['user_id' => $request->user()->id]);
 
         return back()->with('status', __('Added to favorites.'));

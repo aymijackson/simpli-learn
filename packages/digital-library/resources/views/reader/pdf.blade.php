@@ -5,15 +5,17 @@
 
     <div
         data-pdf-reader
+        data-page-label="{{ __('Page :page of :total') }}"
+        data-load-error="{{ __('This PDF could not be loaded.') }}"
         data-stream-url="{{ route('library.resources.files.stream', [$resource, $file]) }}"
         data-progress-url="{{ route('library.resources.files.progress', [$resource, $file]) }}"
         data-csrf-token="{{ csrf_token() }}"
         data-initial-page="{{ $initialPosition ?? '1' }}"
     >
         <div class="mb-4 flex items-center justify-between">
-            <button type="button" data-pdf-prev class="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 disabled:opacity-50">&larr; Prev</button>
-            <span data-pdf-page-indicator class="text-sm text-slate-500">Loading&hellip;</span>
-            <button type="button" data-pdf-next class="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 disabled:opacity-50">Next &rarr;</button>
+            <button type="button" data-pdf-prev class="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 disabled:opacity-50">{{ __('← Prev') }}</button>
+            <span data-pdf-page-indicator class="text-sm text-slate-500">{{ __('Loading…') }}</span>
+            <button type="button" data-pdf-next class="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 disabled:opacity-50">{{ __('Next →') }}</button>
         </div>
         <div class="flex justify-center overflow-auto rounded-lg bg-slate-100 p-4">
             <canvas data-pdf-canvas></canvas>

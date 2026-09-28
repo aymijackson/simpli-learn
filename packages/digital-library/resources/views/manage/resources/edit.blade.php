@@ -73,7 +73,10 @@
                     @endforeach
                 </select>
             </div>
-            <input type="file" name="file" required class="block w-full text-sm text-slate-900 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-100">
+            <input type="file" name="file" required aria-label="File to upload" @error('file') aria-invalid="true" aria-describedby="file-error" @enderror class="block w-full text-sm text-slate-900 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-100">
+            @error('file')
+                <p id="file-error" class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+            @enderror
             <x-button type="submit" variant="secondary">Upload</x-button>
         </form>
         <p class="mt-2 text-xs text-slate-500">PDF/EPUB get an embedded in-platform reader; audio gets a player; other files are viewable/downloadable per their access level. Max 500MB.</p>
