@@ -1,5 +1,5 @@
 // Plain script: epub.js (window.ePub) and its JSZip dependency are loaded
-// from the CDN just before this file — see reader/epub.blade.php.
+// from public/vendor just before this file — see reader/epub.blade.php.
 
 function debounce(fn, delayMs) {
     let timeout;
@@ -23,6 +23,11 @@ async function initEpubReader(container) {
     // automatically, no special credentials option is needed.
     const book = window.ePub(streamUrl, { openAs: 'epub' });
     const rendition = book.renderTo(viewer, { width: '100%', height: '75vh' });
+
+    // Secure files: chapters render in their own iframe, so block copying there too.
+    if (viewer.hasAttribute('data-protected')) {
+        rendition.hooks.content.register((contents) => window.libraryProtect?.protectDocument(contents.document));
+    }
 
     const saveProgress = debounce((cfi) => {
         fetch(progressUrl, {

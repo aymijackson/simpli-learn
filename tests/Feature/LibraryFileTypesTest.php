@@ -253,4 +253,24 @@ class LibraryFileTypesTest extends TestCase
 
         $this->artisan('library:convert-documents')->expectsOutputToContain('LibreOffice was not found')->assertFailed();
     }
+
+    public function test_secure_files_are_watermarked_with_the_viewers_name_and_copy_protected(): void
+    {
+        $this->converter(true);
+        $this->member->update(['name' => 'Ada Learner', 'email' => 'ada@example.com']);
+        foreach (['paper.pdf' => 'data-canvas-watermark="Ada Learner · ada@example.com', 'photo.png' => 'data-watermark="Ada Learner · ada@example.com'] as $name => $marker) {
+            $this->upload(UploadedFile::fake()->create($name, 20));
+            $this->actingAs($this->member)->get($this->url($this->lastFile(), 'read'))
+                ->assertOk()->assertSee($marker, false)->assertSee('data-protected', false)
+                ->assertSee('js/library-protect.js', false)->assertSee('This document can only be viewed on the platform.');
+        }
+    }
+
+    public function test_open_files_are_not_watermarked(): void
+    {
+        $this->upload(UploadedFile::fake()->create('paper.pdf', 20), 'open');
+
+        $this->actingAs($this->member)->get($this->url($this->lastFile(), 'read'))
+            ->assertOk()->assertDontSee('data-protected', false)->assertDontSee('library-protect.js', false);
+    }
 }

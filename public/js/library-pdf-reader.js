@@ -1,5 +1,4 @@
-// Loaded as <script type="module">; pdf.js wraps the cross-origin worker in
-// a same-origin blob itself, so it can come straight from the CDN.
+// Loaded as <script type="module">.
 // pdf.js 6.1.200, served from our own public/vendor copy (no third-party CDN).
 import * as pdfjsLib from '../vendor/pdfjs-6.1.200/pdf.min.js';
 
@@ -50,6 +49,8 @@ async function initPdfReader(container) {
         canvas.height = viewport.height;
 
         await page.render({ canvasContext: context, viewport }).promise;
+        // Secure files: the viewer's name goes into the page image itself.
+        window.libraryProtect?.stampCanvas(canvas, container.dataset.canvasWatermark);
 
         pageIndicator.textContent = (container.dataset.pageLabel || 'Page :page of :total').replace(':page', pageNumber).replace(':total', pdf.numPages);
         prevButton.disabled = pageNumber <= 1;

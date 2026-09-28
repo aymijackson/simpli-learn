@@ -1,3 +1,8 @@
+@php
+    // Secure files get the copy deterrents and a watermark with the viewer's name.
+    $protected = $file->access_level->value === 'secure';
+    $watermark = $protected ? auth()->user()->name.' · '.auth()->user()->email.' · '.now()->format('Y-m-d') : null;
+@endphp
 <x-app-layout :title="$file->title">
     <a href="{{ route('library.resources.show', $resource) }}" class="mb-6 inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-700">
         &larr; {{ $resource->title }}
@@ -5,6 +10,7 @@
 
     <div
         data-pdf-reader
+        @if ($protected) data-protected data-canvas-watermark="{{ $watermark }}" class="print:hidden" @endif
         data-page-label="{{ __('Page :page of :total') }}"
         data-load-error="{{ __('This PDF could not be loaded.') }}"
         data-stream-url="{{ route('library.resources.files.stream', [$resource, $file]) }}"
@@ -22,7 +28,14 @@
         </div>
     </div>
 
+    @if ($protected)
+        <p class="hidden rounded-lg bg-slate-100 p-6 text-center text-sm text-slate-600 print:block">{{ __('This document can only be viewed on the platform.') }}</p>
+    @endif
+
     @push('scripts')
+        @if ($protected)
+            <script src="{{ asset('js/library-protect.js') }}?v={{ filemtime(public_path('js/library-protect.js')) }}"></script>
+        @endif
         <script type="module" src="{{ asset('js/library-pdf-reader.js') }}?v={{ filemtime(public_path('js/library-pdf-reader.js')) }}"></script>
     @endpush
 </x-app-layout>
