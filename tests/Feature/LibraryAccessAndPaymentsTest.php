@@ -186,7 +186,7 @@ class LibraryAccessAndPaymentsTest extends TestCase
         $this->resource();
 
         $this->actingAs($this->owner)->post('/t/acme/library/manage/resources/rare-book/files', [
-            'title' => 'Notes', 'format' => 'file', 'access_level' => 'open',
+            'title' => 'Notes', 'format' => 'text', 'access_level' => 'open',
             'file' => \Illuminate\Http\UploadedFile::fake()->create('notes.txt', 10, 'text/plain'),
         ])->assertRedirect();
 

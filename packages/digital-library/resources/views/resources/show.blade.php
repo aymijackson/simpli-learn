@@ -171,21 +171,20 @@
                             @foreach ($resource->files as $file)
                                 <div class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                                     <div class="flex items-center gap-3">
-                                        <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-[11px] font-bold uppercase text-slate-600">{{ $file->format->value }}</span>
+                                        <span class="flex h-10 w-12 items-center justify-center rounded-lg bg-slate-100 text-[10px] font-bold uppercase text-slate-600">{{ $file->format->badge() }}</span>
                                         <p class="text-sm font-medium text-slate-900">{{ $file->title }}</p>
                                     </div>
                                     <div class="flex flex-wrap items-center gap-2">
-                                        @if (in_array($file->format->value, ['pdf', 'epub']))
-                                            <x-button :href="route('library.resources.files.read', [$resource, $file])" size="sm" icon="book-open">{{ __('Read') }}</x-button>
-                                            @if ($file->access_level->value === 'open')
-                                                <x-button :href="route('library.resources.files.download', [$resource, $file])" variant="secondary" size="sm" icon="download">{{ __('Download') }}</x-button>
-                                            @endif
-                                        @elseif ($file->access_level->value === 'open')
+                                        @php($viewer = $file->viewer())
+                                        @if ($viewer)
+                                            <x-button :href="route('library.resources.files.read', [$resource, $file])" size="sm" :icon="in_array($viewer, ['pdf', 'epub', 'text']) ? 'book-open' : 'eye'">
+                                                {{ match ($viewer) { 'pdf', 'epub', 'text' => __('Read'), 'video' => __('Watch'), 'audio' => __('Listen'), default => __('View') } }}
+                                            </x-button>
+                                        @endif
+                                        @if ($file->access_level->value === 'open')
                                             <x-button :href="route('library.resources.files.download', [$resource, $file])" variant="secondary" size="sm" icon="download">{{ __('Download') }}</x-button>
-                                        @elseif ($file->format->value === 'audio')
-                                            <audio controls preload="none" class="w-full max-w-sm" src="{{ route('library.resources.files.stream', [$resource, $file]) }}"></audio>
-                                        @else
-                                            <x-button :href="route('library.resources.files.stream', [$resource, $file])" target="_blank" variant="secondary" size="sm" icon="eye">{{ __('View') }}</x-button>
+                                        @elseif (! $viewer)
+                                            <span class="text-xs text-slate-500">{{ __('Not viewable online') }}</span>
                                         @endif
                                     </div>
                                 </div>

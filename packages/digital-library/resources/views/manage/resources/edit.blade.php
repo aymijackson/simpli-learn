@@ -60,6 +60,7 @@
             <div>
                 <label class="mb-1.5 block text-sm font-medium text-slate-700">Format</label>
                 <select aria-label="Format" name="format" class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                    <option value="auto" selected>Automatic, from the file</option>
                     @foreach (\Elibrary\Library\Enums\LibraryFileFormat::cases() as $format)
                         <option value="{{ $format->value }}">{{ $format->label() }}</option>
                     @endforeach
@@ -79,6 +80,14 @@
             @enderror
             <x-button type="submit" variant="secondary">Upload</x-button>
         </form>
-        <p class="mt-2 text-xs text-slate-500">PDF/EPUB get an embedded in-platform reader; audio gets a player; other files are viewable/downloadable per their access level. Max 500MB.</p>
+        @php($canConvert = app(\Elibrary\Library\Documents\DocumentConverter::class)->isAvailable())
+        <div class="mt-3 space-y-1 text-xs text-slate-500">
+            <p>Opens inside the platform, after an access check: PDF, EPUB, images (JPG, PNG, GIF, WebP), video (MP4, WebM, MOV), audio (MP3, M4A, WAV, OGG) and text files. “Secure” files can only be viewed there; “Open” files can also be downloaded. Zip files are download only. Max 500MB.</p>
+            @if ($canConvert)
+                <p>Word, Excel and PowerPoint files are converted to PDF on upload so they can be viewed securely.</p>
+            @else
+                <p class="text-amber-700">This server can’t convert Word, Excel or PowerPoint files, so they can only be shared as “Open” downloads. To show one securely, save it as a PDF and upload that.</p>
+            @endif
+        </div>
     </x-card>
 </x-app-layout>

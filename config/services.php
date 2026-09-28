@@ -51,4 +51,10 @@ return [
         ],
     ],
 
+    // Converts Word/Excel/PowerPoint library files to PDF for secure viewing.
+    // Leave unset to auto-detect soffice/libreoffice on the server.
+    'libreoffice' => [
+        'path' => env('LIBREOFFICE_PATH'),
+    ],
+
 ];

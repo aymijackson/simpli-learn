@@ -4,6 +4,7 @@ namespace Elibrary\Library\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Elibrary\Library\Enums\LibraryFileAccessLevel;
+use Elibrary\Library\Enums\LibraryFileFormat;
 use Elibrary\Library\Models\LibraryResource;
 use Elibrary\Library\Models\LibraryResourceFile;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ class LibraryResourceFileController extends Controller
         $this->authorizeAccess($request, $resource, $file);
         abort_unless($file->access_level === LibraryFileAccessLevel::Open, 404);
 
-        return $this->respond($file, ResponseHeaderBag::DISPOSITION_ATTACHMENT);
+        return $this->respond($file, $file->disk_path, LibraryFileFormat::safeMimeFor($file->extension()), ResponseHeaderBag::DISPOSITION_ATTACHMENT);
     }
 
     /**
@@ -36,20 +37,27 @@ class LibraryResourceFileController extends Controller
     public function stream(Request $request, string $tenant, LibraryResource $resource, LibraryResourceFile $file): BinaryFileResponse
     {
         $this->authorizeAccess($request, $resource, $file);
+        // Only what the platform can show; Office files through their PDF copy.
+        abort_unless($file->viewer() !== null, 404);
 
-        return $this->respond($file, ResponseHeaderBag::DISPOSITION_INLINE);
+        return $this->respond($file, $file->viewPath(), $file->viewMime(), ResponseHeaderBag::DISPOSITION_INLINE);
     }
 
-    private function respond(LibraryResourceFile $file, string $disposition): BinaryFileResponse
+    private function respond(LibraryResourceFile $file, string $path, string $mime, string $disposition): BinaryFileResponse
     {
         $disk = Storage::disk($file->disk());
-        abort_unless($disk->exists($file->disk_path), 404);
+        abort_unless($disk->exists($path), 404);
 
-        $response = new BinaryFileResponse($disk->path($file->disk_path));
-        $response->headers->set('Content-Type', $file->mime_type ?? 'application/octet-stream');
+        $response = new BinaryFileResponse($disk->path($path));
+        $response->headers->set('Content-Type', $mime);
         $response->headers->set('Cache-Control', 'private, no-store');
         $response->headers->set('X-Content-Type-Options', 'nosniff');
-        $name = str_replace(['/', '\\'], '', $file->original_filename ?? '') ?: basename($file->disk_path);
+        // Even if opened directly, a file can never run scripts on this site.
+        $response->headers->set('Content-Security-Policy', "sandbox; default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'");
+        $name = str_replace(['/', '\\'], '', $file->original_filename ?? '') ?: basename($path);
+        if ($path === $file->pdf_path) {
+            $name = pathinfo($name, PATHINFO_FILENAME).'.pdf';
+        }
         $response->setContentDisposition($disposition, $name, $this->asciiSafe($name));
 
         return $response;

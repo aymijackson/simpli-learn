@@ -47,7 +47,7 @@ class LibraryResourceFileTest extends TestCase
         $resource = $this->openResource($tenant);
 
         $this->actingAs($owner)->post("/t/acme/library/manage/resources/physics-101/files", [
-            'title' => 'Summary sheet', 'format' => 'file', 'access_level' => 'open',
+            'title' => 'Summary sheet', 'format' => 'text', 'access_level' => 'open',
             'file' => UploadedFile::fake()->create('summary.txt', 100, 'text/plain'),
         ])->assertRedirect();
 
@@ -66,7 +66,7 @@ class LibraryResourceFileTest extends TestCase
         $member = User::factory()->create(['tenant_id' => $tenant->id]);
 
         $this->actingAs($owner)->post("/t/acme/library/manage/resources/physics-101/files", [
-            'title' => 'Summary sheet', 'format' => 'file', 'access_level' => 'open',
+            'title' => 'Summary sheet', 'format' => 'text', 'access_level' => 'open',
             'file' => UploadedFile::fake()->create('summary.txt', 100, 'text/plain'),
         ]);
         $file = $resource->fresh()->files()->first();
