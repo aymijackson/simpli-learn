@@ -34,8 +34,8 @@
 
     @push('scripts')
         @if ($protected)
-            <script src="{{ asset('js/library-protect.js') }}?v={{ filemtime(public_path('js/library-protect.js')) }}"></script>
+            <script src="{{ \App\Support\Asset::url('js/library-protect.js') }}"></script>
         @endif
-        <script type="module" src="{{ asset('js/library-pdf-reader.js') }}?v={{ filemtime(public_path('js/library-pdf-reader.js')) }}"></script>
+        <script type="module" src="{{ \App\Support\Asset::url('js/library-pdf-reader.js') }}"></script>
     @endpush
 </x-app-layout>

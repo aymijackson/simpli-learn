@@ -193,7 +193,7 @@
     </div>
     @if ($video)
         @push('scripts')
-            <script src="{{ asset('js/lesson-video.js') }}?v={{ filemtime(public_path('js/lesson-video.js')) }}" defer></script>
+            <script src="{{ \App\Support\Asset::url('js/lesson-video.js') }}" defer></script>
             <script>
                 document.addEventListener('lesson-video:completed', () => {
                     document.querySelector('[data-video-complete-banner]')?.classList.replace('hidden', 'flex');
@@ -204,7 +204,7 @@
     @endif
     @if ($lesson->hasScorm() && $course->isEnrolled(auth()->user()))
         @push('scripts')
-            <script src="{{ asset('js/scorm-runtime.js') }}?v={{ filemtime(public_path('js/scorm-runtime.js')) }}"></script>
+            <script src="{{ \App\Support\Asset::url('js/scorm-runtime.js') }}"></script>
             <script>
                 document.addEventListener('scorm:completed', () => {
                     document.querySelector('[data-scorm-complete-banner]')?.classList.replace('hidden', 'flex');

@@ -53,7 +53,7 @@
 
     @if ($protected)
         @push('scripts')
-        <script src="{{ asset('js/library-protect.js') }}?v={{ filemtime(public_path('js/library-protect.js')) }}"></script>
+        <script src="{{ \App\Support\Asset::url('js/library-protect.js') }}"></script>
         @endpush
     @endif
 </x-app-layout>

@@ -30,10 +30,10 @@
 
     @push('scripts')
         @if ($protected)
-            <script src="{{ asset('js/library-protect.js') }}?v={{ filemtime(public_path('js/library-protect.js')) }}"></script>
+            <script src="{{ \App\Support\Asset::url('js/library-protect.js') }}"></script>
         @endif
         <script src="{{ asset('vendor/jszip-3.10.1/jszip.min.js') }}"></script>
         <script src="{{ asset('vendor/epubjs-0.3.93/epub.min.js') }}"></script>
-        <script src="{{ asset('js/library-epub-reader.js') }}?v={{ filemtime(public_path('js/library-epub-reader.js')) }}"></script>
+        <script src="{{ \App\Support\Asset::url('js/library-epub-reader.js') }}"></script>
     @endpush
 </x-app-layout>

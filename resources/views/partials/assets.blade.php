@@ -52,7 +52,7 @@
     <style>:root:root { {!! \App\Support\BrandColor::cssVariables($brandTenant->brand_color) !!} }</style>
 @endif
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/trix@2.1.19/dist/trix.css">
-<link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
+<link rel="stylesheet" href="{{ \App\Support\Asset::url('css/app.css') }}">
 {{-- app.js registers Trix hooks, so it must run before Trix upgrades the editors. --}}
-<script src="{{ asset('js/app.js') }}?v={{ filemtime(public_path('js/app.js')) }}" defer></script>
+<script src="{{ \App\Support\Asset::url('js/app.js') }}" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/trix@2.1.19/dist/trix.umd.min.js" defer></script>
