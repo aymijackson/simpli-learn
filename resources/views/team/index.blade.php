@@ -1,6 +1,7 @@
 <x-app-layout title="Team">
     <x-page-header title="Team" subtitle="Manage who has access to this workspace.">
         <x-slot:actions>
+            <x-button :href="route('tenant.team.job-titles.index')" variant="secondary">Job titles</x-button>
             <x-button :href="route('tenant.team.import.create')" variant="secondary" icon="download">Import from CSV</x-button>
             <x-button :href="route('tenant.team.create')" icon="plus">Add member</x-button>
         </x-slot:actions>
@@ -23,7 +24,7 @@
                                 <span class="text-slate-500">(you)</span>
                             @endif
                         </p>
-                        <p class="text-sm text-slate-500">{{ $member->email }}</p>
+                        <p class="text-sm text-slate-500">{{ $member->email }}@if ($member->jobTitle) <span class="text-slate-400">&middot;</span> {{ $member->jobTitle->name }}@endif</p>
                         @if ($member->hasTwoFactorEnabled())
                             <p class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-emerald-700"><x-icon name="shield-check" class="h-3.5 w-3.5" /> Two-step login on</p>
                         @endif

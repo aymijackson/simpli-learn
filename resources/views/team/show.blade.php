@@ -58,6 +58,19 @@
         </div>
     </x-card>
 
+    @unless ($member->isDeactivated())
+        <x-card class="mb-6">
+            <form method="POST" action="{{ route('tenant.team.job-title', $member) }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                @csrf
+                @method('PUT')
+                <div class="flex-1">
+                    <x-job-title-input :value="$member->jobTitle?->name" label="Job title" hint="Used to recommend courses and library resources to them. Pick an existing title as you type, or enter a new one; leave blank to clear." />
+                </div>
+                <x-button type="submit" variant="secondary">Save job title</x-button>
+            </form>
+        </x-card>
+    @endunless
+
     @if ($errors->any())
         <div class="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-inset ring-red-600/20">{{ $errors->first() }}</div>
     @endif

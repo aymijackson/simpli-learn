@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\JobTitleController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ImpersonationController;
@@ -165,9 +166,13 @@ Route::prefix('t/{tenant}')->name('tenant.')->group(function () {
         Route::get('/import', [TeamImportController::class, 'create'])->name('import.create');
         Route::get('/import/template.csv', [TeamImportController::class, 'template'])->name('import.template');
         Route::post('/import', [TeamImportController::class, 'store'])->name('import.store');
+        Route::get('/job-titles', [JobTitleController::class, 'index'])->name('job-titles.index');
+        Route::put('/job-titles/{jobTitle}', [JobTitleController::class, 'update'])->name('job-titles.update');
+        Route::delete('/job-titles/{jobTitle}', [JobTitleController::class, 'destroy'])->name('job-titles.destroy');
         Route::post('/', [TeamController::class, 'store'])->name('store');
         Route::get('/{member}', [TeamController::class, 'show'])->middleware('content:shared')->name('show');
         Route::put('/{member}', [TeamController::class, 'update'])->name('update');
+        Route::put('/{member}/job-title', [TeamController::class, 'updateJobTitle'])->name('job-title');
         Route::delete('/{member}', [TeamController::class, 'destroy'])->name('destroy');
         Route::post('/{member}/reactivate', [TeamController::class, 'reactivate'])->name('reactivate');
         Route::post('/{member}/invite', [TeamController::class, 'resendInvitation'])->name('invite');

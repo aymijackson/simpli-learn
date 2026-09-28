@@ -12,6 +12,9 @@ use App\Support\PersonalData;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Models\ActivityLog;
+use App\Models\JobTitle;
+use App\Models\User;
+use Illuminate\Validation\ValidationException;
 
 /**
  * "Profile & security" for every signed-in user: tenant members and owners
@@ -42,7 +45,13 @@ class ProfileController extends Controller
             ],
             'bio' => ['nullable', 'string', 'max:1000'],
             'locale' => ['nullable', 'in:'.implode(',', array_keys(config('languages.available')))],
+            'job_title' => ['nullable', 'string', 'max:120'],
         ]);
+
+        if ($user->tenant_id && $request->exists('job_title')) {
+            $validated['job_title_id'] = $this->jobTitleId($user, (string) $request->input('job_title'));
+        }
+        unset($validated['job_title']);
 
         $user->fill($validated)->save();
 
@@ -81,6 +90,27 @@ class ProfileController extends Controller
     }
 
     /** @return array<string, string> */
+    /**
+     * Owners may add a new job title; everyone else picks an existing one,
+     * so the list doesn't fill with near-duplicates.
+     */
+    private function jobTitleId(User $user, string $name): ?int
+    {
+        if (JobTitle::tidy($name) === '') {
+            return null;
+        }
+
+        $title = $user->isOwner()
+            ? JobTitle::findOrCreateByName($name, $user->tenant_id)
+            : JobTitle::findByName($name, $user->tenant_id);
+
+        if (! $title) {
+            throw ValidationException::withMessages(['job_title' => __('Pick a job title from the list. If yours is missing, ask your administrator to add it.')])->errorBag('details');
+        }
+
+        return $title->id;
+    }
+
     private function routes(Tenancy $tenancy): array
     {
         $prefix = $tenancy->current() ? 'tenant.' : '';

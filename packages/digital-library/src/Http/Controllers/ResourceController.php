@@ -2,6 +2,7 @@
 
 namespace Elibrary\Library\Http\Controllers;
 
+use App\Support\Recommendations;
 use App\Http\Controllers\Controller;
 use Elibrary\Library\Enums\LibraryPaymentGateway;
 use Elibrary\Library\Models\LibraryResource;
@@ -36,6 +37,12 @@ class ResourceController extends Controller
             $query->whereHas('tags', fn ($inner) => $inner->where('slug', $tag));
         }
 
+        // "For your role": resources recommended for the person's job title.
+        $forRole = $request->string('for')->value() === 'role' && $request->user()->job_title_id;
+        if ($forRole) {
+            Recommendations::forRole($query, $request->user());
+        }
+
         $sort = $request->string('sort')->trim()->value() ?: 'title';
         match ($sort) {
             'newest' => $query->latest(),
@@ -51,6 +58,8 @@ class ResourceController extends Controller
             'activeCategory' => $category ?? '',
             'activeTag' => $tag ?? '',
             'activeSort' => $sort,
+            'activeFor' => $forRole ? 'role' : null,
+            'jobTitle' => $request->user()->jobTitle,
         ]);
     }
 

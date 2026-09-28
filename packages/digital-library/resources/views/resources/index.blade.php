@@ -1,9 +1,9 @@
 @php
     $filterUrl = fn (array $changes) => route('library.resources.index', array_filter(array_merge(
-        ['q' => $search, 'category' => $activeCategory, 'tag' => $activeTag, 'sort' => $activeSort === 'title' ? null : $activeSort],
+        ['q' => $search, 'category' => $activeCategory, 'tag' => $activeTag, 'for' => $activeFor, 'sort' => $activeSort === 'title' ? null : $activeSort],
         $changes,
     )));
-    $filtered = $search !== '' || $activeCategory !== '' || $activeTag !== '';
+    $filtered = $search !== '' || $activeCategory !== '' || $activeTag !== '' || $activeFor;
 @endphp
 
 <x-app-layout :title="__('Digital Library')" flush>
@@ -17,6 +17,7 @@
                 <form method="GET" action="{{ route('library.resources.index') }}" class="mt-6 flex gap-2">
                     @if ($activeCategory)<input type="hidden" name="category" value="{{ $activeCategory }}">@endif
                     @if ($activeTag)<input type="hidden" name="tag" value="{{ $activeTag }}">@endif
+                    @if ($activeFor)<input type="hidden" name="for" value="role">@endif
                     @if ($activeSort !== 'title')<input type="hidden" name="sort" value="{{ $activeSort }}">@endif
                     <label class="relative flex-1">
                         <span class="sr-only">{{ __('Search the library') }}</span>
@@ -74,8 +75,14 @@
         {{-- Results --}}
         <div class="min-w-0 flex-1">
             <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-                <p class="text-sm text-slate-500">
-                    {{ $resources->total() }} {{ trans_choice('resource|resources', $resources->total()) }}
+                <p class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-slate-500">
+                    @if ($jobTitle)
+                        <a href="{{ $filterUrl(['for' => $activeFor ? null : 'role', 'page' => null]) }}" @if ($activeFor) aria-current="true" @endif
+                           class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition {{ $activeFor ? 'bg-brand-600 text-white' : 'bg-brand-50 text-brand-800 ring-1 ring-brand-200 ring-inset hover:bg-brand-100' }}">
+                            <x-icon name="sparkles" class="h-4 w-4" /> {{ __('For your role: :title', ['title' => $jobTitle->name]) }}
+                        </a>
+                    @endif
+                    <span>{{ $resources->total() }} {{ trans_choice('resource|resources', $resources->total()) }}</span>
                     @if ($filtered)
                         &middot; <a href="{{ route('library.resources.index') }}" class="font-medium text-brand-700 hover:text-brand-600">{{ __('Clear filters') }}</a>
                     @endif

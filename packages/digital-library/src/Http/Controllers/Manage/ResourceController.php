@@ -3,6 +3,7 @@
 namespace Elibrary\Library\Http\Controllers\Manage;
 
 use App\Http\Controllers\Controller;
+use App\Support\JobTitleSync;
 use App\Support\Tenancy\Tenancy;
 use Elibrary\Library\Checkouts\LibraryCheckoutService;
 use Elibrary\Library\Models\LibraryResource;
@@ -33,6 +34,7 @@ class ResourceController extends Controller
     {
         $resource = LibraryResource::create($this->validated($request));
         $this->syncTags($request, $resource);
+        JobTitleSync::apply($request, $resource->jobTitles());
 
         return redirect()->route('library.manage.resources.index')->with('status', 'Resource created.');
     }
@@ -49,6 +51,7 @@ class ResourceController extends Controller
     {
         $resource->update($this->validated($request, $resource));
         $this->syncTags($request, $resource);
+        JobTitleSync::apply($request, $resource->jobTitles());
 
         // Added copies (or switched to unlimited) go to the waitlist first.
         DB::transaction(fn () => app(LibraryCheckoutService::class)->offerFreeCopies($resource->fresh()));

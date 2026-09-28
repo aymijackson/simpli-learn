@@ -8,6 +8,7 @@ use Elibrary\Cbt\Models\ExamAttempt;
 use Elibrary\Library\Models\LibraryCheckout;
 use Elibrary\Lms\Models\Course;
 use Elibrary\Lms\Models\Enrollment;
+use App\Models\JobTitle;
 use App\Models\User;
 use App\Notifications\AddedToWorkspace;
 use App\Support\Invitations;
@@ -29,7 +30,7 @@ class TeamController extends Controller
     public function index(): View
     {
         return view('team.index', [
-            'members' => app(Tenancy::class)->current()->users()->active()->orderBy('name')->get(),
+            'members' => app(Tenancy::class)->current()->users()->active()->with('jobTitle')->orderBy('name')->get(),
             'deactivated' => app(Tenancy::class)->current()->users()->whereNotNull('deactivated_at')->orderBy('name')->get(),
         ]);
     }
@@ -112,6 +113,7 @@ class TeamController extends Controller
             'role' => ['required', Rule::in(array_column(UserRole::cases(), 'value'))],
             // Optional: leave blank to email an invitation to set their own password.
             'password' => ['nullable', 'confirmed', Password::defaults()],
+            'job_title' => ['nullable', 'string', 'max:120'],
         ]);
 
         $invite = empty($validated['password']);
@@ -121,6 +123,7 @@ class TeamController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'role' => $validated['role'],
+            'job_title_id' => JobTitle::findOrCreateByName((string) ($validated['job_title'] ?? ''), $tenant->id)?->id,
             'password' => Hash::make($invite ? Str::random(64) : $validated['password']),
         ]);
 
@@ -152,6 +155,19 @@ class TeamController extends Controller
         ActivityLog::record('team.role_changed', "Changed {$member->name}'s role to {$member->role->label()}", $member);
 
         return redirect()->route('tenant.team.index')->with('status', 'Role updated.');
+    }
+
+    /** Sets someone's job title, matching an existing one or adding it. */
+    public function updateJobTitle(Request $request, string $tenant, User $member): RedirectResponse
+    {
+        $validated = $request->validate(['job_title' => ['nullable', 'string', 'max:120']]);
+
+        $title = JobTitle::findOrCreateByName((string) ($validated['job_title'] ?? ''), $member->tenant_id);
+        $member->forceFill(['job_title_id' => $title?->id])->save();
+
+        ActivityLog::record('team.job_title_changed', $title ? "Set {$member->name}'s job title to {$title->name}" : "Cleared {$member->name}'s job title", $member);
+
+        return back()->with('status', 'Job title updated.');
     }
 
     /**

@@ -92,6 +92,12 @@ class Course extends Model implements SharedAcrossTenants
         ];
     }
 
+    /** Job titles this course is recommended for. */
+    public function jobTitles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(\App\Models\JobTitle::class, 'course_job_title');
+    }
+
     public function reviews(): HasMany
     {
         return $this->hasMany(CourseReview::class)->latest();

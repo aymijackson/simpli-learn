@@ -87,13 +87,14 @@
         <x-card>
             <h2 class="text-base font-semibold text-slate-900">File format</h2>
             <p class="mt-2 text-sm text-slate-600">One person per row, with a header row:</p>
-            <pre class="mt-3 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs leading-relaxed text-slate-100">name,email,role
-Ada Obi,ada@example.com,member
-Tunde Bello,tunde@example.com,owner</pre>
+            <pre class="mt-3 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs leading-relaxed text-slate-100">name,email,role,job_title
+Ada Obi,ada@example.com,member,Accountant
+Tunde Bello,tunde@example.com,owner,Operations manager</pre>
             <ul class="mt-4 space-y-2 text-sm text-slate-600">
                 <li><strong>email</strong> is required.</li>
                 <li><strong>name</strong> is optional — we'll use the email if it's missing.</li>
                 <li><strong>role</strong> is optional — <em>member</em> (default) or <em>owner</em>.</li>
+                <li><strong>job_title</strong> is optional. Existing titles are matched whatever the case; new ones are added. It also updates people already in the workspace.</li>
                 <li>People already in the workspace are skipped.</li>
             </ul>
             <x-button :href="route('tenant.team.import.template')" variant="secondary" icon="download" class="mt-5 w-full">Download template</x-button>

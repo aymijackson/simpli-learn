@@ -192,6 +192,30 @@
             </section>
         @endif
 
+        {{-- Recommended for this person's job title --}}
+        @if ($roleCourses->isNotEmpty() || $roleResources->isNotEmpty())
+            <section>
+                <div class="mb-5">
+                    <h2 class="text-xl font-bold tracking-tight text-slate-900">{{ __('Recommended for your role') }}</h2>
+                    <p class="mt-1 text-sm text-slate-500">{{ __('Picked for :title.', ['title' => $jobTitle->name]) }}</p>
+                </div>
+                @if ($roleCourses->isNotEmpty())
+                    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                        @foreach ($roleCourses as $course)
+                            <x-course-card :course="$course" />
+                        @endforeach
+                    </div>
+                @endif
+                @if ($roleResources->isNotEmpty())
+                    <div class="{{ $roleCourses->isNotEmpty() ? 'mt-8' : '' }} grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
+                        @foreach ($roleResources as $resource)
+                            <x-resource-card :resource="$resource" />
+                        @endforeach
+                    </div>
+                @endif
+            </section>
+        @endif
+
         {{-- Recommendations --}}
         @if ($suggestedCourses->isNotEmpty())
             <section>

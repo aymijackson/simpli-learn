@@ -34,7 +34,7 @@ class User extends Authenticatable implements HasLocalePreference
         'tenant_id',
         'role',
         'name',
-        'email', 'bio', 'locale',
+        'email', 'bio', 'locale', 'job_title_id',
         'password',
     ];
 
@@ -81,6 +81,11 @@ class User extends Authenticatable implements HasLocalePreference
     public function hasTwoFactorEnabled(): bool
     {
         return $this->two_factor_confirmed_at !== null && $this->two_factor_secret !== null;
+    }
+
+    public function jobTitle(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(JobTitle::class);
     }
 
     public function isOwner(): bool

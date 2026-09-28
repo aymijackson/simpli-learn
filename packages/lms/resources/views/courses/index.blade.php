@@ -1,7 +1,7 @@
 @php
-    $filtered = $search !== '' || $activePrice || $activeCategory || $activeLevel;
+    $filtered = $search !== '' || $activePrice || $activeCategory || $activeLevel || $activeFor;
     $filterUrl = fn (array $changes) => route('lms.courses.index', array_filter(array_merge(
-        ['q' => $search, 'price' => $activePrice, 'category' => $activeCategory, 'level' => $activeLevel, 'sort' => $activeSort === 'newest' ? null : $activeSort],
+        ['q' => $search, 'price' => $activePrice, 'category' => $activeCategory, 'level' => $activeLevel, 'for' => $activeFor, 'sort' => $activeSort === 'newest' ? null : $activeSort],
         $changes,
     )));
 @endphp
@@ -16,6 +16,7 @@
             <form method="GET" action="{{ route('lms.courses.index') }}" class="mt-6 flex max-w-2xl gap-2">
                 @if ($activePrice)<input type="hidden" name="price" value="{{ $activePrice }}">@endif
                 @if ($activeCategory)<input type="hidden" name="category" value="{{ $activeCategory }}">@endif
+                @if ($activeFor)<input type="hidden" name="for" value="role">@endif
                 @if ($activeLevel)<input type="hidden" name="level" value="{{ $activeLevel }}">@endif
                 @if ($activeSort !== 'newest')<input type="hidden" name="sort" value="{{ $activeSort }}">@endif
                 <label class="relative flex-1">
@@ -47,12 +48,19 @@
                     <a href="{{ $filterUrl(['price' => $value ?: null]) }}"
                        class="rounded-full px-4 py-1.5 text-sm font-medium transition {{ $activePrice === $value ? 'bg-ink-900 text-white' : 'bg-white text-slate-700 ring-1 ring-slate-300 ring-inset hover:bg-slate-50' }}">{{ $label }}</a>
                 @endforeach
+                @if ($jobTitle)
+                    <a href="{{ $filterUrl(['for' => $activeFor ? null : 'role']) }}" @if ($activeFor) aria-current="true" @endif
+                       class="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition {{ $activeFor ? 'bg-brand-600 text-white' : 'bg-brand-50 text-brand-800 ring-1 ring-brand-200 ring-inset hover:bg-brand-100' }}">
+                        <x-icon name="sparkles" class="h-4 w-4" /> {{ __('For your role: :title', ['title' => $jobTitle->name]) }}
+                    </a>
+                @endif
             </div>
 
             <form method="GET" action="{{ route('lms.courses.index') }}" class="flex items-center gap-2 text-sm">
                 @if ($search)<input type="hidden" name="q" value="{{ $search }}">@endif
                 @if ($activePrice)<input type="hidden" name="price" value="{{ $activePrice }}">@endif
                 @if ($activeCategory)<input type="hidden" name="category" value="{{ $activeCategory }}">@endif
+                @if ($activeFor)<input type="hidden" name="for" value="role">@endif
                 <label for="course-level" class="sr-only">{{ __('Level') }}</label>
                 <select id="course-level" name="level" onchange="this.form.submit()"
                         class="rounded-lg border-0 bg-white py-1.5 pr-8 pl-3 text-sm font-medium text-slate-900 ring-1 ring-slate-300 ring-inset focus:ring-2 focus:ring-brand-600">

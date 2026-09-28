@@ -2,6 +2,7 @@
 
 namespace Elibrary\Lms\Http\Controllers\Manage;
 
+use App\Support\JobTitleSync;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Scopes\TenantScope;
@@ -62,6 +63,7 @@ class CourseController extends Controller
     {
         $course = Course::create($this->validated($request));
         $this->syncPrerequisites($request, $course);
+        JobTitleSync::apply($request, $course->jobTitles());
 
         return redirect()->route('lms.manage.courses.edit', $course)->with('status', 'Course created.');
     }
@@ -86,6 +88,7 @@ class CourseController extends Controller
     {
         $course->update($this->validated($request, $course));
         $this->syncPrerequisites($request, $course);
+        JobTitleSync::apply($request, $course->jobTitles());
 
         return redirect()->route('lms.manage.courses.edit', $course)->with('status', 'Course updated.');
     }

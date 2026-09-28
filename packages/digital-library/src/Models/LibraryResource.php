@@ -31,6 +31,12 @@ class LibraryResource extends Model
         ];
     }
 
+    /** Job titles this resource is recommended for. */
+    public function jobTitles(): BelongsToMany
+    {
+        return $this->belongsToMany(\App\Models\JobTitle::class, 'library_resource_job_title', 'resource_id', 'job_title_id');
+    }
+
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(ResourceTag::class, 'library_resource_tag', 'resource_id', 'tag_id');

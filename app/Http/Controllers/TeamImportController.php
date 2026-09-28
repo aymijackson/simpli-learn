@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Module;
 use App\Enums\UserRole;
 use App\Models\ActivityLog;
+use App\Models\JobTitle;
 use App\Models\User;
 use App\Support\Invitations;
 use App\Support\Tenancy\Tenancy;
@@ -41,9 +42,9 @@ class TeamImportController extends Controller
     {
         return response()->streamDownload(function () {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['name', 'email', 'role']);
-            fputcsv($out, ['Ada Obi', 'ada.obi@example.com', 'member']);
-            fputcsv($out, ['Tunde Bello', 'tunde.bello@example.com', 'member']);
+            fputcsv($out, ['name', 'email', 'role', 'job_title']);
+            fputcsv($out, ['Ada Obi', 'ada.obi@example.com', 'member', 'Accountant']);
+            fputcsv($out, ['Tunde Bello', 'tunde.bello@example.com', 'member', 'Sales manager']);
             fclose($out);
         }, 'team-import-template.csv', ['Content-Type' => 'text/csv']);
     }
@@ -92,8 +93,14 @@ class TeamImportController extends Controller
                 continue;
             }
 
+            // Optional; matched to existing titles regardless of case, new ones added.
+            $jobTitle = JobTitle::findOrCreateByName((string) ($row['job_title'] ?? ''), $tenant->id);
+
             if ($existing->has($email)) {
                 $person = $existing->get($email);
+                if ($jobTitle && $person->job_title_id !== $jobTitle->id) {
+                    $person->forceFill(['job_title_id' => $jobTitle->id])->save();
+                }
                 $skipped[] = ['line' => $line, 'email' => $email, 'reason' => $person->isDeactivated() ? 'already in the workspace (deactivated)' : 'already in the workspace'];
                 if (! $person->isDeactivated()) {
                     $alreadyMembers->push($person);
@@ -107,6 +114,7 @@ class TeamImportController extends Controller
                 'name' => Str::limit($name, 255, ''),
                 'email' => $email,
                 'role' => $roleInput,
+                'job_title_id' => $jobTitle?->id,
                 'password' => Hash::make(Str::random(64)),
             ]);
             $created->push($user);
@@ -154,7 +162,7 @@ class TeamImportController extends Controller
             if ($line === 1) {
                 // Strip a UTF-8 byte-order mark (Excel adds one), then detect a header row.
                 $cells[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string) $cells[0]);
-                $header = array_map(fn ($cell) => Str::lower(trim((string) $cell)), $cells);
+                $header = array_map(fn ($cell) => Str::snake(Str::lower(trim((string) $cell))), $cells);
                 if (in_array('email', $header, true)) {
                     $columns = $header;
 

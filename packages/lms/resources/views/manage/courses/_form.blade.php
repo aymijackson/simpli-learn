@@ -136,6 +136,8 @@
     @endif
 </fieldset>
 
+<x-job-titles-picker :selected="isset($course) ? $course->jobTitles->pluck('id')->all() : []" :allow-new="auth()->user()->isOwner()" />
+
 @php($currentPricingPolicy = old('pricing_policy', $course->pricing_policy?->value ?? 'free'))
 
 <div>

@@ -88,6 +88,9 @@ class PersonalData
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role?->label(),
+                'job_title' => $user->jobTitle?->name,
+                'about' => $user->bio,
+                'language' => $user->locale,
                 'email_verified_at' => $user->email_verified_at?->toIso8601String(),
                 'created_at' => $user->created_at?->toIso8601String(),
             ],
@@ -152,6 +155,9 @@ class PersonalData
                 'password' => Hash::make(Str::random(64)),
                 'remember_token' => null,
                 'email_verified_at' => null,
+                'job_title_id' => null,
+                'bio' => null,
+                'locale' => null,
             ])->save();
         });
     }

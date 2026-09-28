@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Recommendations;
 use App\Enums\Module;
 use App\Support\Achievements;
 use App\Support\Tenancy\Tenancy;
@@ -42,6 +43,9 @@ class HomeController extends Controller
             'suggestedExams' => collect(),
             'checkouts' => collect(),
             'newResources' => collect(),
+            'jobTitle' => $user->jobTitle,
+            'roleCourses' => $enabled->contains(Module::Lms) ? Recommendations::courses($user) : collect(),
+            'roleResources' => $enabled->contains(Module::Library) ? Recommendations::libraryResources($user) : collect(),
         ];
 
         if ($enabled->contains(Module::Lms)) {
@@ -133,6 +137,10 @@ class HomeController extends Controller
             $data['streak'] = Achievements::streak($user);
             $data['badges'] = Achievements::badgesFor($user);
         }
+
+        // Don't list a course twice when it's already recommended for their role.
+        $roleCourseIds = $data['roleCourses']->pluck('id');
+        $data['suggestedCourses'] = $data['suggestedCourses']->reject(fn ($course) => $roleCourseIds->contains($course->id))->values();
 
         return view('home', $data);
     }

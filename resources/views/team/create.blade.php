@@ -11,6 +11,7 @@
 
             <x-input type="text" name="name" label="Name" value="{{ old('name') }}" required autofocus />
             <x-input type="email" name="email" label="Email" value="{{ old('email') }}" required />
+            <x-job-title-input label="Job title (optional)" hint="Pick an existing title as you type, or enter a new one. Used to recommend courses and library resources." />
 
             <div>
                 <label class="mb-1.5 block text-sm font-medium text-slate-700">Role</label>

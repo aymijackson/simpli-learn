@@ -161,7 +161,7 @@ class TeamInvitationTest extends TestCase
     public function test_the_template_can_be_downloaded_and_members_cannot_import(): void
     {
         $response = $this->actingAs($this->owner)->get('/t/acme/team/import/template.csv');
-        $this->assertStringStartsWith("name,email,role\n", $response->streamedContent());
+        $this->assertStringStartsWith("name,email,role,job_title\n", $response->streamedContent());
 
         $member = User::factory()->create(['tenant_id' => $this->tenant->id, 'role' => UserRole::Member]);
         $this->actingAs($member)->post('/t/acme/team/import', ['file' => $this->csv("a@b.test\n")])->assertForbidden();

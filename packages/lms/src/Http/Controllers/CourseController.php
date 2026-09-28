@@ -2,6 +2,7 @@
 
 namespace Elibrary\Lms\Http\Controllers;
 
+use App\Support\Recommendations;
 use App\Http\Controllers\Controller;
 use Elibrary\Lms\Certificates\CourseCertificateService;
 use Elibrary\Lms\Enums\CourseLevel;
@@ -44,6 +45,12 @@ class CourseController extends Controller
             $query->where('pricing_policy', $price);
         }
 
+        // "For your role": courses recommended for the person's job title.
+        $forRole = $request->string('for')->value() === 'role' && $request->user()->job_title_id;
+        if ($forRole) {
+            Recommendations::forRole($query, $request->user());
+        }
+
         $sort = $request->string('sort')->value();
         match ($sort) {
             'popular' => $query->orderByDesc('enrollments_count'),
@@ -57,6 +64,8 @@ class CourseController extends Controller
 
         return view('lms::courses.index', [
             'courses' => $courses,
+            'jobTitle' => $request->user()->jobTitle,
+            'activeFor' => $forRole ? 'role' : null,
             'progress' => $courses->whereIn('id', $enrolledIds)
                 ->mapWithKeys(fn (Course $course) => [$course->id => $course->progressPercentFor($request->user())]),
             'search' => $search,

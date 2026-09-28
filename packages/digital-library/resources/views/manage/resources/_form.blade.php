@@ -23,6 +23,8 @@
 
 <x-input type="text" name="tags" label="Tags (optional, comma-separated)" value="{{ old('tags', $tagNames ?? '') }}" placeholder="algebra, revision, past-papers" />
 
+<x-job-titles-picker :selected="isset($resource) ? $resource->jobTitles->pluck('id')->all() : []" />
+
 <div>
     <label class="mb-1.5 block text-sm font-medium text-slate-700">Cover image (optional)</label>
     @if (! empty($resource->cover_image_path))
