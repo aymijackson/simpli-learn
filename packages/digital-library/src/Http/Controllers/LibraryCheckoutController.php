@@ -53,4 +53,15 @@ class LibraryCheckoutController extends Controller
 
         return redirect()->route('library.resources.show', $hold->resource)->with('status', __('Your hold has been checked out.'));
     }
+
+    /** Leave the waitlist, or turn down an offered copy so it passes on. */
+    public function leaveHold(Request $request, string $tenant, LibraryHold $hold, LibraryCheckoutService $service): RedirectResponse
+    {
+        abort_unless($hold->user_id === $request->user()->id && $hold->fulfilled_at === null, 403);
+
+        $resource = $hold->resource;
+        $service->cancel($hold);
+
+        return redirect()->route('library.resources.show', $resource)->with('status', __("You've left the waitlist."));
+    }
 }

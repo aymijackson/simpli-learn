@@ -40,7 +40,7 @@
                             @if ($checkout->isActive())
                                 Due {{ $checkout->due_at->format('M j, Y') }}
                                 @if ($checkout->isOverdue())
-                                    <span class="text-red-600">&middot; overdue</span>
+                                    <span class="text-amber-700">&middot; loan ended, returning automatically</span>
                                 @endif
                             @else
                                 Returned {{ $checkout->returned_at->format('M j, Y') }}

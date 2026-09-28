@@ -62,7 +62,8 @@ class ResourceController extends Controller
         return view('library::resources.show', [
             'resource' => $resource->load('tags', 'files'),
             'myCheckout' => $resource->checkouts()->where('user_id', $user->id)->whereNull('returned_at')->first(),
-            'myHold' => $resource->holds()->where('user_id', $user->id)->whereNull('fulfilled_at')->first(),
+            // A lapsed offer is over (the hourly job clears it); they can queue again.
+            'myHold' => $resource->holds()->where('user_id', $user->id)->whereNull('fulfilled_at')->get()->reject->hasForfeitedOffer()->first(),
             'myRating' => $resource->ratingFor($user),
             'isFavorited' => $resource->isFavoritedBy($user),
             'needsPurchase' => $resource->needsPurchaseBy($user),

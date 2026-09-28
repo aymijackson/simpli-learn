@@ -13,6 +13,7 @@ Artisan::command('inspire', function () {
 // Run everything below with one cPanel cron job, every minute:
 //   * * * * * cd /home/<user>/<app> && php artisan schedule:run >> /dev/null 2>&1
 Schedule::command('courses:send-reminders')->dailyAt('08:00');
+Schedule::command('library:process-loans')->hourly()->withoutOverlapping();
 Schedule::call(fn () => DatabaseNotification::whereNotNull('read_at')->where('created_at', '<', now()->subDays(90))->delete())
     ->daily()->name('prune-read-notifications');
 // Heartbeat for the health check: proves the cron job runs schedule:run.

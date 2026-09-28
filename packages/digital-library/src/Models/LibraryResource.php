@@ -129,9 +129,10 @@ class LibraryResource extends Model
         return $this->purchases()->where('user_id', $user->id)->where('status', 'pending')->latest('id')->first();
     }
 
+    /** A loan that is still running — access ends at the due date. */
     public function hasActiveCheckoutFor(User $user): bool
     {
-        return $this->checkouts()->where('user_id', $user->id)->whereNull('returned_at')->exists();
+        return $this->checkouts()->where('user_id', $user->id)->whereNull('returned_at')->where('due_at', '>', now())->exists();
     }
 
     public function activeCheckoutsCount(): int
@@ -139,14 +140,40 @@ class LibraryResource extends Model
         return $this->checkouts()->whereNull('returned_at')->count();
     }
 
-    /** Null = unlimited (checkout still tracked, no scarcity). */
-    public function availableCopies(): ?int
+    /** Holds currently offered a copy — that copy is reserved for them. */
+    public function liveOffersCount(): int
+    {
+        return $this->holds()->whereNull('fulfilled_at')->whereNotNull('notified_at')->where('expires_at', '>', now())->count();
+    }
+
+    /** People still queueing, not yet offered a copy. */
+    public function waitingHoldsCount(): int
+    {
+        return $this->holds()->whereNull('fulfilled_at')->whereNull('notified_at')->count();
+    }
+
+    /**
+     * Copies nobody is borrowing and nobody has been offered. Used by
+     * LibraryCheckoutService to offer copies to the waitlist in order.
+     */
+    public function unreservedCopies(): ?int
     {
         if ($this->total_copies === null) {
             return null;
         }
 
-        return max(0, $this->total_copies - $this->activeCheckoutsCount());
+        return max(0, $this->total_copies - $this->activeCheckoutsCount() - $this->liveOffersCount());
+    }
+
+    /**
+     * Copies a newcomer could take right now: unreserved and not owed to
+     * anyone already queueing. Null = unlimited (loans tracked, no scarcity).
+     */
+    public function availableCopies(): ?int
+    {
+        $unreserved = $this->unreservedCopies();
+
+        return $unreserved === null ? null : max(0, $unreserved - $this->waitingHoldsCount());
     }
 
     public function hasCopyAvailable(): bool
@@ -157,13 +184,9 @@ class LibraryResource extends Model
     }
 
     /**
-     * The earliest hold that has never been notified — the one that should
-     * be promoted next when a copy frees up. A hold that already forfeited
-     * its claim window (notified but never claimed in time) is permanently
-     * skipped, not retried: `notified_at` stays set once assigned, so this
-     * `whereNull` naturally excludes both "already has a live offer" and
-     * "already forfeited" without needing a separate check or a job to
-     * advance anything.
+     * The earliest hold not yet offered a copy — the next in line. Holds
+     * with a live or lapsed offer keep `notified_at`, so they're skipped;
+     * LibraryCheckoutService::offerFreeCopies() does the offering.
      */
     public function nextEligibleHold(): ?LibraryHold
     {

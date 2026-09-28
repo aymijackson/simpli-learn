@@ -35,6 +35,7 @@ Route::middleware(['web', 'auth', 'module:library'])
         Route::post('/resources/{resource:slug}/borrow', [LibraryCheckoutController::class, 'borrow'])->name('resources.borrow');
         Route::post('/checkouts/{checkout}/return', [LibraryCheckoutController::class, 'return'])->name('checkouts.return');
         Route::post('/holds/{hold}/claim', [LibraryCheckoutController::class, 'claimHold'])->name('holds.claim');
+        Route::delete('/holds/{hold}', [LibraryCheckoutController::class, 'leaveHold'])->name('holds.destroy');
 
         Route::get('/resources/{resource:slug}/purchase', [LibraryResourcePurchaseController::class, 'create'])->name('resources.purchase.create');
         Route::post('/resources/{resource:slug}/purchase', [LibraryResourcePurchaseController::class, 'store'])->name('resources.purchase.store');

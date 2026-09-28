@@ -48,12 +48,11 @@
 
                         @if ($resource->requires_checkout)
                             @if ($myCheckout)
-                                <div class="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
-                                    You have this checked out &mdash; due {{ $myCheckout->due_at->format('M j, Y') }}
-                                    @if ($myCheckout->isOverdue())
-                                        <span class="font-semibold text-red-600">(overdue)</span>
-                                    @endif
-                                </div>
+                                @if ($myCheckout->isOverdue())
+                                    <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">Your loan ended on {{ $myCheckout->due_at->format('M j, Y') }}. It will be returned automatically.</p>
+                                @else
+                                    <p class="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">You have this checked out &mdash; due {{ $myCheckout->due_at->format('M j, Y') }}.</p>
+                                @endif
                                 <form method="POST" action="{{ route('library.checkouts.return', $myCheckout) }}">
                                     @csrf
                                     <x-button type="submit" variant="secondary" class="w-full">Return</x-button>
@@ -64,8 +63,18 @@
                                     @csrf
                                     <x-button type="submit" class="w-full">Claim your copy</x-button>
                                 </form>
+                                <form method="POST" action="{{ route('library.holds.destroy', $myHold) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-button type="submit" variant="ghost" size="sm" class="w-full">No thanks, pass it on</x-button>
+                                </form>
                             @elseif ($myHold)
-                                <p class="rounded-lg bg-slate-50 p-3 text-center text-sm text-slate-600">You're #{{ $myHold->position() }} on the waitlist.</p>
+                                <p class="rounded-lg bg-slate-50 p-3 text-center text-sm text-slate-600">You're #{{ $myHold->position() }} on the waitlist. We'll let you know when a copy is ready.</p>
+                                <form method="POST" action="{{ route('library.holds.destroy', $myHold) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-button type="submit" variant="ghost" size="sm" class="w-full">Leave the waitlist</x-button>
+                                </form>
                             @elseif (! $hasAccess)
                                 <form method="POST" action="{{ route('library.resources.borrow', $resource) }}">
                                     @csrf

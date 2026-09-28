@@ -4,10 +4,12 @@ namespace Elibrary\Library\Http\Controllers\Manage;
 
 use App\Http\Controllers\Controller;
 use App\Support\Tenancy\Tenancy;
+use Elibrary\Library\Checkouts\LibraryCheckoutService;
 use Elibrary\Library\Models\LibraryResource;
 use Elibrary\Library\Models\ResourceTag;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -47,6 +49,9 @@ class ResourceController extends Controller
     {
         $resource->update($this->validated($request, $resource));
         $this->syncTags($request, $resource);
+
+        // Added copies (or switched to unlimited) go to the waitlist first.
+        DB::transaction(fn () => app(LibraryCheckoutService::class)->offerFreeCopies($resource->fresh()));
 
         return redirect()->route('library.manage.resources.index')->with('status', 'Resource updated.');
     }

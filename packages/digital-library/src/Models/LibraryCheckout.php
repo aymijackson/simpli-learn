@@ -11,13 +11,14 @@ class LibraryCheckout extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'resource_id', 'user_id', 'checked_out_at', 'due_at', 'returned_at'];
+    protected $fillable = ['tenant_id', 'resource_id', 'user_id', 'checked_out_at', 'due_at', 'reminder_sent_at', 'returned_at'];
 
     protected function casts(): array
     {
         return [
             'checked_out_at' => 'datetime',
             'due_at' => 'datetime',
+            'reminder_sent_at' => 'datetime',
             'returned_at' => 'datetime',
         ];
     }
@@ -38,9 +39,9 @@ class LibraryCheckout extends Model
     }
 
     /**
-     * Overdue is just a display/nudge state — it does not free the copy.
-     * Only an explicit return does that (no auto-expiry, this app has no
-     * cron infrastructure and everything is computed live like this).
+     * Past its due date. Access ends at that moment (see
+     * LibraryResource::hasActiveCheckoutFor); the hourly
+     * `library:process-loans` job then returns it, freeing the copy.
      */
     public function isOverdue(): bool
     {
