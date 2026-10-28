@@ -101,4 +101,5 @@
     @endpush
 
     @include('cbt::attempts._integrity_monitor')
+    @include('cbt::attempts._proctoring')
 </x-app-layout>

@@ -24,13 +24,53 @@
     <p class="mt-1 text-xs text-slate-500">When enabled, a submission received after the duration has elapsed is rejected and the attempt is forfeited (scored 0). When disabled, the countdown is shown to learners but a late submission is still graded normally.</p>
 </div>
 
-<div>
-    <label class="flex items-center gap-2 text-sm text-slate-600">
-        <input type="checkbox" name="integrity_monitoring_enabled" value="1" class="rounded border-slate-300 text-brand-600 focus:ring-brand-600" @checked(old('integrity_monitoring_enabled', $exam?->integrity_monitoring_enabled ?? false))>
-        Monitor for tab-switching and copy/paste
-    </label>
-    <p class="mt-1 text-xs text-slate-500">Logs when a learner switches away from the exam tab, loses window focus, copies, or pastes — timestamped for your review afterward. It never blocks, warns, or auto-fails the learner; it's purely a signal for you to factor into grading manually.</p>
-</div>
+@php($currentProctoring = old('proctoring_level', $exam?->proctoringLevel() ?? 'off'))
+
+<fieldset class="rounded-xl p-4 ring-1 ring-slate-200">
+    <legend class="px-1 text-sm font-medium text-slate-700">Proctoring</legend>
+    <div class="space-y-3">
+        @foreach ([
+            'off' => ['Off', 'No monitoring.'],
+            'browser' => ['Browser monitoring', 'Logs when a candidate leaves the exam tab or window, copies or pastes — timestamped for your review.'],
+            'webcam' => ['Webcam snapshots', 'Browser monitoring, plus an ID check photo before the exam starts and webcam photos during it. Candidates must agree to it and have a working camera; the exam asks them to stay in full screen.'],
+        ] as $value => [$label, $hint])
+            <label class="flex gap-3">
+                <input type="radio" name="proctoring_level" value="{{ $value }}" data-proctoring-level class="mt-0.5 border-slate-300 text-brand-600 focus:ring-brand-600" @checked($currentProctoring === $value)>
+                <span>
+                    <span class="block text-sm text-slate-700">{{ $label }}</span>
+                    <span class="block text-xs text-slate-500">{{ $hint }}</span>
+                </span>
+            </label>
+        @endforeach
+    </div>
+    <p class="mt-3 text-xs text-slate-500">Monitoring never fails anyone by itself (with webcam snapshots, the exam does pause while the camera is off). Flagged attempts appear in Analytics for you to review and clear or confirm.</p>
+
+    <div id="webcam-settings" class="mt-4 grid gap-5 sm:grid-cols-2 {{ $currentProctoring === 'webcam' ? '' : 'hidden' }}">
+        <div>
+            <x-input type="number" name="snapshot_interval_seconds" label="Seconds between photos" value="{{ old('snapshot_interval_seconds', $exam->snapshot_interval_seconds ?? 60) }}" min="15" max="300" />
+            <p class="mt-1 text-xs text-slate-500">15–300. Extra photos are taken whenever something is flagged.</p>
+        </div>
+        <div>
+            <x-input type="number" name="proctoring_retention_days" label="Keep photos for (days)" value="{{ old('proctoring_retention_days', $exam->proctoring_retention_days ?? 90) }}" min="1" max="730" />
+            <p class="mt-1 text-xs text-slate-500">Counted from submission; then they are deleted automatically.</p>
+        </div>
+    </div>
+</fieldset>
+
+<fieldset class="rounded-xl p-4 ring-1 ring-slate-200">
+    <legend class="px-1 text-sm font-medium text-slate-700">Supervised sitting (optional)</legend>
+    <div class="space-y-5">
+        <div>
+            <x-input type="text" name="invigilator_code" label="Invigilator code" value="{{ old('invigilator_code', $exam?->invigilator_code ?? '') }}" maxlength="50" autocomplete="off" />
+            <p class="mt-1 text-xs text-slate-500">If set, candidates need this code to start — give it out in the exam room. Change it for each sitting. Leave blank for no code.</p>
+        </div>
+        <div>
+            <x-textarea name="allowed_networks" label="Allowed networks" rows="3" placeholder="e.g. 102.89.34.10 or 102.89.34.0/24">{{ old('allowed_networks', $exam?->allowed_networks ?? '') }}</x-textarea>
+            <p class="mt-1 text-xs text-slate-500">IP addresses or ranges, one per line. If set, the exam can only be started and taken from these networks — for example your office or a test centre. Leave blank to allow anywhere.</p>
+            <p class="mt-1 text-xs text-slate-500">Your current address is <span class="font-mono">{{ request()->ip() }}</span>.</p>
+        </div>
+    </div>
+</fieldset>
 
 @php($currentNavMode = old('navigation_mode', $exam->navigation_mode?->value ?? 'all_at_once'))
 
@@ -140,6 +180,13 @@
             const maxAttemptsField = document.getElementById('max-attempts-field');
             allowRetakesField.addEventListener('change', () => {
                 maxAttemptsField.classList.toggle('hidden', !allowRetakesField.checked);
+            });
+
+            const webcamSettings = document.getElementById('webcam-settings');
+            document.querySelectorAll('[data-proctoring-level]').forEach((radio) => {
+                radio.addEventListener('change', () => {
+                    webcamSettings.classList.toggle('hidden', document.querySelector('[data-proctoring-level]:checked')?.value !== 'webcam');
+                });
             });
 
             const certPolicyField = document.getElementById('certificate-policy');

@@ -26,7 +26,7 @@ class SecurityHeaders
             'X-Content-Type-Options' => 'nosniff',
             'X-Frame-Options' => 'SAMEORIGIN',
             'Referrer-Policy' => 'strict-origin-when-cross-origin',
-            'Permissions-Policy' => 'camera=(), microphone=(), geolocation=(), payment=(self)',
+            'Permissions-Policy' => self::permissions($request),
         ];
 
         if (config('security.csp.enforce')) {
@@ -49,6 +49,16 @@ class SecurityHeaders
         }
 
         return $response;
+    }
+
+    /** Pages that may use the camera: the webcam check before a proctored exam, and the exam itself. */
+    private const CAMERA_ROUTES = ['cbt.exams.show', 'cbt.attempts.take', 'cbt.attempts.questions.show'];
+
+    private static function permissions(Request $request): string
+    {
+        $camera = $request->routeIs(...self::CAMERA_ROUTES) ? 'camera=(self)' : 'camera=()';
+
+        return "{$camera}, microphone=(), geolocation=(), payment=(self)";
     }
 
     public static function policy(): string

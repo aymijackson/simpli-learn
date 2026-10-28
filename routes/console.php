@@ -1,6 +1,7 @@
 <?php
 
 use App\Support\Monitoring\HealthCheck;
+use Elibrary\Cbt\Models\ExamProctoringSnapshot;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Artisan;
@@ -19,3 +20,5 @@ Schedule::call(fn () => DatabaseNotification::whereNotNull('read_at')->where('cr
 // Heartbeat for the health check: proves the cron job runs schedule:run.
 Schedule::call(fn () => HealthCheck::beat())->everyMinute()->name('monitoring-heartbeat');
 Schedule::command('model:prune')->daily();
+// Exam webcam photos, once each exam's retention period has passed (model:prune only scans app/Models by default).
+Schedule::command('model:prune', ['--model' => [ExamProctoringSnapshot::class]])->dailyAt('03:30')->name('prune-proctoring-photos');

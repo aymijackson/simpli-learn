@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Symfony\Component\HttpFoundation\IpUtils;
 
 class Exam extends Model implements SharedAcrossTenants
 {
@@ -39,6 +40,7 @@ class Exam extends Model implements SharedAcrossTenants
     protected $fillable = [
         'tenant_id', 'title', 'slug', 'description', 'instructions',
         'duration_minutes', 'enforce_time_limit', 'integrity_monitoring_enabled', 'pass_percentage', 'is_published',
+        'webcam_proctoring', 'snapshot_interval_seconds', 'proctoring_retention_days', 'invigilator_code', 'allowed_networks',
         'navigation_mode', 'allow_backward_navigation',
         'allow_retakes', 'max_attempts', 'available_from', 'available_until',
         'randomize_questions', 'questions_per_attempt',
@@ -51,6 +53,8 @@ class Exam extends Model implements SharedAcrossTenants
             'is_published' => 'boolean',
             'enforce_time_limit' => 'boolean',
             'integrity_monitoring_enabled' => 'boolean',
+            'webcam_proctoring' => 'boolean',
+            'invigilator_code' => 'encrypted',
             'navigation_mode' => NavigationMode::class,
             'allow_backward_navigation' => 'boolean',
             'allow_retakes' => 'boolean',
@@ -100,6 +104,41 @@ class Exam extends Model implements SharedAcrossTenants
         }
 
         return $questions->sortBy('position')->values();
+    }
+
+    /** off, browser (tab and copy/paste monitoring) or webcam (that plus photos). */
+    public function proctoringLevel(): string
+    {
+        return match (true) {
+            $this->webcam_proctoring => 'webcam',
+            $this->integrity_monitoring_enabled => 'browser',
+            default => 'off',
+        };
+    }
+
+    public function requiresInvigilatorCode(): bool
+    {
+        return filled($this->invigilator_code);
+    }
+
+    public function invigilatorCodeMatches(?string $code): bool
+    {
+        return $this->requiresInvigilatorCode()
+            && hash_equals(mb_strtoupper(trim((string) $this->invigilator_code)), mb_strtoupper(trim((string) $code)));
+    }
+
+    /** @return array<int, string> IP addresses and CIDR ranges, one per line. */
+    public function allowedNetworks(): array
+    {
+        return array_values(array_filter(array_map('trim', preg_split('/[\s,]+/', (string) $this->allowed_networks))));
+    }
+
+    /** Whether an attempt may be started or continued from this address. */
+    public function allowsNetwork(?string $ip): bool
+    {
+        $networks = $this->allowedNetworks();
+
+        return $networks === [] || ($ip !== null && IpUtils::checkIp($ip, $networks));
     }
 
     public function attempts(): HasMany
@@ -170,10 +209,14 @@ class Exam extends Model implements SharedAcrossTenants
      * "resume", not a "start", and is handled separately by the caller
      * before this is ever consulted.
      */
-    public function startBlockReason(User $user): ?string
+    public function startBlockReason(User $user, ?string $ip = null): ?string
     {
         if ($reason = app(ExamPlacements::class)->accessBlockReason($this, $user)) {
             return $reason;
+        }
+
+        if ($ip !== null && ! $this->allowsNetwork($ip)) {
+            return __('This exam can only be taken from an approved location.');
         }
 
         if ($this->available_from && now()->lt($this->available_from)) {

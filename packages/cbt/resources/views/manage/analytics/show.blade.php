@@ -71,9 +71,17 @@
                             <p class="text-xs text-slate-500">{{ $attempt->user->email }} &middot; submitted {{ $attempt->submitted_at->format('M j, Y g:ia') }} &middot; {{ round($attempt->durationMinutes(), 1) }} min</p>
                         </div>
                         <div class="flex items-center gap-3">
-                            @if ($attempt->integrity_events_count > 0)
+                            @if ($attempt->review_status === 'cleared')
+                                <a href="{{ route('cbt.manage.analytics.attempts.integrity', [$exam, $attempt]) }}"><x-badge color="green">Cleared</x-badge></a>
+                            @elseif ($attempt->review_status === 'concern')
+                                <a href="{{ route('cbt.manage.analytics.attempts.integrity', [$exam, $attempt]) }}"><x-badge color="red">Concern</x-badge></a>
+                            @elseif ($attempt->integrity_events_count > 0)
                                 <a href="{{ route('cbt.manage.analytics.attempts.integrity', [$exam, $attempt]) }}" class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20 hover:bg-amber-100">
                                     &#9888; {{ $attempt->integrity_events_count }} {{ \Illuminate\Support\Str::plural('flag', $attempt->integrity_events_count) }}
+                                </a>
+                            @elseif ($attempt->proctoring_snapshots_count > 0)
+                                <a href="{{ route('cbt.manage.analytics.attempts.integrity', [$exam, $attempt]) }}" class="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-300 hover:bg-slate-100">
+                                    Review photos
                                 </a>
                             @endif
                             @if ($attempt->isAwaitingMarking())

@@ -5,6 +5,9 @@
     $submittedAttempts = $attempts->filter->isSubmitted()->reject->isAwaitingMarking();
     $openAttempt = $attempts->first(fn ($attempt) => ! $attempt->isSubmitted());
     $best = $submittedAttempts->max('score');
+    // Webcam and invigilator checks happen in a panel on the page, not from the hero button.
+    $needsStartChecks = $exam->webcam_proctoring || $exam->requiresInvigilatorCode();
+    $canStart = ! $openAttempt && ! $startBlockReason;
 @endphp
 
 <x-app-layout :title="$exam->title" flush>
@@ -56,6 +59,8 @@
                         <span class="inline-flex items-center gap-2 rounded-xl bg-rose-500/15 px-4 py-3 text-sm font-medium text-rose-200 ring-1 ring-rose-400/30">
                             <x-icon name="lock" class="h-4 w-4" /> {{ $startBlockReason }}
                         </span>
+                    @elseif ($needsStartChecks)
+                        <x-button href="#start-check" variant="white" size="lg" icon="play">{{ $attempts->isEmpty() ? __('Start exam') : __('Retake exam') }}</x-button>
                     @else
                         <form method="POST" action="{{ route('cbt.exams.start', $exam) }}">
                             @csrf
@@ -80,6 +85,10 @@
 
         <div class="mt-8 grid gap-6 lg:grid-cols-3">
             <div class="space-y-6 lg:col-span-2">
+                @if ($canStart && $needsStartChecks)
+                    @include('cbt::exams._start_checks')
+                @endif
+
                 @if ($exam->description)
                     <x-card>
                         <h2 class="text-lg font-bold text-slate-900">{{ __('About this exam') }}</h2>
@@ -157,8 +166,14 @@
                         @if ($exam->randomize_questions || $exam->questions_per_attempt)
                             <li class="flex gap-3"><x-icon name="sparkles" class="mt-0.5 h-4 w-4 text-slate-500" /> {{ __('Questions are shuffled for every attempt.') }}</li>
                         @endif
+                        @if ($exam->webcam_proctoring)
+                            <li class="flex gap-3"><x-icon name="camera" class="mt-0.5 h-4 w-4 text-slate-500" /> {{ __('This exam uses your webcam: an ID check photo before you start, and photos while you work. Keep your face in view and stay in full screen.') }}</li>
+                        @endif
                         @if ($exam->integrity_monitoring_enabled)
                             <li class="flex gap-3"><x-icon name="shield-check" class="mt-0.5 h-4 w-4 text-slate-500" /> {{ __('This exam is monitored: leaving the exam window or copying text is recorded.') }}</li>
+                        @endif
+                        @if ($exam->allowedNetworks())
+                            <li class="flex gap-3"><x-icon name="lock" class="mt-0.5 h-4 w-4 text-slate-500" /> {{ __('This exam can only be taken from an approved location.') }}</li>
                         @endif
                         <li class="flex gap-3"><x-icon name="bolt" class="mt-0.5 h-4 w-4 text-slate-500" /> {{ __('Results are graded instantly when you submit.') }}</li>
                     </ul>
@@ -166,4 +181,9 @@
             </aside>
         </div>
     </div>
+    @if ($canStart && $exam->webcam_proctoring)
+        @push('scripts')
+            <script src="{{ \App\Support\Asset::url('js/exam-proctor.js') }}" defer></script>
+        @endpush
+    @endif
 </x-app-layout>

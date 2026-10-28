@@ -6,8 +6,10 @@ use Elibrary\Cbt\Http\Controllers\CertificateController;
 use Elibrary\Cbt\Http\Controllers\CertificatePaymentController;
 use Elibrary\Cbt\Http\Controllers\ExamController;
 use Elibrary\Cbt\Http\Controllers\IntegrityEventController;
+use Elibrary\Cbt\Http\Controllers\ProctoringSnapshotController;
 use Elibrary\Cbt\Http\Controllers\Manage\AnalyticsController as ManageAnalyticsController;
 use Elibrary\Cbt\Http\Controllers\Manage\ExamPeopleReportController;
+use Elibrary\Cbt\Http\Controllers\Manage\ProctoringReviewController as ManageProctoringReviewController;
 use Elibrary\Cbt\Http\Controllers\Manage\MarkingController as ManageMarkingController;
 use Elibrary\Cbt\Http\Controllers\Manage\CertificatePaymentQueueController as ManageCertificatePaymentQueueController;
 use Elibrary\Cbt\Http\Controllers\Manage\CertificateSettingsController as ManageCertificateSettingsController;
@@ -39,6 +41,7 @@ Route::middleware(['web', 'auth', 'module:cbt'])
         Route::get('/attempts/{attempt}/questions/{page}', [AttemptQuestionController::class, 'show'])->whereNumber('page')->name('attempts.questions.show');
         Route::post('/attempts/{attempt}/questions/{page}', [AttemptQuestionController::class, 'answer'])->whereNumber('page')->name('attempts.questions.answer');
         Route::post('/attempts/{attempt}/integrity-events', [IntegrityEventController::class, 'store'])->middleware('throttle:30,1')->name('attempts.integrity.store');
+        Route::post('/attempts/{attempt}/snapshots', [ProctoringSnapshotController::class, 'store'])->middleware('throttle:20,1')->name('attempts.snapshots.store');
         Route::get('/attempts/{attempt}/certificate', [CertificateController::class, 'download'])->name('attempts.certificate.download');
 
         Route::get('/attempts/{attempt}/certificate/pay', [CertificatePaymentController::class, 'create'])->name('attempts.certificate-payment.create');
@@ -86,6 +89,8 @@ Route::middleware(['web', 'auth', 'module:cbt'])
             Route::get('/analytics/{exam:slug}/people.csv', [ExamPeopleReportController::class, 'export'])->name('analytics.people.export');
             Route::get('/analytics/{exam:slug}/export.pdf', [ManageAnalyticsController::class, 'exportPdf'])->name('analytics.export.pdf');
             Route::get('/analytics/{exam:slug}/attempts/{attempt}/integrity', [ManageAnalyticsController::class, 'integrityEvents'])->name('analytics.attempts.integrity');
+            Route::put('/analytics/{exam:slug}/attempts/{attempt}/review', [ManageProctoringReviewController::class, 'update'])->name('analytics.attempts.review');
+            Route::get('/analytics/{exam:slug}/attempts/{attempt}/snapshots/{snapshot}', [ManageProctoringReviewController::class, 'snapshot'])->name('analytics.attempts.snapshot');
 
 
             Route::get('/certificates/settings', [ManageCertificateSettingsController::class, 'edit'])->name('certificates.settings.edit');

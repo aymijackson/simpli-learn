@@ -14,7 +14,10 @@ class ExamAttempt extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'exam_id', 'user_id', 'started_at', 'submitted_at', 'score', 'needs_marking'];
+    protected $fillable = ['tenant_id', 'exam_id', 'user_id', 'started_at', 'submitted_at', 'score', 'needs_marking', 'proctoring_consented_at'];
+
+    /** A reviewer's verdict on a monitored attempt. */
+    public const REVIEW_STATUSES = ['cleared' => 'Cleared', 'concern' => 'Concern confirmed'];
 
     protected function casts(): array
     {
@@ -22,6 +25,8 @@ class ExamAttempt extends Model
             'started_at' => 'datetime',
             'submitted_at' => 'datetime',
             'needs_marking' => 'boolean',
+            'proctoring_consented_at' => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
     }
 
@@ -78,6 +83,16 @@ class ExamAttempt extends Model
     public function integrityEvents(): HasMany
     {
         return $this->hasMany(ExamIntegrityEvent::class, 'exam_attempt_id');
+    }
+
+    public function proctoringSnapshots(): HasMany
+    {
+        return $this->hasMany(ExamProctoringSnapshot::class, 'exam_attempt_id');
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function certificate(): HasOne

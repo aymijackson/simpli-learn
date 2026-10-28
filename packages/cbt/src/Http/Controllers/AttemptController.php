@@ -14,10 +14,13 @@ use Elibrary\Cbt\Contracts\ExamPlacements;
 use Elibrary\Cbt\Enums\NavigationMode;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Cbt\Models\ExamAttempt;
+use Elibrary\Cbt\Models\ExamProctoringSnapshot;
+use Elibrary\Cbt\Support\ProctoringImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AttemptController extends Controller
@@ -45,17 +48,62 @@ class AttemptController extends Controller
                 $existing->update(['submitted_at' => now(), 'score' => 0]);
             }
 
-            if ($reason = $exam->startBlockReason($request->user())) {
+            if ($reason = $exam->startBlockReason($request->user(), $request->ip())) {
                 return redirect()->route('cbt.exams.show', $exam)->with('error', $reason);
             }
+
+            $idPhoto = $this->validateStartChecks($request, $exam);
 
             $attempt = $exam->attempts()->create([
                 'user_id' => $userId,
                 'started_at' => now(),
+                'proctoring_consented_at' => $exam->webcam_proctoring ? now() : null,
             ]);
+
+            if ($idPhoto) {
+                ExamProctoringSnapshot::record($attempt, $idPhoto['contents'], $idPhoto['extension'], 'id_check');
+            }
 
             return redirect()->route('cbt.attempts.take', $attempt);
         });
+    }
+
+    /**
+     * The invigilator's code, and for webcam-proctored exams the candidate's
+     * consent and ID check photo (a data: URL from the camera check).
+     *
+     * @return array{contents: string, extension: string}|null the ID photo
+     */
+    private function validateStartChecks(Request $request, Exam $exam): ?array
+    {
+        $rules = [];
+        if ($exam->requiresInvigilatorCode()) {
+            $rules['invigilator_code'] = ['required', 'string', 'max:50'];
+        }
+        if ($exam->webcam_proctoring) {
+            $rules['proctoring_consent'] = ['required', 'accepted'];
+            $rules['id_photo'] = ['required', 'string', 'max:3000000'];
+        }
+
+        $request->validate($rules, [
+            'proctoring_consent.required' => __('Please agree to camera monitoring to start this exam.'),
+            'id_photo.required' => __('Please take your ID check photo first.'),
+        ]);
+
+        if ($exam->requiresInvigilatorCode() && ! $exam->invigilatorCodeMatches($request->input('invigilator_code'))) {
+            throw ValidationException::withMessages(['invigilator_code' => __('That invigilator code is not right.')]);
+        }
+
+        if (! $exam->webcam_proctoring) {
+            return null;
+        }
+
+        $photo = ProctoringImage::fromDataUrl((string) $request->input('id_photo'));
+        if (! $photo) {
+            throw ValidationException::withMessages(['id_photo' => __('The ID check photo could not be read. Please take it again.')]);
+        }
+
+        return $photo;
     }
 
     public function take(Request $request, string $tenant, ExamAttempt $attempt): View|RedirectResponse
@@ -64,6 +112,10 @@ class AttemptController extends Controller
 
         if ($attempt->isSubmitted()) {
             return redirect()->route('cbt.attempts.result', $attempt);
+        }
+
+        if (! $attempt->exam->allowsNetwork($request->ip())) {
+            return redirect()->route('cbt.exams.show', $attempt->exam)->with('error', __('This exam can only be taken from an approved location.'));
         }
 
         if ($attempt->hasExpired()) {

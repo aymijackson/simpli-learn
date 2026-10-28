@@ -116,6 +116,10 @@ class AttemptQuestionController extends Controller
             return redirect()->route('cbt.attempts.result', $attempt);
         }
 
+        if (! $attempt->exam->allowsNetwork($request->ip())) {
+            return redirect()->route('cbt.exams.show', $attempt->exam)->with('error', __('This exam can only be taken from an approved location.'));
+        }
+
         if ($attempt->hasExpired()) {
             $attempt->update(['submitted_at' => now(), 'score' => 0]);
 

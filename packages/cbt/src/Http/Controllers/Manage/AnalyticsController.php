@@ -37,7 +37,7 @@ class AnalyticsController extends Controller
 
         $attempts = $this->filteredAttempts($exam, $request)
             ->with('user')
-            ->withCount('integrityEvents')
+            ->withCount(['integrityEvents', 'proctoringSnapshots' => fn ($query) => $query->withoutGlobalScopes()])
             ->latest('submitted_at')
             ->paginate(20)
             ->withQueryString();
@@ -54,10 +54,15 @@ class AnalyticsController extends Controller
     {
         abort_unless($attempt->exam_id === $exam->id, 404);
 
+        $events = $attempt->integrityEvents()->orderBy('created_at')->get();
+        $snapshots = $attempt->proctoringSnapshots()->withoutGlobalScopes()->orderBy('created_at')->orderBy('id')->get();
+
         return view('cbt::manage.analytics.integrity', [
             'exam' => $exam,
-            'attempt' => $attempt->load('user'),
-            'events' => $attempt->integrityEvents()->orderBy('created_at')->get(),
+            'attempt' => $attempt->load('user', 'reviewer'),
+            'events' => $events,
+            'idCheck' => $snapshots->firstWhere('kind', 'id_check'),
+            'snapshots' => $snapshots->where('kind', '!=', 'id_check')->values(),
         ]);
     }
 

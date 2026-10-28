@@ -78,11 +78,33 @@ class ExamController extends Controller
             'certificate_policy' => ['nullable', Rule::in(array_column(CertificatePolicy::cases(), 'value'))],
             'certificate_price' => ['nullable', 'numeric', 'min:0'],
             'certificate_currency' => ['nullable', 'string', 'size:3'],
+            'proctoring_level' => ['nullable', Rule::in(['off', 'browser', 'webcam'])],
+            'snapshot_interval_seconds' => ['nullable', 'integer', 'min:15', 'max:300'],
+            'proctoring_retention_days' => ['nullable', 'integer', 'min:1', 'max:730'],
+            'invigilator_code' => ['nullable', 'string', 'max:50'],
+            'allowed_networks' => ['nullable', 'string', 'max:2000', function ($attribute, $value, $fail) {
+                foreach (array_filter(preg_split('/[\s,]+/', (string) $value)) as $network) {
+                    if (! $this->isNetwork($network)) {
+                        $fail("\"{$network}\" isn't an IP address or range (for example 102.89.34.10 or 102.89.34.0/24).");
+
+                        return;
+                    }
+                }
+            }],
         ]);
 
         $validated['is_published'] = $request->boolean('is_published');
         $validated['enforce_time_limit'] = $request->boolean('enforce_time_limit');
-        $validated['integrity_monitoring_enabled'] = $request->boolean('integrity_monitoring_enabled');
+        $level = $validated['proctoring_level'] ?? 'off';
+        unset($validated['proctoring_level']);
+        $validated['integrity_monitoring_enabled'] = $level !== 'off';
+        $validated['webcam_proctoring'] = $level === 'webcam';
+        $validated['snapshot_interval_seconds'] = $validated['snapshot_interval_seconds'] ?? $exam?->snapshot_interval_seconds ?? 60;
+        $validated['proctoring_retention_days'] = $validated['proctoring_retention_days'] ?? $exam?->proctoring_retention_days ?? 90;
+        $validated['invigilator_code'] = filled($validated['invigilator_code'] ?? null) ? trim($validated['invigilator_code']) : null;
+        $validated['allowed_networks'] = filled($validated['allowed_networks'] ?? null)
+            ? implode("\n", array_filter(preg_split('/[\s,]+/', $validated['allowed_networks'])))
+            : null;
         $validated['navigation_mode'] = $validated['navigation_mode'] ?? NavigationMode::AllAtOnce->value;
         $validated['allow_backward_navigation'] = $validated['navigation_mode'] === NavigationMode::OneAtATime->value
             ? $request->boolean('allow_backward_navigation')
@@ -99,5 +121,20 @@ class ExamController extends Controller
         }
 
         return $validated;
+    }
+
+    /** An IPv4/IPv6 address, optionally with a /prefix. */
+    private function isNetwork(string $value): bool
+    {
+        [$address, $prefix] = array_pad(explode('/', $value, 2), 2, null);
+        if (! filter_var($address, FILTER_VALIDATE_IP)) {
+            return false;
+        }
+        if ($prefix === null) {
+            return true;
+        }
+        $max = str_contains($address, ':') ? 128 : 32;
+
+        return ctype_digit($prefix) && (int) $prefix <= $max;
     }
 }
