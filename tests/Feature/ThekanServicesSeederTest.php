@@ -3,12 +3,14 @@
 namespace Tests\Feature;
 
 use App\Enums\UserRole;
+use App\Models\JobTitle;
 use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\ThekanServicesSeeder;
 use Elibrary\Cbt\Models\Exam;
 use Elibrary\Lms\Enums\AssessmentMode;
 use Elibrary\Lms\Models\Course;
+use Elibrary\Lms\Models\LearningPath;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,7 +18,14 @@ class ThekanServicesSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_it_creates_the_workspace_owner_and_induction_course(): void
+    /** slug => [modules, final exam slug, final question count] */
+    private const COURSES = [
+        'architect-induction' => [7, 'architect-induction-assessment', 20],
+        'thekan-erp-foundations' => [6, 'erp-foundations-assessment', 20],
+        'thekan-erp-projects' => [7, 'erp-projects-assessment', 25],
+    ];
+
+    public function test_it_creates_the_workspace_owner_and_courses(): void
     {
         $this->seed(ThekanServicesSeeder::class);
 
@@ -27,32 +36,63 @@ class ThekanServicesSeederTest extends TestCase
         $this->assertSame('ime.udoh@thekanservices.com', $owner->email);
         $this->assertSame(UserRole::Owner, $owner->role);
 
-        $course = Course::withoutGlobalScopes()->where('tenant_id', $tenant->id)->sole();
-        $this->assertTrue($course->is_published);
-        $this->assertTrue($course->sequential_lessons);
-        $this->assertSame(AssessmentMode::PerModule, $course->assessment_mode);
-        $this->assertSame(['Architect'], $course->jobTitles()->withoutGlobalScopes()->pluck('name')->all());
+        $this->assertSame(15, JobTitle::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
 
-        // Every module ends with a test; the last one is the timed final assessment.
-        $modules = $course->modules()->withoutGlobalScopes()->orderBy('position')->get();
-        $this->assertCount(7, $modules);
-        foreach ($modules as $module) {
-            $exam = Exam::withoutGlobalScopes()->findOrFail($module->exam_id);
-            $this->assertTrue($exam->is_published);
-            $this->assertGreaterThanOrEqual(5, $exam->questions()->withoutGlobalScopes()->count());
-            $this->assertTrue($module->lessons()->withoutGlobalScopes()->exists());
+        foreach (self::COURSES as $slug => [$moduleCount, $finalSlug, $finalQuestions]) {
+            $course = Course::withoutGlobalScopes()->where('tenant_id', $tenant->id)->where('slug', $slug)->sole();
+            $this->assertTrue($course->is_published);
+            $this->assertTrue($course->sequential_lessons);
+            $this->assertSame(AssessmentMode::PerModule, $course->assessment_mode);
+
+            // Every module ends with a test; the last one is the timed final assessment.
+            $modules = $course->modules()->withoutGlobalScopes()->orderBy('position')->get();
+            $this->assertCount($moduleCount, $modules, $slug);
+            foreach ($modules as $module) {
+                $exam = Exam::withoutGlobalScopes()->findOrFail($module->exam_id);
+                $this->assertTrue($exam->is_published);
+                $this->assertGreaterThanOrEqual(5, $exam->questions()->withoutGlobalScopes()->count());
+                $this->assertTrue($module->lessons()->withoutGlobalScopes()->exists());
+            }
+
+            $final = Exam::withoutGlobalScopes()->findOrFail($modules->last()->exam_id);
+            $this->assertSame($finalSlug, $final->slug);
+            $this->assertTrue($final->enforce_time_limit);
+            $this->assertSame($finalQuestions, $final->questions()->withoutGlobalScopes()->count());
         }
 
-        $final = Exam::withoutGlobalScopes()->findOrFail($modules->last()->exam_id);
-        $this->assertSame('architect-induction-assessment', $final->slug);
-        $this->assertTrue($final->enforce_time_limit);
-        $this->assertSame(20, $final->questions()->withoutGlobalScopes()->count());
+        // The induction keeps its original test names; the ERP courses get their own.
+        $this->assertTrue(Exam::withoutGlobalScopes()->where('slug', 'induction-module-1-test')->where('title', 'like', 'Module 1 Test:%')->exists());
+        $this->assertTrue(Exam::withoutGlobalScopes()->where('slug', 'erp-projects-module-1-test')->where('title', 'like', 'Projects Module 1 Test:%')->exists());
 
-        // Every question has at least one correct answer.
+        // Recommended by job title.
+        $induction = Course::withoutGlobalScopes()->where('slug', 'architect-induction')->sole();
+        $this->assertSame(['Architect'], $induction->jobTitles()->withoutGlobalScopes()->pluck('name')->all());
+        $foundations = Course::withoutGlobalScopes()->where('slug', 'thekan-erp-foundations')->sole();
+        $this->assertCount(15, $foundations->jobTitles()->withoutGlobalScopes()->get());
+        $projects = Course::withoutGlobalScopes()->where('slug', 'thekan-erp-projects')->sole();
+        $this->assertContains('Site Supervisor', $projects->jobTitles()->withoutGlobalScopes()->pluck('name')->all());
+
+        // The learning path puts Foundations first and makes it a prerequisite.
+        $path = LearningPath::withoutGlobalScopes()->where('tenant_id', $tenant->id)->where('slug', 'project-site-delivery')->sole();
+        $this->assertTrue($path->is_sequential);
+        $this->assertSame(
+            ['thekan-erp-foundations', 'thekan-erp-projects'],
+            $path->courses()->withoutGlobalScopes()->get()->pluck('slug')->all(),
+        );
+        $this->assertSame(
+            ['thekan-erp-foundations'],
+            $projects->prerequisites()->withoutGlobalScopes()->pluck('slug')->all(),
+        );
+
+        // Every question has at least one correct answer. ERP course questions
+        // all have four options — fewer means two options shared the same text
+        // and one silently overwrote the other in the content array.
         $exams = Exam::withoutGlobalScopes()->where('tenant_id', $tenant->id)->get();
         foreach ($exams as $exam) {
             foreach ($exam->questions()->withoutGlobalScopes()->get() as $question) {
-                $this->assertTrue($question->options()->withoutGlobalScopes()->where('is_correct', true)->exists(), $question->question_text);
+                $options = $question->options()->withoutGlobalScopes()->get();
+                $this->assertTrue($options->contains('is_correct', true), $question->question_text);
+                $this->assertGreaterThanOrEqual(str_starts_with($exam->slug, 'erp-') ? 4 : 3, $options->count(), $question->question_text);
             }
         }
     }
@@ -64,7 +104,29 @@ class ThekanServicesSeederTest extends TestCase
 
         $tenant = Tenant::where('slug', 'thekan-services')->sole();
         $this->assertSame(1, User::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
-        $this->assertSame(1, Course::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
-        $this->assertSame(7, Exam::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
+        $this->assertSame(3, Course::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
+        $this->assertSame(20, Exam::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
+        $this->assertSame(1, LearningPath::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
+        $this->assertSame(15, JobTitle::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
+    }
+
+    public function test_it_adds_new_courses_to_a_workspace_that_already_has_the_induction(): void
+    {
+        $this->seed(ThekanServicesSeeder::class);
+        $tenant = Tenant::where('slug', 'thekan-services')->sole();
+
+        // Simulate the live workspace before the ERP courses existed.
+        foreach (['thekan-erp-projects', 'thekan-erp-foundations'] as $slug) {
+            $course = Course::withoutGlobalScopes()->where('slug', $slug)->sole();
+            $examIds = $course->modules()->withoutGlobalScopes()->pluck('exam_id');
+            LearningPath::withoutGlobalScopes()->where('tenant_id', $tenant->id)->delete();
+            $course->delete();
+            Exam::withoutGlobalScopes()->whereIn('id', $examIds)->get()->each->delete();
+        }
+
+        $this->seed(ThekanServicesSeeder::class);
+
+        $this->assertSame(3, Course::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
+        $this->assertSame(1, LearningPath::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
     }
 }

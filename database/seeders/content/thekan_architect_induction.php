@@ -13,6 +13,10 @@
  */
 
 return [
+    // Module tests are named "Module N Test: …" with slugs induction-module-N-test.
+    'test_prefix' => 'induction',
+    'test_label' => '',
+
     'course' => [
         'title' => 'Architect Induction: Working at Thekan',
         'slug' => 'architect-induction',
@@ -624,5 +628,6 @@ HTML,
     ],
 
     // Workspace job titles. The course is recommended for the first one.
-    'job_titles' => ['Architect', 'Project Manager', 'Site Supervisor'],
+    // Recommended to these job titles (created by the seeder).
+    'recommended_for' => ['Architect'],
 ];

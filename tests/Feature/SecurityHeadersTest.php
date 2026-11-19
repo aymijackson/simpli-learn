@@ -46,4 +46,17 @@ class SecurityHeadersTest extends TestCase
             ],
         ]))->assertNoContent();
     }
+
+    public function test_violation_reports_do_not_touch_the_session(): void
+    {
+        // A report sent with a stale, pre-sign-in session cookie must not get
+        // a session cookie back — that would overwrite the signed-in one.
+        $response = $this->withCookie(config('session.cookie'), 'stale-guest-session')
+            ->call('POST', '/csp-report', [], [], [], ['CONTENT_TYPE' => 'application/csp-report'], json_encode([
+                'csp-report' => ['violated-directive' => 'font-src', 'blocked-uri' => 'https://cdn.example/font.woff2'],
+            ]));
+
+        $response->assertNoContent();
+        $this->assertSame([], $response->headers->getCookies());
+    }
 }

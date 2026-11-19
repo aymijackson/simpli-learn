@@ -75,7 +75,8 @@ class SecurityHeaders
             // small inline scripts remain in a few views (theme guard, exam timer, integrity monitor).
             "script-src 'self' 'unsafe-inline' {$cdn} {$videoScripts}{$turnstile}",
             "style-src 'self' 'unsafe-inline' {$cdn} https://fonts.bunny.net",
-            "font-src 'self' data: https://fonts.bunny.net",
+            // Bunny Fonts serves the font files themselves from jsDelivr.
+            "font-src 'self' data: https://fonts.bunny.net {$cdn}",
             "img-src 'self' data: blob: https:",
             "media-src 'self' blob:",
             "connect-src 'self' {$cdn}",

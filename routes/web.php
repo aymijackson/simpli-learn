@@ -40,7 +40,20 @@ use Illuminate\Support\Facades\Route;
 // Public marketing site
 Route::get('/', [MarketingController::class, 'home'])->name('home');
 Route::get('/pages/{page:slug}', [MarketingController::class, 'show'])->name('pages.show');
-Route::post('/csp-report', CspReportController::class)->name('csp.report')->middleware('throttle:60,1');
+// Browsers send these in the background, sometimes with a cookie from before
+// the user signed in. Starting a session here would answer with that stale
+// guest cookie and sign the user straight back out, so this route touches
+// neither the session nor cookies.
+Route::post('/csp-report', CspReportController::class)->name('csp.report')->middleware('throttle:60,1')
+    ->withoutMiddleware([
+        \Illuminate\Cookie\Middleware\EncryptCookies::class,
+        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
+        \App\Http\Middleware\EnsureAccountIsActive::class,
+        \App\Http\Middleware\SetLocale::class,
+    ]);
 Route::get('/find-workspace', [MarketingController::class, 'findWorkspace'])->name('workspace.find');
 Route::get('/contact', [ContactController::class, 'create'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:contact')->name('contact.store');
