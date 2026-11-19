@@ -49,6 +49,8 @@ class ThekanServicesSeeder extends Seeder
         'thekan_architect_induction.php',
         'thekan_erp_foundations.php',
         'thekan_erp_projects.php',
+        'thekan_erp_sales.php',
+        'thekan_erp_crm.php',
     ];
 
     /** Job titles used across the firm, so learning can be recommended by role. */
@@ -76,6 +78,16 @@ class ThekanServicesSeeder extends Seeder
             'project-site-delivery',
             'For project managers, site and installation supervisors, site engineers, quantity surveyors and architects: Thekan ERP Foundations, then running projects, site installation and construction in the ERP.',
             ['thekan-erp-foundations', 'thekan-erp-projects'],
+        ],
+        'Estimating & Sales' => [
+            'estimating-sales',
+            'For estimators, sales executives and quantity surveyors: Thekan ERP Foundations, then estimating, quoting and order-to-cash in the ERP.',
+            ['thekan-erp-foundations', 'thekan-erp-sales'],
+        ],
+        'Client Relationships' => [
+            'client-relationships',
+            'For everyone who works with clients: Thekan ERP Foundations, then leads, the pipeline, follow-up and customer care in the ERP.',
+            ['thekan-erp-foundations', 'thekan-erp-crm'],
         ],
     ];
 
