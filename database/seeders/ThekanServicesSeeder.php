@@ -51,6 +51,9 @@ class ThekanServicesSeeder extends Seeder
         'thekan_erp_projects.php',
         'thekan_erp_sales.php',
         'thekan_erp_crm.php',
+        'thekan_erp_procurement.php',
+        'thekan_erp_inventory.php',
+        'thekan_erp_production.php',
     ];
 
     /** Job titles used across the firm, so learning can be recommended by role. */
@@ -88,6 +91,21 @@ class ThekanServicesSeeder extends Seeder
             'client-relationships',
             'For everyone who works with clients: Thekan ERP Foundations, then leads, the pipeline, follow-up and customer care in the ERP.',
             ['thekan-erp-foundations', 'thekan-erp-crm'],
+        ],
+        'Procurement' => [
+            'procurement',
+            'For procurement officers, approvers and requesters: Thekan ERP Foundations, then purchase-to-pay in the ERP.',
+            ['thekan-erp-foundations', 'thekan-erp-procurement'],
+        ],
+        'Stores & Inventory' => [
+            'stores-inventory',
+            'For storekeepers and stores staff: Thekan ERP Foundations, then stock control in the ERP.',
+            ['thekan-erp-foundations', 'thekan-erp-inventory'],
+        ],
+        'Workshop Production' => [
+            'workshop-production',
+            'For production supervisors and the workshop team: Thekan ERP Foundations, then furniture production in the ERP.',
+            ['thekan-erp-foundations', 'thekan-erp-production'],
         ],
     ];
 

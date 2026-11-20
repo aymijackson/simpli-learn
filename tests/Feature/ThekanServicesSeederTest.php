@@ -25,6 +25,9 @@ class ThekanServicesSeederTest extends TestCase
         'thekan-erp-projects' => [7, 'erp-projects-assessment', 25],
         'thekan-erp-sales' => [7, 'erp-sales-assessment', 25],
         'thekan-erp-crm' => [6, 'erp-crm-assessment', 20],
+        'thekan-erp-procurement' => [6, 'erp-procurement-assessment', 20],
+        'thekan-erp-inventory' => [6, 'erp-inventory-assessment', 20],
+        'thekan-erp-production' => [6, 'erp-production-assessment', 20],
     ];
 
     /** path slug => course slugs in order */
@@ -32,6 +35,9 @@ class ThekanServicesSeederTest extends TestCase
         'project-site-delivery' => ['thekan-erp-foundations', 'thekan-erp-projects'],
         'estimating-sales' => ['thekan-erp-foundations', 'thekan-erp-sales'],
         'client-relationships' => ['thekan-erp-foundations', 'thekan-erp-crm'],
+        'procurement' => ['thekan-erp-foundations', 'thekan-erp-procurement'],
+        'stores-inventory' => ['thekan-erp-foundations', 'thekan-erp-inventory'],
+        'workshop-production' => ['thekan-erp-foundations', 'thekan-erp-production'],
     ];
 
     public function test_it_creates_the_workspace_owner_and_courses(): void
@@ -111,9 +117,9 @@ class ThekanServicesSeederTest extends TestCase
 
         $tenant = Tenant::where('slug', 'thekan-services')->sole();
         $this->assertSame(1, User::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
-        $this->assertSame(5, Course::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
-        $this->assertSame(33, Exam::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
-        $this->assertSame(3, LearningPath::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
+        $this->assertSame(8, Course::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
+        $this->assertSame(51, Exam::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
+        $this->assertSame(6, LearningPath::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
         $this->assertSame(15, JobTitle::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
     }
 
@@ -123,7 +129,7 @@ class ThekanServicesSeederTest extends TestCase
         $tenant = Tenant::where('slug', 'thekan-services')->sole();
 
         // Simulate the live workspace before the ERP courses existed.
-        foreach (['thekan-erp-crm', 'thekan-erp-sales', 'thekan-erp-projects', 'thekan-erp-foundations'] as $slug) {
+        foreach (['thekan-erp-production', 'thekan-erp-inventory', 'thekan-erp-procurement', 'thekan-erp-crm', 'thekan-erp-sales', 'thekan-erp-projects', 'thekan-erp-foundations'] as $slug) {
             $course = Course::withoutGlobalScopes()->where('slug', $slug)->sole();
             $examIds = $course->modules()->withoutGlobalScopes()->pluck('exam_id');
             LearningPath::withoutGlobalScopes()->where('tenant_id', $tenant->id)->delete();
@@ -133,7 +139,7 @@ class ThekanServicesSeederTest extends TestCase
 
         $this->seed(ThekanServicesSeeder::class);
 
-        $this->assertSame(5, Course::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
-        $this->assertSame(3, LearningPath::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
+        $this->assertSame(8, Course::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
+        $this->assertSame(6, LearningPath::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
     }
 }
