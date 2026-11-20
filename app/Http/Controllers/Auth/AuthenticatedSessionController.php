@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\TenantStatus;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Scopes\TenantScope;
+use App\Models\User;
 use App\Support\Tenancy\Tenancy;
+use App\Support\WorkspaceAccounts;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -16,6 +21,9 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
+    /** Session key holding the accounts someone may choose between after the central password step. */
+    private const CHOICE_KEY = 'login.workspace_choice';
+
     private const MAX_ATTEMPTS = 5;
 
     private const DECAY_SECONDS = 300;
@@ -55,12 +63,34 @@ class AuthenticatedSessionController extends Controller
         $guard = Auth::guard('web');
 
         if (! $guard->validate($credentials)) {
-            RateLimiter::hit($throttleKey, self::DECAY_SECONDS);
-            event(new Failed('web', $guard->getLastAttempted(), $credentials));
+            // On the central page, the person may be a workspace member who
+            // doesn't remember their workspace's address: look for their
+            // accounts whose password matches, and take them there.
+            $workspaceAccounts = $tenant ? collect() : WorkspaceAccounts::matching($credentials['email'], $credentials['password']);
 
-            return back()->withErrors([
-                'email' => __('These credentials do not match our records.'),
-            ])->onlyInput('email');
+            if ($workspaceAccounts->isEmpty()) {
+                RateLimiter::hit($throttleKey, self::DECAY_SECONDS);
+                event(new Failed('web', $guard->getLastAttempted(), $credentials));
+
+                return back()->withErrors([
+                    'email' => __('These credentials do not match our records.'),
+                ])->onlyInput('email');
+            }
+
+            RateLimiter::clear($throttleKey);
+
+            if ($workspaceAccounts->count() === 1) {
+                return $this->signInToWorkspace($request, $workspaceAccounts->first(), $request->boolean('remember'));
+            }
+
+            // The same email and password in several workspaces: let them choose.
+            $request->session()->put(self::CHOICE_KEY, [
+                'user_ids' => $workspaceAccounts->pluck('id')->all(),
+                'remember' => $request->boolean('remember'),
+                'expires_at' => now()->addMinutes(5)->timestamp,
+            ]);
+
+            return redirect()->route('login.workspace');
         }
 
         RateLimiter::clear($throttleKey);
@@ -90,6 +120,33 @@ class AuthenticatedSessionController extends Controller
         return redirect()->intended(route($tenant ? 'tenant.home' : 'admin.dashboard'));
     }
 
+    /** The workspaces whose accounts matched, for someone choosing which one to enter. */
+    public function chooseWorkspace(Request $request): View|RedirectResponse
+    {
+        $accounts = $this->pendingChoice($request);
+
+        if ($accounts->isEmpty()) {
+            return redirect()->route('login')->withErrors(['email' => __('Your sign-in expired. Please enter your password again.')]);
+        }
+
+        return view('auth.choose-workspace', ['accounts' => $accounts]);
+    }
+
+    public function enterWorkspace(Request $request): RedirectResponse
+    {
+        $accounts = $this->pendingChoice($request);
+        $user = $accounts->firstWhere('id', (int) $request->input('account'));
+
+        if (! $user) {
+            return redirect()->route('login')->withErrors(['email' => __('Your sign-in expired. Please enter your password again.')]);
+        }
+
+        $remember = (bool) $request->session()->get(self::CHOICE_KEY.'.remember');
+        $request->session()->forget(self::CHOICE_KEY);
+
+        return $this->signInToWorkspace($request, $user, $remember);
+    }
+
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
@@ -100,6 +157,59 @@ class AuthenticatedSessionController extends Controller
         $tenant = app(Tenancy::class)->current();
 
         return redirect(route($tenant ? 'tenant.login' : 'home'));
+    }
+
+    /**
+     * Finish signing a workspace member in from the central page: the same
+     * checks as their workspace's own login page, then on to their workspace.
+     */
+    private function signInToWorkspace(Request $request, User $user, bool $remember): RedirectResponse
+    {
+        $workspace = $user->tenant;
+
+        // A page remembered from the central site (say /admin) isn't theirs to return to.
+        $request->session()->forget('url.intended');
+
+        if ($user->isDeactivated()) {
+            ActivityLog::record('auth.failed', 'Sign-in blocked: account is deactivated', actor: $user);
+
+            return redirect()->route('login')->withErrors([
+                'email' => __('This account has been deactivated. Contact your workspace administrator.'),
+            ])->onlyInput('email');
+        }
+
+        if ($user->hasTwoFactorEnabled()) {
+            $request->session()->put('two_factor.login', [
+                'user_id' => $user->id,
+                'remember' => $remember,
+                'expires_at' => now()->addMinutes(10)->timestamp,
+            ]);
+
+            return redirect()->route('tenant.two-factor.challenge', $workspace->slug);
+        }
+
+        Auth::guard('web')->login($user, $remember);
+        $request->session()->regenerate();
+
+        return redirect()->route('tenant.home', $workspace->slug);
+    }
+
+    /** @return Collection<int, User> accounts still waiting to be chosen (none once expired) */
+    private function pendingChoice(Request $request): Collection
+    {
+        $pending = $request->session()->get(self::CHOICE_KEY);
+
+        if (! $pending || $pending['expires_at'] < now()->timestamp) {
+            return collect();
+        }
+
+        // Re-check status: a workspace or account may have changed since the password step.
+        return User::withoutGlobalScope(TenantScope::class)
+            ->whereIn('id', $pending['user_ids'])
+            ->whereHas('tenant', fn ($query) => $query->where('status', TenantStatus::Active))
+            ->with('tenant')
+            ->orderBy('id')
+            ->get();
     }
 
     private function throttleKey(Request $request, ?int $tenantId): string

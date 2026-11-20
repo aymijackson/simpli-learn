@@ -67,7 +67,23 @@ class AuthenticationTest extends TestCase
         $this->assertAuthenticatedAs($admin);
     }
 
-    public function test_a_tenant_user_cannot_log_in_at_the_root_domain(): void
+    public function test_a_workspace_member_logging_in_at_the_root_domain_is_taken_to_their_workspace(): void
+    {
+        $tenant = Tenant::create(['name' => 'Acme', 'slug' => 'acme', 'status' => TenantStatus::Active]);
+        $user = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => 'user@acme.test',
+            'password' => bcrypt('password'),
+        ]);
+
+        $this->post('/login', ['email' => 'user@acme.test', 'password' => 'password'])
+            ->assertRedirect(route('tenant.home', 'acme'));
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertDatabaseHas('activity_logs', ['action' => 'auth.login', 'user_id' => $user->id, 'tenant_id' => $tenant->id]);
+    }
+
+    public function test_a_wrong_password_at_the_root_domain_reveals_nothing(): void
     {
         $tenant = Tenant::create(['name' => 'Acme', 'slug' => 'acme', 'status' => TenantStatus::Active]);
         User::factory()->create([
@@ -76,13 +92,12 @@ class AuthenticationTest extends TestCase
             'password' => bcrypt('password'),
         ]);
 
-        $response = $this->post('/login', [
-            'email' => 'user@acme.test',
-            'password' => 'password',
-        ]);
+        $this->from('/login')->post('/login', ['email' => 'user@acme.test', 'password' => 'wrong'])
+            ->assertRedirect('/login')
+            ->assertSessionHasErrors(['email' => 'These credentials do not match our records.']);
 
-        $response->assertSessionHasErrors('email');
         $this->assertGuest();
+        $this->get('/login')->assertDontSee('Acme');
     }
 
     public function test_repeated_failed_logins_are_locked_out(): void

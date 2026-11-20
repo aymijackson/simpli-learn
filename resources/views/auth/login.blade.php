@@ -2,7 +2,11 @@
     @php($loginTenant = app(\App\Support\Tenancy\Tenancy::class)->current())
     <div class="mb-8">
         <h1 class="font-display text-3xl font-bold tracking-tight text-slate-900">{{ __('Welcome back') }}</h1>
-        <p class="mt-2 text-sm text-slate-500">{{ __('Log in to :name to continue.', ['name' => $loginTenant ? $loginTenant->name : __('your account')]) }}</p>
+        @if ($loginTenant)
+            <p class="mt-2 text-sm text-slate-500">{{ __('Log in to :name to continue.', ['name' => $loginTenant->name]) }}</p>
+        @else
+            <p class="mt-2 text-sm text-slate-500">{{ __('Log in with your work email and password — we\'ll take you to your workspace.') }}</p>
+        @endif
     </div>
 
     <x-card class="sm:p-8">
@@ -50,6 +54,10 @@
 
     @unless (app(\App\Support\Tenancy\Tenancy::class)->current())
         <p class="mt-6 text-center text-sm text-slate-500">
+            {{ __('Not sure which workspace you belong to?') }}
+            <a href="{{ route('workspace.forgot') }}" class="font-medium text-brand-600 hover:text-brand-500">{{ __('Forgot your workspace?') }}</a>
+        </p>
+        <p class="mt-2 text-center text-sm text-slate-500">
             {{ __('Don\'t have a workspace yet?') }}
             <a href="{{ route('signup') }}" class="font-medium text-brand-600 hover:text-brand-500">{{ __('Sign up') }}</a>
         </p>

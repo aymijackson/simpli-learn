@@ -250,6 +250,10 @@
                     @if (session('workspace_error'))
                         <p class="mt-2 text-sm text-red-600">{{ session('workspace_error') }}</p>
                     @endif
+                    <p class="mt-3 text-sm text-slate-600">
+                        Don't know the address? <a href="{{ route('login') }}" class="font-medium text-brand-700 hover:text-brand-600">Log in with your work email</a>
+                        and we'll take you there, or <a href="{{ route('workspace.forgot') }}" class="font-medium text-brand-700 hover:text-brand-600">email me my workspaces</a>.
+                    </p>
                 </form>
             </div>
         </div>

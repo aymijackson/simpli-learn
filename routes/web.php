@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\TenantApprovalController;
 use App\Http\Controllers\Admin\TenantController as AdminTenantController;
 use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\ForgotWorkspaceController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegistrationController;
@@ -73,6 +74,13 @@ Route::get('/signup/pending', [RegistrationController::class, 'pending'])->name(
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+    // Workspace members signing in from the central page with the same email
+    // and password in several workspaces pick which one to open.
+    Route::get('/login/workspace', [AuthenticatedSessionController::class, 'chooseWorkspace'])->name('login.workspace');
+    Route::post('/login/workspace', [AuthenticatedSessionController::class, 'enterWorkspace']);
+
+    Route::get('/forgot-workspace', [ForgotWorkspaceController::class, 'create'])->name('workspace.forgot');
+    Route::post('/forgot-workspace', [ForgotWorkspaceController::class, 'store'])->middleware('throttle:6,1');
 
     Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email')->middleware('throttle:6,1');
