@@ -87,8 +87,11 @@
                     @foreach ([['current_password', 'Current password', 'current-password'], ['password', 'New password', 'new-password'], ['password_confirmation', 'Confirm new password', 'new-password']] as [$field, $label, $autocomplete])
                         <div>
                             <label for="{{ $field }}" class="mb-1.5 block text-sm font-medium text-slate-700">{{ $label }}</label>
-                            <input id="{{ $field }}" type="password" name="{{ $field }}" required autocomplete="{{ $autocomplete }}"
-                                   class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                            <div class="relative">
+                                <input id="{{ $field }}" type="password" name="{{ $field }}" required autocomplete="{{ $autocomplete }}"
+                                       class="block w-full rounded-lg border-0 py-2 pr-11 pl-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                                <x-password-toggle />
+                            </div>
                             @error($field, 'password')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
                     @endforeach
@@ -131,16 +134,22 @@
                     <form method="POST" action="{{ $routes['twoFactorRecoveryCodes'] }}" class="space-y-3">
                         @csrf
                         <label class="block text-sm font-medium text-slate-700" for="regen-password">{{ __('New recovery codes') }}</label>
-                        <input id="regen-password" type="password" name="password" required placeholder="{{ __('Your password') }}" autocomplete="current-password"
-                               class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                        <div class="relative">
+                            <input id="regen-password" type="password" name="password" required placeholder="{{ __('Your password') }}" autocomplete="current-password"
+                                   class="block w-full rounded-lg border-0 py-2 pr-11 pl-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                            <x-password-toggle />
+                        </div>
                         <x-button type="submit" variant="secondary" size="sm">{{ __('Generate new codes') }}</x-button>
                     </form>
                     <form method="POST" action="{{ $routes['twoFactorDisable'] }}" class="space-y-3" onsubmit="return confirm('Turn off two-step login? Your account will be protected by your password only.')">
                         @csrf
                         @method('DELETE')
                         <label class="block text-sm font-medium text-slate-700" for="disable-password">{{ __('Turn off') }}</label>
-                        <input id="disable-password" type="password" name="password" required placeholder="{{ __('Your password') }}" autocomplete="current-password"
-                               class="block w-full rounded-lg border-0 px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                        <div class="relative">
+                            <input id="disable-password" type="password" name="password" required placeholder="{{ __('Your password') }}" autocomplete="current-password"
+                                   class="block w-full rounded-lg border-0 py-2 pr-11 pl-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm">
+                            <x-password-toggle />
+                        </div>
                         <x-button type="submit" variant="danger" size="sm">{{ __('Turn off two-step login') }}</x-button>
                     </form>
                 </div>

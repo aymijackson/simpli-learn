@@ -110,3 +110,38 @@ document.addEventListener('keydown', (event) => {
     document.querySelectorAll('[data-drawer]:not(.hidden)').forEach((drawer) => drawer.classList.add('hidden'));
     document.body.classList.remove('overflow-hidden');
 });
+
+// Show/hide buttons on password fields (components/password-toggle.blade.php).
+const setPasswordVisible = (button, visible) => {
+    const input = button.parentElement.querySelector('input');
+    if (!input) return;
+
+    input.type = visible ? 'text' : 'password';
+    const label = visible ? button.dataset.labelHide : button.dataset.labelShow;
+    button.setAttribute('aria-pressed', visible ? 'true' : 'false');
+    button.setAttribute('aria-label', label);
+    button.title = label;
+    button.querySelector('[data-password-icon="show"]').style.display = visible ? 'none' : '';
+    button.querySelector('[data-password-icon="hide"]').style.display = visible ? '' : 'none';
+};
+
+document.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-password-toggle]');
+    if (!button) return;
+
+    const input = button.parentElement.querySelector('input');
+    setPasswordVisible(button, input && input.type === 'password');
+
+    // Keep typing where the person left off.
+    if (input) {
+        input.focus();
+        const end = input.value.length;
+        try { input.setSelectionRange(end, end); } catch (e) { /* not supported for this type */ }
+    }
+});
+
+// Hide them again as the form is sent, so browsers still offer to save the password.
+document.addEventListener('submit', (event) => {
+    event.target.querySelectorAll('[data-password-toggle][aria-pressed="true"]')
+        .forEach((button) => setPasswordVisible(button, false));
+}, true);

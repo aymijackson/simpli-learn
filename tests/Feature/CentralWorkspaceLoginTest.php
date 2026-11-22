@@ -231,4 +231,15 @@ class CentralWorkspaceLoginTest extends TestCase
 
         Notification::assertNothingSent();
     }
+
+    public function test_password_fields_have_a_show_password_button(): void
+    {
+        $this->workspace('acme', 'Acme Academy');
+
+        foreach (['/login', '/t/acme/login', '/signup'] as $page) {
+            $this->get($page)->assertOk()
+                ->assertSee('data-password-toggle', false)
+                ->assertSee('aria-label="Show password"', false);
+        }
+    }
 }
