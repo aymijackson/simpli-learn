@@ -54,6 +54,7 @@ class ThekanServicesSeeder extends Seeder
         'thekan_erp_procurement.php',
         'thekan_erp_inventory.php',
         'thekan_erp_production.php',
+        'thekan_erp_finance.php',
     ];
 
     /** Job titles used across the firm, so learning can be recommended by role. */
@@ -106,6 +107,11 @@ class ThekanServicesSeeder extends Seeder
             'workshop-production',
             'For production supervisors and the workshop team: Thekan ERP Foundations, then furniture production in the ERP.',
             ['thekan-erp-foundations', 'thekan-erp-production'],
+        ],
+        'Finance & Fixed Assets' => [
+            'finance-fixed-assets',
+            'For accountants and finance staff: Thekan ERP Foundations, then accounting, banking, fixed assets and closing the books in the ERP.',
+            ['thekan-erp-foundations', 'thekan-erp-finance'],
         ],
     ];
 
