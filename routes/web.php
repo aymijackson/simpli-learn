@@ -224,6 +224,7 @@ Route::prefix('t/{tenant}')->name('tenant.')->group(function () {
         Route::get('/{member}', [TeamController::class, 'show'])->middleware('content:shared')->name('show');
         Route::put('/{member}', [TeamController::class, 'update'])->name('update');
         Route::put('/{member}/job-title', [TeamController::class, 'updateJobTitle'])->name('job-title');
+        Route::put('/{member}/details', [TeamController::class, 'updateDetails'])->name('details');
         Route::delete('/{member}', [TeamController::class, 'destroy'])->name('destroy');
         Route::post('/{member}/reactivate', [TeamController::class, 'reactivate'])->name('reactivate');
         Route::post('/{member}/invite', [TeamController::class, 'resendInvitation'])->name('invite');

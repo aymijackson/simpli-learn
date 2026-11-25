@@ -11,6 +11,8 @@ use Elibrary\Lms\Models\Enrollment;
 use App\Models\JobTitle;
 use App\Models\User;
 use App\Notifications\AddedToWorkspace;
+use App\Notifications\MemberEmailChanged;
+use Illuminate\Support\Facades\Notification;
 use App\Support\Invitations;
 use App\Support\PersonalData;
 use App\Support\SafeNotifier;
@@ -155,6 +157,58 @@ class TeamController extends Controller
         ActivityLog::record('team.role_changed', "Changed {$member->name}'s role to {$member->role->label()}", $member);
 
         return redirect()->route('tenant.team.index')->with('status', 'Role updated.');
+    }
+
+    /**
+     * Corrects a member's name, email and job title. Every change is logged
+     * with its old and new value, and when the email changes the old address
+     * is told, so a hijack attempt can't go unnoticed.
+     */
+    public function updateDetails(Request $request, string $tenant, User $member): RedirectResponse
+    {
+        $validated = $request->validateWithBag('details', [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required', 'email', 'max:255',
+                Rule::unique('users', 'email')->where(fn ($query) => $query->where('tenant_id', $member->tenant_id))->ignore($member->id),
+            ],
+            'job_title' => ['nullable', 'string', 'max:120'],
+        ]);
+
+        $before = ['name' => $member->name, 'email' => $member->email, 'job_title' => $member->jobTitle?->name];
+        $title = JobTitle::findOrCreateByName((string) ($validated['job_title'] ?? ''), $member->tenant_id);
+
+        $member->forceFill([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'job_title_id' => $title?->id,
+        ]);
+        $after = ['name' => $member->name, 'email' => $member->email, 'job_title' => $title?->name];
+
+        $changes = collect($after)
+            ->filter(fn ($value, $field) => $value !== $before[$field])
+            ->map(fn ($value, $field) => ['from' => $before[$field], 'to' => $value]);
+
+        if ($changes->isEmpty()) {
+            return back()->with('status', 'No changes to save.');
+        }
+
+        $member->save();
+
+        $labels = ['name' => 'name', 'email' => 'email', 'job_title' => 'job title'];
+        $summary = $changes->map(fn ($change, $field) => sprintf('%s from "%s" to "%s"', $labels[$field], $change['from'] ?? '—', $change['to'] ?? '—'))->implode('; ');
+        ActivityLog::record('team.details_changed', "Changed {$before['name']}'s {$summary}", $member, ['changes' => $changes->all()]);
+
+        if ($changes->has('email')) {
+            SafeNotifier::send(
+                Notification::route('mail', $before['email']),
+                new MemberEmailChanged(app(Tenancy::class)->current(), $before['email'], $member->email, $request->user()->name),
+            );
+        }
+
+        return back()->with('status', $changes->has('email')
+            ? "Details updated. {$member->name} now logs in with {$member->email}, and we've let the old address know."
+            : 'Details updated.');
     }
 
     /** Sets someone's job title, matching an existing one or adding it. */

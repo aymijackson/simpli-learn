@@ -60,13 +60,24 @@
 
     @unless ($member->isDeactivated())
         <x-card class="mb-6">
-            <form method="POST" action="{{ route('tenant.team.job-title', $member) }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+                <h2 class="text-base font-semibold text-slate-900">Details</h2>
+                <p class="text-xs text-slate-500">Changes are recorded in the activity log. If you change the email, they log in with the new one and we tell the old address.</p>
+            </div>
+            @if ($errors->details->any())
+                <div class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-inset ring-red-600/20">{{ $errors->details->first() }}</div>
+            @endif
+            <form method="POST" action="{{ route('tenant.team.details', $member) }}" class="space-y-4">
                 @csrf
                 @method('PUT')
-                <div class="flex-1">
-                    <x-job-title-input :value="$member->jobTitle?->name" label="Job title" hint="Used to recommend courses and library resources to them. Pick an existing title as you type, or enter a new one; leave blank to clear." />
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <x-input name="name" label="Full name" :value="old('name', $member->name)" required maxlength="255" autocomplete="off" />
+                    <x-input name="email" type="email" label="Email (used to log in)" :value="old('email', $member->email)" required maxlength="255" autocomplete="off" />
                 </div>
-                <x-button type="submit" variant="secondary">Save job title</x-button>
+                <x-job-title-input :value="old('job_title', $member->jobTitle?->name)" label="Job title" hint="Used to recommend courses and library resources to them. Pick an existing title as you type, or enter a new one; leave blank to clear." />
+                <div class="flex justify-end">
+                    <x-button type="submit">Save details</x-button>
+                </div>
             </form>
         </x-card>
     @endunless
