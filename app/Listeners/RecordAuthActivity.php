@@ -34,6 +34,8 @@ class RecordAuthActivity
         }
 
         ActivityLog::record('auth.login', 'Signed in', actor: $event->user);
+
+        $event->user->forceFill(['last_login_at' => now()])->saveQuietly();
     }
 
     public function failed(Failed $event): void

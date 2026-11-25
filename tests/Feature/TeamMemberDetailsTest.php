@@ -8,6 +8,7 @@ use App\Enums\UserRole;
 use App\Models\ActivityLog;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\AddedToWorkspace;
 use App\Notifications\MemberEmailChanged;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\AnonymousNotifiable;
@@ -70,6 +71,7 @@ class TeamMemberDetailsTest extends TestCase
 
     public function test_the_old_address_is_told_and_the_member_logs_in_with_the_new_one(): void
     {
+        $this->member->forceFill(['last_login_at' => now()->subWeek()])->save();
         $this->save(['email' => 'ada@new.test']);
 
         Notification::assertSentOnDemand(MemberEmailChanged::class, function (MemberEmailChanged $notification, array $channels, AnonymousNotifiable $notifiable) {
@@ -85,6 +87,67 @@ class TeamMemberDetailsTest extends TestCase
         $this->assertGuest();
         $this->post('/t/acme/login', ['email' => 'ada@new.test', 'password' => 'secret-pass']);
         $this->assertAuthenticatedAs($this->member->fresh());
+    }
+
+    public function test_fixing_the_email_of_someone_who_never_signed_in_sends_a_new_invitation(): void
+    {
+        $this->save(['email' => 'ada@right.test', 'send_invitation' => '1'])
+            ->assertSessionHas('status', "Details updated. We've sent a new invitation to ada@right.test.");
+
+        // The invitation goes to the corrected address, and the mistyped one
+        // (which may be a stranger's) isn't told anything.
+        Notification::assertSentTo($this->member->fresh(), AddedToWorkspace::class, fn ($notification, $channels, $notifiable) => $notifiable->routeNotificationFor('mail') === 'ada@right.test');
+        Notification::assertSentOnDemandTimes(MemberEmailChanged::class, 0);
+        $this->assertSame(1, ActivityLog::withoutGlobalScopes()->where('action', 'team.invitation_sent')->count());
+    }
+
+    public function test_the_new_invitation_can_be_left_unsent(): void
+    {
+        $this->save(['email' => 'ada@right.test', 'send_invitation' => '0'])
+            ->assertSessionHas('status', 'Details updated. Ada Lerner will log in with ada@right.test. Use "Resend invitation" to send them a new link.');
+
+        Notification::assertNothingSent();
+    }
+
+    public function test_people_who_have_signed_in_are_not_reinvited(): void
+    {
+        $this->member->forceFill(['last_login_at' => now()])->save();
+
+        $this->save(['email' => 'ada@new.test', 'send_invitation' => '1']);
+
+        Notification::assertNotSentTo($this->member->fresh(), AddedToWorkspace::class);
+        Notification::assertSentOnDemand(MemberEmailChanged::class);
+    }
+
+    public function test_the_team_list_shows_who_has_not_signed_in_yet(): void
+    {
+        $this->owner->forceFill(['last_login_at' => now()])->save();
+        User::factory()->create(['tenant_id' => $this->tenant->id, 'name' => 'Bola Active', 'last_login_at' => now()]);
+
+        $this->actingAs($this->owner)->get('/t/acme/team')
+            ->assertOk()
+            ->assertSeeInOrder(['Everyone', '3', 'Not signed in yet', '1'])
+            ->assertSee('invitation pending');
+
+        $this->actingAs($this->owner)->get('/t/acme/team?show=pending')
+            ->assertOk()
+            ->assertSee('Ada Lerner')
+            ->assertDontSee('Bola Active')
+            ->assertSee(route('tenant.team.invite', $this->member), false);
+
+        $this->actingAs($this->owner)->get("/t/acme/team/{$this->member->id}")
+            ->assertSee('Invitation pending')
+            ->assertSee('name="send_invitation"', false);
+    }
+
+    public function test_signing_in_clears_the_pending_state(): void
+    {
+        $this->assertTrue($this->member->hasNeverSignedIn());
+
+        $this->post('/t/acme/login', ['email' => 'ada@old.test', 'password' => 'secret-pass']);
+
+        $this->assertAuthenticatedAs($this->member);
+        $this->assertFalse($this->member->fresh()->hasNeverSignedIn());
     }
 
     public function test_changing_only_the_name_sends_no_email(): void

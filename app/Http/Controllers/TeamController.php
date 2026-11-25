@@ -29,11 +29,18 @@ use App\Models\ActivityLog;
 
 class TeamController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $members = app(Tenancy::class)->current()->users()->active()->with('jobTitle')->orderBy('name')->get();
+        $pending = $members->filter->hasNeverSignedIn();
+        $showPending = $request->query('show') === 'pending';
+
         return view('team.index', [
-            'members' => app(Tenancy::class)->current()->users()->active()->with('jobTitle')->orderBy('name')->get(),
-            'deactivated' => app(Tenancy::class)->current()->users()->whereNotNull('deactivated_at')->orderBy('name')->get(),
+            'members' => $showPending ? $pending : $members,
+            'totalCount' => $members->count(),
+            'pendingCount' => $pending->count(),
+            'showPending' => $showPending,
+            'deactivated' => $showPending ? collect() : app(Tenancy::class)->current()->users()->whereNotNull('deactivated_at')->orderBy('name')->get(),
         ]);
     }
 
@@ -87,7 +94,7 @@ class TeamController extends Controller
             'courses' => $courses,
             'attempts' => $attempts,
             'loans' => $loans,
-            'lastSignIn' => ActivityLog::where('user_id', $member->id)->where('action', 'auth.login')->latest('id')->value('created_at'),
+            'lastSignIn' => $member->last_login_at,
             'activity' => ActivityLog::where('tenant_id', $workspace->id)
                 ->where(fn ($query) => $query->where('user_id', $member->id)
                     ->orWhere(fn ($about) => $about->where('subject_type', $member->getMorphClass())->where('subject_id', $member->id)))
@@ -199,16 +206,29 @@ class TeamController extends Controller
         $summary = $changes->map(fn ($change, $field) => sprintf('%s from "%s" to "%s"', $labels[$field], $change['from'] ?? '—', $change['to'] ?? '—'))->implode('; ');
         ActivityLog::record('team.details_changed', "Changed {$before['name']}'s {$summary}", $member, ['changes' => $changes->all()]);
 
-        if ($changes->has('email')) {
+        $reinvited = false;
+        if ($changes->has('email') && $member->hasNeverSignedIn() && $request->boolean('send_invitation')) {
+            $reinvited = Invitations::send($member, app(Tenancy::class)->current(), $request->user()->name);
+            ActivityLog::record('team.invitation_sent', "Sent {$member->name} a new invitation at {$member->email}", $member);
+        }
+
+        // Only warn the old address if they've actually used it to sign in.
+        // For someone who never has, it was probably a typo — possibly
+        // someone else's inbox — so it isn't told about the new address.
+        $warnedOldAddress = $changes->has('email') && ! $member->hasNeverSignedIn();
+        if ($warnedOldAddress) {
             SafeNotifier::send(
                 Notification::route('mail', $before['email']),
                 new MemberEmailChanged(app(Tenancy::class)->current(), $before['email'], $member->email, $request->user()->name),
             );
         }
 
-        return back()->with('status', $changes->has('email')
-            ? "Details updated. {$member->name} now logs in with {$member->email}, and we've let the old address know."
-            : 'Details updated.');
+        return back()->with('status', match (true) {
+            $reinvited => "Details updated. We've sent a new invitation to {$member->email}.",
+            $warnedOldAddress => "Details updated. {$member->name} now logs in with {$member->email}, and we've let the old address know.",
+            $changes->has('email') => "Details updated. {$member->name} will log in with {$member->email}. Use \"Resend invitation\" to send them a new link.",
+            default => 'Details updated.',
+        });
     }
 
     /** Sets someone's job title, matching an existing one or adding it. */

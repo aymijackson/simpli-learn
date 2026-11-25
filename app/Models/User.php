@@ -65,6 +65,7 @@ class User extends Authenticatable implements HasLocalePreference
             'two_factor_recovery_codes' => 'encrypted:array',
             'two_factor_confirmed_at' => 'datetime',
             'deactivated_at' => 'datetime',
+            'last_login_at' => 'datetime',
         ];
     }
 
@@ -76,6 +77,12 @@ class User extends Authenticatable implements HasLocalePreference
     public function scopeActive($query)
     {
         return $query->whereNull('deactivated_at');
+    }
+
+    /** Hasn't signed in since being added — their invitation is still pending. */
+    public function hasNeverSignedIn(): bool
+    {
+        return $this->last_login_at === null;
     }
 
     public function hasTwoFactorEnabled(): bool

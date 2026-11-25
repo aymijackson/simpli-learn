@@ -23,6 +23,8 @@
                         <x-badge :color="$member->isOwner() ? 'indigo' : 'slate'">{{ $member->role->label() }}</x-badge>
                         @if ($member->isDeactivated())
                             <x-badge color="red">Deactivated {{ $member->deactivated_at->format('M j, Y') }}</x-badge>
+                        @elseif ($member->hasNeverSignedIn())
+                            <x-badge color="amber">Invitation pending</x-badge>
                         @endif
                     </h1>
                     <p class="mt-0.5 text-sm text-slate-500"><a href="mailto:{{ $member->email }}" class="hover:text-brand-700">{{ $member->email }}</a></p>
@@ -44,6 +46,11 @@
                     <x-button type="submit" variant="secondary">Reactivate</x-button>
                 </form>
             @elseif (! $isSelf)
+                <div class="flex flex-wrap items-center gap-3">
+                <form method="POST" action="{{ route('tenant.team.invite', $member) }}">
+                    @csrf
+                    <x-button type="submit" :variant="$member->hasNeverSignedIn() ? 'primary' : 'secondary'" size="sm">Resend invitation</x-button>
+                </form>
                 <form method="POST" action="{{ route('tenant.team.update', $member) }}" class="flex items-center gap-2">
                     @csrf
                     @method('PUT')
@@ -54,6 +61,7 @@
                         @endforeach
                     </select>
                 </form>
+                </div>
             @endif
         </div>
     </x-card>
@@ -62,7 +70,7 @@
         <x-card class="mb-6">
             <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
                 <h2 class="text-base font-semibold text-slate-900">Details</h2>
-                <p class="text-xs text-slate-500">Changes are recorded in the activity log. If you change the email, they log in with the new one and we tell the old address.</p>
+                <p class="text-xs text-slate-500">Changes are recorded in the activity log. If you change the email, they log in with the new one{{ $member->hasNeverSignedIn() ? '.' : ' and we tell the old address.' }}</p>
             </div>
             @if ($errors->details->any())
                 <div class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-inset ring-red-600/20">{{ $errors->details->first() }}</div>
@@ -75,6 +83,13 @@
                     <x-input name="email" type="email" label="Email (used to log in)" :value="old('email', $member->email)" required maxlength="255" autocomplete="off" />
                 </div>
                 <x-job-title-input :value="old('job_title', $member->jobTitle?->name)" label="Job title" hint="Used to recommend courses and library resources to them. Pick an existing title as you type, or enter a new one; leave blank to clear." />
+                @if ($member->hasNeverSignedIn())
+                    <label class="flex items-start gap-2 text-sm text-slate-700">
+                        <input type="hidden" name="send_invitation" value="0">
+                        <input type="checkbox" name="send_invitation" value="1" @checked(old('send_invitation', '1') === '1') class="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-600">
+                        <span>If you change the email, send a new invitation to the new address <span class="block text-xs text-slate-500">They haven't signed in yet, so the old invitation went to the old address.</span></span>
+                    </label>
+                @endif
                 <div class="flex justify-end">
                     <x-button type="submit">Save details</x-button>
                 </div>

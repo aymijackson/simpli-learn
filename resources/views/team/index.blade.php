@@ -13,8 +13,24 @@
         </div>
     @endif
 
+    {{-- Everyone, or only those who haven't signed in yet (invitation pending). --}}
+    <nav class="mb-4 flex flex-wrap gap-2" aria-label="Filter team">
+        <a href="{{ route('tenant.team.index') }}" @class(['rounded-full px-3 py-1.5 text-sm font-medium ring-1 ring-inset', 'bg-slate-900 text-white ring-slate-900' => ! $showPending, 'bg-white text-slate-700 ring-slate-300 hover:bg-slate-50' => $showPending]) @if (! $showPending) aria-current="page" @endif>
+            Everyone <span class="opacity-70">{{ $totalCount }}</span>
+        </a>
+        <a href="{{ route('tenant.team.index', ['show' => 'pending']) }}" @class(['rounded-full px-3 py-1.5 text-sm font-medium ring-1 ring-inset', 'bg-slate-900 text-white ring-slate-900' => $showPending, 'bg-white text-slate-700 ring-slate-300 hover:bg-slate-50' => ! $showPending]) @if ($showPending) aria-current="page" @endif>
+            Not signed in yet <span class="opacity-70">{{ $pendingCount }}</span>
+        </a>
+    </nav>
+    @if ($showPending)
+        <p class="mb-4 text-sm text-slate-500">These people haven't signed in since they were added, so their invitation is still pending. Check their email is right, then use <strong class="font-medium text-slate-700">Resend invitation</strong>. A new link lasts 7 days.</p>
+    @endif
+
     <x-card :padded="false">
         <ul class="divide-y divide-slate-200">
+            @if ($members->isEmpty())
+                <li class="px-6 py-10 text-center text-sm text-slate-500">{{ $showPending ? 'Everyone has signed in at least once.' : 'No team members yet.' }}</li>
+            @endif
             @foreach ($members as $member)
                 <li class="flex items-center justify-between gap-4 px-6 py-4">
                     <div>
@@ -25,6 +41,9 @@
                             @endif
                         </p>
                         <p class="text-sm text-slate-500">{{ $member->email }}@if ($member->jobTitle) <span class="text-slate-400">&middot;</span> {{ $member->jobTitle->name }}@endif</p>
+                        @if ($member->hasNeverSignedIn())
+                            <p class="mt-1"><x-badge color="amber">Not signed in yet · invitation pending</x-badge></p>
+                        @endif
                         @if ($member->hasTwoFactorEnabled())
                             <p class="mt-1 inline-flex items-center gap-1 text-xs font-medium text-emerald-700"><x-icon name="shield-check" class="h-3.5 w-3.5" /> Two-step login on</p>
                         @endif
@@ -34,6 +53,12 @@
                         <x-badge :color="$member->isOwner() ? 'indigo' : 'slate'">{{ $member->role->label() }}</x-badge>
                     @else
                         <div class="flex items-center gap-3">
+                            @if ($member->hasNeverSignedIn())
+                                <form method="POST" action="{{ route('tenant.team.invite', $member) }}">
+                                    @csrf
+                                    <button type="submit" class="whitespace-nowrap text-sm font-medium text-brand-700 hover:text-brand-600">Resend invitation</button>
+                                </form>
+                            @endif
                             <form method="POST" action="{{ route('tenant.team.update', $member) }}">
                                 @csrf
                                 @method('PUT')
